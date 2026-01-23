@@ -4,7 +4,8 @@ using UnityEngine.InputSystem;
 
 public class BuildController : MonoBehaviour
 {
-    private bool isBuildingMode = false;
+    public bool isBuildingMode = false;
+    private GameObject currentPreviewObject;
     
     // Tile-centered objects
     [SerializeField] private GameObject ticketMachinePrefab;
