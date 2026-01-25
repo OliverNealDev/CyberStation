@@ -11,14 +11,16 @@ public class BuildController : MonoBehaviour
     public GameObject selectedPreviewObject;
     
     private GameObject previewObjectInstance;
+
+    private int objectRotation = 0; // Rotation state (0, 90, 180, 270 degrees)
     
     // Tile-centered objects
-    [SerializeField] private GameObject ticketMachinePrefab;
-    [SerializeField] private GameObject ticketBarrierPrefab;
+    //[SerializeField] private GameObject ticketMachinePrefab;
+    //[SerializeField] private GameObject ticketBarrierPrefab;
     
     // Inter-Tile objects
-    [SerializeField] private GameObject wallPrefab;
-    [SerializeField] private GameObject railingPrefab;
+    //[SerializeField] private GameObject wallPrefab;
+    //[SerializeField] private GameObject railingPrefab;
 
     private void Awake()
     {
@@ -35,13 +37,23 @@ public class BuildController : MonoBehaviour
                 
                 if (GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z))
                 {
-                    Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, Quaternion.identity);
+                    Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
                     GridManager.Instance.OccupyTile(gridPos.x, gridPos.y, gridPos.z);
                 }
                 else
                 {
                     Debug.Log("Cannot build here, tile is occupied." + " Position: " + gridPos);
                 }
+            }
+        }
+        
+        if (Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            objectRotation += 90;
+            if (objectRotation >= 360) objectRotation = 0;
+            if (previewObjectInstance != null)
+            {
+                previewObjectInstance.transform.rotation = Quaternion.Euler(0, objectRotation, 0);
             }
         }
     }
@@ -63,6 +75,8 @@ public class BuildController : MonoBehaviour
                     Vector3 buildPosition = hitInfo.point;
                     Vector3Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
                     previewObjectInstance.transform.position = GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, gridPos.z);
+                    
+                    previewObjectInstance.transform.rotation = Quaternion.Euler(0, objectRotation, 0);
                 }
                 else
                 {

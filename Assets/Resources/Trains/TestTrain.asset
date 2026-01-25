@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
+  m_Name: TestTrain
+  m_EditorClassIdentifier: Assembly-CSharp::Train
+  name: Test Train
+  description: Test Train for testing
+  icon: {fileID: 2800000, guid: 564d58a5bbeaee34ab4b45bda9371119, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 97ac649560f1ad04eb1cd0c89e8be635, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
+  speed: 10
+  carriageCount: 4
+  carriageLength: 34
+  capacityPerCarriage: 50
+  costPerRide: 5
+  minutesBetweenArrivals: 0.5
