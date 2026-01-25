@@ -17,6 +17,5 @@ public class Train : ScriptableObject
     public float carriageLength;
     public int capacityPerCarriage;
     public int costPerRide;
-    public float minutesBetweenArrivals;
-    
+    public float secondsBetweenArrivals;
 }

@@ -5603,7 +5603,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 150ee46e779beda4c95822eeafe8a965, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  unlockAllTrains: 0
+  unlockAllTrains: 1
 --- !u!4 &1832696139
 Transform:
   m_ObjectHideFlags: 0

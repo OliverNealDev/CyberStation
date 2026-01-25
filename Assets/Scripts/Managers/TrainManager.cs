@@ -6,7 +6,7 @@ public class TrainManager : MonoBehaviour
     public static TrainManager Instance;
 
     private Train[] allTrains;
-    private List<Train> activeTrains = new List<Train>();
+    private List<TrainService> activeTrainServices = new List<TrainService>();
     public bool unlockAllTrains = false;
     
     [SerializeField]
@@ -21,7 +21,7 @@ public class TrainManager : MonoBehaviour
         {
             foreach (var train in allTrains)
             {
-                activeTrains.Add(train);
+                activeTrainServices.Add(new TrainService(train));
             }
         }
     }
@@ -36,11 +36,48 @@ public class TrainManager : MonoBehaviour
         activePlatforms.Add(newPlatform);
     }
 
-    private struct Platform
+    void FixedUpdate()
+    {
+        CheckServicesDue();
+    }
+    
+    private void CheckServicesDue()
+    {
+        foreach (var service in activeTrainServices)
+        {
+            if (Time.time >= service.nextArrivalTime)
+            {
+                // Find an available platform
+                foreach (Platform platform in activePlatforms)
+                {
+                    if (!platform.isOccupied)
+                    {
+                        // Spawn the train at the platform
+                        GameObject trainInstance = Instantiate(service.trainData.trainPrefab, platform.platformVector3, Quaternion.identity);
+                        platform.isOccupied = true;
+
+                        // Schedule next arrival
+                        service.ScheduleNextArrival();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private class Platform
     {
         public Vector3 platformVector3; // Specifically where the train stops
         public bool isOccupied;
         public int platformNumber;
         public int maxTrainLength;
     }
+    
+    /* TO DO
+     Train has a controller and pulls into the platform, waits, then departs
+     Train triggers platform to free up after departure, and schedules next arrival
+     Platform creates area of waiting for passengers?
+     
+     Passenger spawning and boarding system, probably do ticket machine first
+     */
 }

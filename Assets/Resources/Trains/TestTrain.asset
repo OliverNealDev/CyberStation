@@ -22,4 +22,4 @@ MonoBehaviour:
   carriageLength: 34
   capacityPerCarriage: 50
   costPerRide: 5
-  minutesBetweenArrivals: 0.5
+  secondsBetweenArrivals: 30
