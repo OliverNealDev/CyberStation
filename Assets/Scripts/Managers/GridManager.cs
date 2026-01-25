@@ -36,7 +36,7 @@ public class GridManager : MonoBehaviour
 
     public bool IsTileFree(int x, int y, int z)
     {
-        if (x >= 0 && y >= 0 && x < width && y < height && z >= 0 && z < floors)
+        if (x >= 0 && y >= 0 && x < width && y < floors && z >= 0 && z < height)
         {
             return !grid[x, y, z].isOccupied; 
         }
@@ -48,7 +48,7 @@ public class GridManager : MonoBehaviour
 
     public void OccupyTile(int x, int y, int z) // Marks a tile as occupied
     {
-        if (x >= 0 && y >= 0 && x < width && y < height && z >= 0 && z < floors)
+        if (x >= 0 && y >= 0 && x < width && y < floors && z >= 0 && z < height)
         {
             grid[x, y, z].isOccupied = true;
         }
