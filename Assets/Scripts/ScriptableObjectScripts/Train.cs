@@ -12,10 +12,11 @@ public class Train : ScriptableObject
     public GameObject trainPrefab;
     public GameObject carriagePrefab;
     
-    public float speed;
-    public int carriageCount;
-    public float carriageLength;
-    public int capacityPerCarriage;
-    public int costPerRide;
-    public float secondsBetweenArrivals;
+    public float speed = 10;
+    public int carriageCount = 2;
+    public float carriageLength = 34;
+    public int capacityPerCarriage = 50;
+    public int costPerRide = 5;
+    public float secondsBetweenArrivals = 30;
+    public float secondsStationary = 10;
 }

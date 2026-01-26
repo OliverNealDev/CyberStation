@@ -17,9 +17,10 @@ MonoBehaviour:
   icon: {fileID: 2800000, guid: 564d58a5bbeaee34ab4b45bda9371119, type: 3}
   trainPrefab: {fileID: 1096767433483698802, guid: 97ac649560f1ad04eb1cd0c89e8be635, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
-  speed: 10
-  carriageCount: 4
+  speed: 50
+  carriageCount: 2
   carriageLength: 34
   capacityPerCarriage: 50
   costPerRide: 5
-  secondsBetweenArrivals: 30
+  secondsBetweenArrivals: 1
+  secondsStationary: 1

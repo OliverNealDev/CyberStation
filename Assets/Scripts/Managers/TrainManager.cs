@@ -21,7 +21,9 @@ public class TrainManager : MonoBehaviour
         {
             foreach (var train in allTrains)
             {
-                activeTrainServices.Add(new TrainService(train));
+                TrainService newService = new TrainService(train);
+                activeTrainServices.Add(newService);
+                newService.AddTrainToService();
             }
         }
     }
@@ -29,7 +31,7 @@ public class TrainManager : MonoBehaviour
     void Start()
     {
         var newPlatform = new Platform();
-        newPlatform.platformVector3 = new Vector3(-8, 0, 68.5f);
+        newPlatform.trainStopPosition = new Vector3(-8, 0, 68.5f);
         newPlatform.isOccupied = false;
         newPlatform.platformNumber = 1;
         newPlatform.maxTrainLength = 5;
@@ -47,27 +49,53 @@ public class TrainManager : MonoBehaviour
         {
             if (Time.time >= service.nextArrivalTime)
             {
-                // Find an available platform
+                bool isAnyPlatformAvailable = false;
                 foreach (Platform platform in activePlatforms)
                 {
                     if (!platform.isOccupied)
                     {
                         // Spawn the train at the platform
-                        GameObject trainInstance = Instantiate(service.trainData.trainPrefab, platform.platformVector3, Quaternion.identity);
+                        GameObject trainInstance = Instantiate(service.trainData.trainPrefab,
+                            platform.trainStopPosition + new Vector3(100, 0, 0), Quaternion.identity);
                         platform.isOccupied = true;
+                        trainInstance.GetComponent<TrainController>().trainData = service.trainData; // needs optimised
+                        trainInstance.GetComponent<TrainController>().trainStopPosition = platform.trainStopPosition; // needs optimised
+                        trainInstance.GetComponent<TrainController>().platformNumber = platform.platformNumber; // needs optimised
+                        trainInstance.GetComponent<TrainController>().trainService = service;
 
                         // Schedule next arrival
-                        service.ScheduleNextArrival();
+                        service.ConfirmArrival();
+                        isAnyPlatformAvailable = true;
                         break;
                     }
+                }
+
+                if (!isAnyPlatformAvailable)
+                {
+                    service.RescheduleCurrentArrival(); // Try again in 1 second
+                    Debug.Log("Train rescheduled due to no available platforms.");
                 }
             }
         }
     }
+    
+    public void FreePlatform(int platformNumber)
+    {
+        foreach (Platform platform in activePlatforms)
+        {
+            if (platform.platformNumber == platformNumber)
+            {
+                platform.isOccupied = false;
+                Debug.Log("Platform " + platformNumber + " is now free.");
+                return;
+            }
+        }
+        Debug.LogWarning("Platform " + platformNumber + " not found!");
+    }
 
     private class Platform
     {
-        public Vector3 platformVector3; // Specifically where the train stops
+        public Vector3 trainStopPosition; // Specifically where the train stops
         public bool isOccupied;
         public int platformNumber;
         public int maxTrainLength;
