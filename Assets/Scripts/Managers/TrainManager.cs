@@ -6,11 +6,11 @@ public class TrainManager : MonoBehaviour
     public static TrainManager Instance;
 
     private Train[] allTrains;
-    private List<TrainService> activeTrainServices = new List<TrainService>();
+    public List<TrainService> activeTrainServices = new List<TrainService>();
     public bool unlockAllTrains = false;
     
     [SerializeField]
-    private List<Platform> activePlatforms = new List<Platform>();
+    public List<Platform> activePlatforms = new List<Platform>();
 
     void Awake()
     {
@@ -23,7 +23,7 @@ public class TrainManager : MonoBehaviour
             {
                 TrainService newService = new TrainService(train);
                 activeTrainServices.Add(newService);
-                newService.AddTrainToService();
+                //newService.AddTrainToService();
             }
         }
     }
@@ -57,6 +57,7 @@ public class TrainManager : MonoBehaviour
                         // Spawn the train at the platform
                         GameObject trainInstance = Instantiate(service.trainData.trainPrefab,
                             platform.trainStopPosition + new Vector3(100, 0, 0), Quaternion.identity);
+                        service.physicalTrainInstance = trainInstance.GetComponent<TrainController>();
                         platform.isOccupied = true;
                         trainInstance.GetComponent<TrainController>().trainData = service.trainData; // needs optimised
                         trainInstance.GetComponent<TrainController>().trainStopPosition = platform.trainStopPosition; // needs optimised
@@ -78,6 +79,27 @@ public class TrainManager : MonoBehaviour
             }
         }
     }
+
+    public TrainService AssignTrainServiceToPassenger()
+    {
+        int totalSeatsInService = 0;
+        foreach (var service in activeTrainServices)
+        {
+            totalSeatsInService += service.TrainPassengerCapacity();
+        }
+        
+        int randomlyAssignedSeat = Random.Range(0, totalSeatsInService);
+        foreach (var service in activeTrainServices)
+        {
+            int serviceCapacity = service.TrainPassengerCapacity();
+            if (randomlyAssignedSeat < serviceCapacity)
+            {
+                return service;
+            }
+            randomlyAssignedSeat -= serviceCapacity;
+        }
+        return null; // Should never reach here
+    }
     
     public void FreePlatform(int platformNumber)
     {
@@ -93,7 +115,7 @@ public class TrainManager : MonoBehaviour
         Debug.LogWarning("Platform " + platformNumber + " not found!");
     }
 
-    private class Platform
+    public class Platform
     {
         public Vector3 trainStopPosition; // Specifically where the train stops
         public bool isOccupied;

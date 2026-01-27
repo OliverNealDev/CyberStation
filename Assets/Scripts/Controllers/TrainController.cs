@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TrainController : MonoBehaviour
@@ -58,6 +59,7 @@ public class TrainController : MonoBehaviour
                     transform.position = trainStopPosition;
                     currentSpeed = 0f;
                     currentState = trainStates.Stationary;
+                    PassengerManager.Instance.TrainArrived(trainService);
                 }
                 break;
             
@@ -85,5 +87,26 @@ public class TrainController : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    public List<Vector3> GetDoorPositions()
+    {
+        List<Vector3> doorPositions = new List<Vector3>();
+        
+        foreach (Transform child in transform)
+        {
+            if (child.CompareTag("TrainCarriage"))
+            {
+                foreach (Transform door in child)
+                {
+                    if (door.CompareTag("TrainDoor"))
+                    {
+                        doorPositions.Add(door.position);
+                    }
+                }
+            }
+        }
+        
+        return doorPositions;
     }
 }

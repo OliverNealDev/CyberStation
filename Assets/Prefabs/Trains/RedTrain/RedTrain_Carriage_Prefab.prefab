@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 342005043601698897}
   m_Layer: 0
   m_Name: Door_FL
-  m_TagString: Untagged
+  m_TagString: TrainDoor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -351,7 +351,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -658,7 +658,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f1f6a977e8497ff49a5e2ed51128360d, type: 2}
+  - {fileID: 2100000, guid: 3bd0d600c3c5e8d4aaa04cd457385b7a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -707,7 +707,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -728,7 +728,7 @@ GameObject:
   - component: {fileID: 184642295446251468}
   m_Layer: 0
   m_Name: Door_FR
-  m_TagString: Untagged
+  m_TagString: TrainDoor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1063,7 +1063,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -1078,8 +1078,8 @@ GameObject:
   m_Component:
   - component: {fileID: 795967249551444508}
   m_Layer: 0
-  m_Name: TestTrain_Carriage_Prefab
-  m_TagString: Untagged
+  m_Name: RedTrain_Carriage_Prefab
+  m_TagString: TrainCarriage
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1407,7 +1407,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f1f6a977e8497ff49a5e2ed51128360d, type: 2}
+  - {fileID: 2100000, guid: 3bd0d600c3c5e8d4aaa04cd457385b7a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1456,7 +1456,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -1477,7 +1477,7 @@ GameObject:
   - component: {fileID: 4411269829145384837}
   m_Layer: 0
   m_Name: Door_BL
-  m_TagString: Untagged
+  m_TagString: TrainDoor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1812,7 +1812,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -1833,7 +1833,7 @@ GameObject:
   - component: {fileID: 1557670835879494872}
   m_Layer: 0
   m_Name: Door_BR
-  m_TagString: Untagged
+  m_TagString: TrainDoor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2168,7 +2168,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30

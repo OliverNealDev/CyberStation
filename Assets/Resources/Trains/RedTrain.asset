@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
+  m_Name: RedTrain
+  m_EditorClassIdentifier: Assembly-CSharp::Train
+  name: Red Train
+  description: Red train like tomato
+  icon: {fileID: 2800000, guid: b0a5ca494f797d9489accd185a992b7d, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 94391a62abe089f47bb7ace3c5cd7380, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: f88fe8f03848c7d40b4ca1d3a1b518bb, type: 3}
+  speed: 24
+  carriageCount: 2
+  carriageLength: 34
+  capacityPerCarriage: 56
+  costPerRide: 10
+  secondsBetweenArrivals: 32
+  secondsStationary: 14

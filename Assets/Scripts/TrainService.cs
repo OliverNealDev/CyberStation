@@ -7,7 +7,9 @@ public class TrainService
     public Train trainData;
     public List<float> arrivalTimes = new List<float>();
 
-    public int trainsInService => arrivalTimes.Count; 
+    public int trainsInService; 
+    
+    public TrainController physicalTrainInstance;
     
     public TrainService(Train data)
     {
@@ -48,7 +50,14 @@ public class TrainService
     
     public void AddTrainToService()
     {
+        trainsInService++;
         arrivalTimes.Add(Time.time); 
         Debug.Log("Train added. Total in service: " + trainsInService);
+    }
+    
+    public int TrainPassengerCapacity()
+    {
+        Debug.Log("Calculating capacity: " + trainsInService + " trains, " + trainData.carriageCount + " carriages each, " + trainData.capacityPerCarriage + " per carriage.");
+        return trainsInService * (trainData.carriageCount * trainData.capacityPerCarriage);
     }
 }
