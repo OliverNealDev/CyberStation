@@ -52,6 +52,6 @@ public class BuildMenuController : MonoBehaviour
     {
         Debug.Log("Clicked on build item: " + data.name);
         
-        BuildController.Instance.selectedPreviewObject = data.prefab;
+        BuildController.Instance.ChangePreviewObject(data.prefab);
     }
 }

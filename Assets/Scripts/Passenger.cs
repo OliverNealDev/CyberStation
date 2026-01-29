@@ -6,10 +6,11 @@ public class Passenger : MonoBehaviour
 
     public float patienceLevel = 1f; // Depletes during unnecessary waiting and may cause the passenger to leave
     
-    public passengerStates currentState = passengerStates.GoingToPlatform;
+    public passengerStates currentState = passengerStates.FindingTicketMachine;
     public enum passengerStates
     {
-        NeedsTicket,
+        FindingTicketMachine,
+        WaitingForTicket,
         GoingToPlatform,
         WaitingForTrain,
         BoardingTrain,

@@ -16,6 +16,10 @@ public class PassengerManager : MonoBehaviour
     private float tickLength = 0.05f; // 20 ticks per second
     private float tickTimer;
     
+    // Ticket Machine
+    private TicketMachineController targetTicketMachine;
+    private bool isWaitingForTicket = false;
+    
     void Awake()
     {
         Instance = this;
@@ -25,7 +29,7 @@ public class PassengerManager : MonoBehaviour
     {
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
         
-        InvokeRepeating("ok", 1, 1);
+        InvokeRepeating("ok", 1, 2);
     }
 
     void Update()
@@ -58,7 +62,14 @@ public class PassengerManager : MonoBehaviour
             
             switch (passenger.currentState)
             {
-                case Passenger.passengerStates.NeedsTicket:
+                case Passenger.passengerStates.FindingTicketMachine:
+                    if (targetTicketMachine == null)
+                    {
+                        
+                    }
+                    break;
+                
+                case Passenger.passengerStates.WaitingForTicket:
 
                     break;
                 

@@ -56,7 +56,7 @@ public class TrainManager : MonoBehaviour
                     {
                         // Spawn the train at the platform
                         GameObject trainInstance = Instantiate(service.trainData.trainPrefab,
-                            platform.trainStopPosition + new Vector3(100, 0, 0), Quaternion.identity);
+                            platform.trainStopPosition + new Vector3(1000, 0, 0), Quaternion.identity);
                         service.physicalTrainInstance = trainInstance.GetComponent<TrainController>();
                         platform.isOccupied = true;
                         trainInstance.GetComponent<TrainController>().trainData = service.trainData; // needs optimised

@@ -24,8 +24,8 @@ public class TrainController : MonoBehaviour
     void Start()
     {
         currentSpeed = trainData.speed;
-        acceleration = trainData.speed / 3f;
-        deceleration = trainData.speed / 3f;
+        acceleration = trainData.speed / 16f;
+        deceleration = trainData.speed / 16f;
 
         if (trainData.carriageCount > 1)
         {
@@ -72,7 +72,7 @@ public class TrainController : MonoBehaviour
                 break;
             
             case trainStates.Departing:
-                Vector3 departTarget = trainStopPosition - new Vector3(100, 0, 0);
+                Vector3 departTarget = trainStopPosition - new Vector3(1000, 0, 0);
 
                 if (transform.position != departTarget)
                 {

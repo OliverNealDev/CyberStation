@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GridManager : MonoBehaviour
 {
@@ -59,7 +60,7 @@ public class GridManager : MonoBehaviour
         if (x >= 0 && y >= 0 && x < width && y < height && z >= 0 && z < floors)
         {
             grid[x, y, z].isOccupied = false;
-            grid[x, y, z].occupyingObject = null;
+            //grid[x, y, z].occupyingObject = null;
         }
     }
     
@@ -67,11 +68,5 @@ public class GridManager : MonoBehaviour
     public struct GridCell
     {
         public bool isOccupied;
-        public GameObject occupyingObject;
-        public enum OccupationType
-        {
-            Floor,
-            Object
-        }
     }
 }

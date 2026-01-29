@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
+using UnityEngine.EventSystems;
 
 public class BuildController : MonoBehaviour
 {
@@ -29,7 +30,7 @@ public class BuildController : MonoBehaviour
     
     void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) // Ensures pointer is not over UI
         {
             if (previewObjectInstance != null)
             {
@@ -37,7 +38,8 @@ public class BuildController : MonoBehaviour
                 
                 if (GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z))
                 {
-                    Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
+                    GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
+                    placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(); // Tells object to enable its functionality
                     GridManager.Instance.OccupyTile(gridPos.x, gridPos.y, gridPos.z);
                 }
                 else
@@ -70,7 +72,7 @@ public class BuildController : MonoBehaviour
             if (previewObjectInstance) // If the preview object exists, update its position to the mouse position (tile-aligned)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-                if (Physics.Raycast(ray, out RaycastHit hitInfo))
+                if (Physics.Raycast(ray, out RaycastHit hitInfo) && !EventSystem.current.IsPointerOverGameObject()) // Ensures pointer is not over UI
                 {
                     Vector3 buildPosition = hitInfo.point;
                     Vector3Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
@@ -93,6 +95,24 @@ public class BuildController : MonoBehaviour
         }
     }
     
+    public void RemovePreviewObject()
+    {
+        if (previewObjectInstance != null)
+        {
+            Destroy(previewObjectInstance);
+        }
+    }
+
+    public void ChangePreviewObject(GameObject previewObject)
+    {
+        if (previewObjectInstance != null)
+        {
+            Destroy(previewObjectInstance);
+        }
+
+        selectedPreviewObject = previewObject;
+    }
+    
     private Vector3 GetPreviewObjectPosition()
     {
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
@@ -107,6 +127,4 @@ public class BuildController : MonoBehaviour
             return new Vector3(0, -1000, 0);
         }
     }
-    
-    
 }
