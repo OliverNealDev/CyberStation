@@ -2678,6 +2678,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2a130ad8777457478a00b50a446fb7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  AllTicketMachines: []
 --- !u!4 &568982315
 Transform:
   m_ObjectHideFlags: 0

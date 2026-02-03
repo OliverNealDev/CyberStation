@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Passenger : MonoBehaviour
 {
@@ -6,10 +7,14 @@ public class Passenger : MonoBehaviour
 
     public float patienceLevel = 1f; // Depletes during unnecessary waiting and may cause the passenger to leave
     
-    public passengerStates currentState = passengerStates.FindingTicketMachine;
+    public TicketMachineController targetTicketMachine;
+    
+    public NavMeshAgent agent;
+    
+    public passengerStates currentState = passengerStates.LocatingTrainTicketSource;
     public enum passengerStates
     {
-        FindingTicketMachine,
+        LocatingTrainTicketSource,
         WaitingForTicket,
         GoingToPlatform,
         WaitingForTrain,
@@ -18,4 +23,9 @@ public class Passenger : MonoBehaviour
     }
     
     public Vector3 trainWaitPosition; // Position where the passenger waits for the train
+    
+    void Start()
+    {
+        agent = GetComponent<NavMeshAgent>();
+    }
 }

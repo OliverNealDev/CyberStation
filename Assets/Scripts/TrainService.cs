@@ -57,7 +57,7 @@ public class TrainService
     
     public int TrainPassengerCapacity()
     {
-        Debug.Log("Calculating capacity: " + trainsInService + " trains, " + trainData.carriageCount + " carriages each, " + trainData.capacityPerCarriage + " per carriage.");
+       // Debug.Log("Calculating capacity: " + trainsInService + " trains, " + trainData.carriageCount + " carriages each, " + trainData.capacityPerCarriage + " per carriage.");
         return trainsInService * (trainData.carriageCount * trainData.capacityPerCarriage);
     }
 }

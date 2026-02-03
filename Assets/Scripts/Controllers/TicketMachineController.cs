@@ -1,7 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TicketMachineController : MonoBehaviour
 {
+    public Passenger currentPassenger;
+    public List<Passenger> PassengersOnWay = new List<Passenger>();
+    
     public TicketMachineStates currentTicketMachineState;
     public enum TicketMachineStates
     {
@@ -14,22 +18,49 @@ public class TicketMachineController : MonoBehaviour
         currentTicketMachineState = TicketMachineStates.Idle;
         TicketMachineManager.Instance.RegisterTicketMachine(this);
     }
+
+    public void AssignPassengerOnWay(Passenger passenger)
+    {
+        if (!PassengersOnWay.Contains(passenger))
+        {
+            PassengersOnWay.Add(passenger);
+        }
+    }
+    
+    public void RemovePassengerOnWay(Passenger passenger)
+    {
+        if (PassengersOnWay.Contains(passenger))
+        {
+            PassengersOnWay.Remove(passenger);
+        }
+    }
     
     public void ProcessTicketRequest(Passenger passenger)
     {
         if (currentTicketMachineState == TicketMachineStates.Idle)
         {
             currentTicketMachineState = TicketMachineStates.ProcessingTicket;
-            Invoke(nameof(FinishProcessingTicket), 3f); // Simulate ticket processing time
+            currentPassenger = passenger;
+            Invoke(nameof(FinishProcessingTicket), 3f); 
         }
     }
     
     private void FinishProcessingTicket()
     {
+        if (currentPassenger != null)
+        {
+            PassengerManager.Instance.ReceiveTicket(currentPassenger);
+            currentPassenger = null;
+        }
+        
         currentTicketMachineState = TicketMachineStates.Idle;
     }
     
-    // passenger pings ticketmachine for ticket - changes state to waiting for ticket
-    // ticketmachine assigns the waiting passenger, starts the processing timer and changes state
-    // when ticket is processed, ping passenger to say ticket is processed and change state back to idle
+    public void OnDestroy()
+    {
+        if (TicketMachineManager.Instance != null)
+        {
+            TicketMachineManager.Instance.DeregisterTicketMachine(this);
+        }
+    }
 }

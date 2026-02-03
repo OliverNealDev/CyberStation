@@ -28,6 +28,27 @@ public class TicketMachineManager : MonoBehaviour
         }
     }
     
+    public TicketMachineController leastOccupiedTicketMachine
+    {
+        get
+        {
+            TicketMachineController leastOccupied = null;
+            int minPassengers = int.MaxValue;
+
+            foreach (var machine in AllTicketMachines)
+            {
+                int passengerCount = machine.PassengersOnWay.Count;
+                if (passengerCount < minPassengers)
+                {
+                    minPassengers = passengerCount;
+                    leastOccupied = machine;
+                }
+            }
+
+            return leastOccupied;
+        }
+    }
+    
     public void RegisterTicketMachine(TicketMachineController ticketMachine)
     {
         if (!AllTicketMachines.Contains(ticketMachine))

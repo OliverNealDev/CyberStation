@@ -74,7 +74,7 @@ public class TrainManager : MonoBehaviour
                 if (!isAnyPlatformAvailable)
                 {
                     service.RescheduleCurrentArrival(); // Try again in 1 second
-                    Debug.Log("Train rescheduled due to no available platforms.");
+                    //Debug.Log("Train rescheduled due to no available platforms.");
                 }
             }
         }
