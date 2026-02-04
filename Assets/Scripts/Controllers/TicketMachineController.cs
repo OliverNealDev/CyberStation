@@ -1,66 +1,33 @@
-using System.Collections.Generic;
-using UnityEngine;
-
-public class TicketMachineController : MonoBehaviour
+public class TicketMachineController : QueuableObject // Inherits from Parent
 {
     public Passenger currentPassenger;
-    public List<Passenger> PassengersOnWay = new List<Passenger>();
+    public enum MachineState { Idle, Processing }
+    public MachineState state = MachineState.Idle;
     
-    public TicketMachineStates currentTicketMachineState;
-    public enum TicketMachineStates
-    {
-        Idle,
-        ProcessingTicket,
-    }
+    public override bool IsAvailable => state == MachineState.Idle;
 
     void Start()
     {
-        currentTicketMachineState = TicketMachineStates.Idle;
         TicketMachineManager.Instance.RegisterTicketMachine(this);
     }
-
-    public void AssignPassengerOnWay(Passenger passenger)
-    {
-        if (!PassengersOnWay.Contains(passenger))
-        {
-            PassengersOnWay.Add(passenger);
-        }
-    }
     
-    public void RemovePassengerOnWay(Passenger passenger)
+    public override void ProcessInteraction(Passenger passenger)
     {
-        if (PassengersOnWay.Contains(passenger))
+        if (state == MachineState.Idle)
         {
-            PassengersOnWay.Remove(passenger);
-        }
-    }
-    
-    public void ProcessTicketRequest(Passenger passenger)
-    {
-        if (currentTicketMachineState == TicketMachineStates.Idle)
-        {
-            currentTicketMachineState = TicketMachineStates.ProcessingTicket;
+            state = MachineState.Processing;
             currentPassenger = passenger;
-            Invoke(nameof(FinishProcessingTicket), 3f); 
+            Invoke(nameof(FinishProcessing), 3f);
         }
     }
-    
-    private void FinishProcessingTicket()
+
+    private void FinishProcessing()
     {
         if (currentPassenger != null)
         {
             PassengerManager.Instance.ReceiveTicket(currentPassenger);
             currentPassenger = null;
         }
-        
-        currentTicketMachineState = TicketMachineStates.Idle;
-    }
-    
-    public void OnDestroy()
-    {
-        if (TicketMachineManager.Instance != null)
-        {
-            TicketMachineManager.Instance.DeregisterTicketMachine(this);
-        }
+        state = MachineState.Idle;
     }
 }

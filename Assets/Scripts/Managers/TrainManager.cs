@@ -8,6 +8,7 @@ public class TrainManager : MonoBehaviour
     private Train[] allTrains;
     public List<TrainService> activeTrainServices = new List<TrainService>();
     public bool unlockAllTrains = false;
+    //public List<TrainController> trainInstances = new List<TrainController>();
     
     [SerializeField]
     public List<Platform> activePlatforms = new List<Platform>();
@@ -63,6 +64,7 @@ public class TrainManager : MonoBehaviour
                         trainInstance.GetComponent<TrainController>().trainStopPosition = platform.trainStopPosition; // needs optimised
                         trainInstance.GetComponent<TrainController>().platformNumber = platform.platformNumber; // needs optimised
                         trainInstance.GetComponent<TrainController>().trainService = service;
+                        //trainInstances.Add(trainInstance.GetComponent<TrainController>());
 
                         // Schedule next arrival
                         service.ConfirmArrival();

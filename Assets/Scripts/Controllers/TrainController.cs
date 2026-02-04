@@ -12,6 +12,9 @@ public class TrainController : MonoBehaviour
     private float currentSpeed;
     private float acceleration;
     private float deceleration;
+
+    private float tickLength = 0.05f;
+    private float tickTimer = 0f;
     
     private trainStates currentState = trainStates.Approaching;
     private enum trainStates
@@ -39,6 +42,13 @@ public class TrainController : MonoBehaviour
     
     void Update()
     {
+        tickTimer += Time.deltaTime;
+        if (tickTimer >= tickLength)
+        {
+            LogicUpdate();
+            tickTimer = 0f;
+        }
+        
         switch (currentState)
         {
             case trainStates.Approaching:
@@ -86,6 +96,14 @@ public class TrainController : MonoBehaviour
                     Destroy(gameObject);
                 }
                 break;
+        }
+    }
+
+    void LogicUpdate()
+    {
+        if (currentState == trainStates.Stationary)
+        {
+            PassengerManager.Instance.TrainArrived(trainService); // needs to be more efficent this is awful
         }
     }
 

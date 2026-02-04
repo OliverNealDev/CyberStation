@@ -8346,6 +8346,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   passengerPrefab: {fileID: 2991288983431714229, guid: d457faba8c381e94dbc79fdd56f74a28, type: 3}
   platformLength: 32
+  autoSpawnPassengers: 1
+  minPassengers: 12
 --- !u!1 &2147477611
 GameObject:
   m_ObjectHideFlags: 0

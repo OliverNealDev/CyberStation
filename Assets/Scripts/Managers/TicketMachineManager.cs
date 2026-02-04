@@ -19,7 +19,7 @@ public class TicketMachineManager : MonoBehaviour
             List<TicketMachineController> availableMachines = new List<TicketMachineController>();
             foreach (var machine in AllTicketMachines)
             {
-                if (machine.currentTicketMachineState == TicketMachineController.TicketMachineStates.Idle)
+                if (machine.state == TicketMachineController.MachineState.Idle)
                 {
                     availableMachines.Add(machine);
                 }

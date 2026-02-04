@@ -1,25 +1,39 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 public class Passenger : MonoBehaviour
 {
     public TrainService assignedTrainService;
-
-    public float patienceLevel = 1f; // Depletes during unnecessary waiting and may cause the passenger to leave
     
-    public TicketMachineController targetTicketMachine;
+    public bool hasTicket = false;
+    public bool isTicketEvader = false;
+    public bool hasBypassedBarrier = false;
+
+    // Needs
+    public float patience = 1f;
+    public float satiation = 1f;
+    public float hydration = 1f;
+    public float hygiene = 1f;
+    
+    public QueuableObject currentTarget;
     
     public NavMeshAgent agent;
     
-    public passengerStates currentState = passengerStates.LocatingTrainTicketSource;
+    public passengerStates currentState = passengerStates.Ticket_FindingMachine;
     public enum passengerStates
     {
-        LocatingTrainTicketSource,
-        WaitingForTicket,
-        GoingToPlatform,
-        WaitingForTrain,
-        BoardingTrain,
-        OnTrain,
+        Ticket_FindingMachine,
+        Ticket_Queueing,
+        
+        Platform_Travelling,
+        Platform_Waiting,
+        
+        Train_Boarding,
+        Train_Seated,
+        
+        LeaveStation,
+        LeavingStation
     }
     
     public Vector3 trainWaitPosition; // Position where the passenger waits for the train
@@ -27,5 +41,6 @@ public class Passenger : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        agent.speed = Random.Range(3f, 4f);
     }
 }

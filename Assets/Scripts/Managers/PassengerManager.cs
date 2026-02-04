@@ -17,20 +17,19 @@ public class PassengerManager : MonoBehaviour
     private float tickLength = 0.05f; 
     private float tickTimer;
 
-    private bool autoSpawnPassengers = false;
+    public bool autoSpawnPassengers = false;
+    public int minPassengers = 4;
     
     void Awake()
     {
         Instance = this;
     }
-
     void Start()
     {
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
         
         //InvokeRepeating("ok", 1, 2);
     }
-
     void Update()
     {
         tickTimer += Time.deltaTime;
@@ -50,10 +49,9 @@ public class PassengerManager : MonoBehaviour
             autoSpawnPassengers = !autoSpawnPassengers; 
         }
     }
-
     void LogicUpdate()
     {
-        if (activePassengers.Count < 1 && autoSpawnPassengers)
+        if (activePassengers.Count < minPassengers && autoSpawnPassengers)
         {
             SpawnPassenger();
         }
@@ -66,17 +64,17 @@ public class PassengerManager : MonoBehaviour
             
             switch (passenger.currentState)
             {
-                case Passenger.passengerStates.LocatingTrainTicketSource:
-                    if (passenger.targetTicketMachine == null)
+                case Passenger.passengerStates.Ticket_FindingMachine:
+                    if (passenger.currentTarget == null)
                     {
                         //List<TicketMachineController> availableTicketMachines = TicketMachineManager.Instance.AvailableTicketMachines;
                         TicketMachineController bestMachine = TicketMachineManager.Instance.leastOccupiedTicketMachine;
                         if (bestMachine != null)
                         {
-                            passenger.targetTicketMachine = bestMachine; /*availableTicketMachines[Random.Range(0, availableTicketMachines.Count)];*/
-                            passenger.targetTicketMachine.AssignPassengerOnWay(passenger);
+                            passenger.currentTarget = bestMachine; /*availableTicketMachines[Random.Range(0, availableTicketMachines.Count)];*/
+                            passenger.currentTarget.AssignPassenger(passenger);
                             
-                            Vector3 frontOfMachinePosition = passenger.targetTicketMachine.transform.position + passenger.targetTicketMachine.transform.forward * 2f;
+                            Vector3 frontOfMachinePosition = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
                             
                             NavMeshHit hit;
                             if(NavMesh.SamplePosition(frontOfMachinePosition, out hit, 4, NavMesh.AllAreas))
@@ -91,7 +89,7 @@ public class PassengerManager : MonoBehaviour
                     }
                     else
                     {
-                        int queueIndex = passenger.targetTicketMachine.PassengersOnWay.IndexOf(passenger);
+                        int queueIndex = passenger.currentTarget.PassengersOnWay.IndexOf(passenger);
                         
                         float baseDistance = 0.25f; 
                         float queueSpacing = 1.5f; 
@@ -106,25 +104,23 @@ public class PassengerManager : MonoBehaviour
                         {
                             if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
                             {
-                                passenger.currentState = Passenger.passengerStates.WaitingForTicket;
-                                passenger.targetTicketMachine.ProcessTicketRequest(passenger); 
+                                passenger.currentState = Passenger.passengerStates.Ticket_Queueing;
+                                passenger.currentTarget.ProcessInteraction(passenger); 
                             }
                         }
                     }
                     break;
-                
-                case Passenger.passengerStates.WaitingForTicket:
-                    if (passenger.targetTicketMachine == null)
+                case Passenger.passengerStates.Ticket_Queueing:
+                    if (passenger.currentTarget == null)
                     {
-                        passenger.currentState = Passenger.passengerStates.LocatingTrainTicketSource;
+                        passenger.currentState = Passenger.passengerStates.Ticket_FindingMachine;
                     }
                     break;
                 
-                case Passenger.passengerStates.GoingToPlatform:
+                case Passenger.passengerStates.Platform_Travelling:
                     if (passenger.trainWaitPosition == Vector3.zero)
                     {
                         float waitPositionX = Random.Range(0, platformLength);
-                        float waitPositionY = 0;
                         float waitPositionZ = TrainManager.Instance.activePlatforms[0].trainStopPosition.z - 6f; 
 
                         passenger.trainWaitPosition = new Vector3(waitPositionX, 0, waitPositionZ);
@@ -139,26 +135,37 @@ public class PassengerManager : MonoBehaviour
                     }
                     else
                     {
-                        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+                        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
                         {
-                            passenger.currentState = Passenger.passengerStates.WaitingForTrain;
+                            passenger.currentState = Passenger.passengerStates.Platform_Waiting;
                         }
                     }
                     break;
-                
-                case Passenger.passengerStates.WaitingForTrain:
+                case Passenger.passengerStates.Platform_Waiting:
 
                     break;
                 
-                case Passenger.passengerStates.BoardingTrain:
+                case Passenger.passengerStates.Train_Boarding:
                     if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
                     {
-                        passenger.currentState = Passenger.passengerStates.OnTrain;
+                        passenger.currentState = Passenger.passengerStates.Train_Seated;
                     }
                     break;
-                
-                case Passenger.passengerStates.OnTrain:
+                case Passenger.passengerStates.Train_Seated:
                     UnregisterPassenger(passenger);
+                    break;
+                
+                case Passenger.passengerStates.LeaveStation:
+                    Vector3 exitPosition = NavMesh.SamplePosition(passengerSpawnPoint, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : passengerSpawnPoint;
+                    agent.SetDestination(exitPosition);
+                    passenger.currentState = Passenger.passengerStates.LeavingStation;
+                    agent.stoppingDistance = 1f;
+                    break;
+                case Passenger.passengerStates.LeavingStation:
+                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+                    {
+                        UnregisterPassenger(passenger);
+                    }
                     break;
             }
         }
@@ -166,11 +173,34 @@ public class PassengerManager : MonoBehaviour
     
     public void ReceiveTicket(Passenger passenger)
     {
-        if (passenger.currentState == Passenger.passengerStates.WaitingForTicket)
+        if (passenger.currentState == Passenger.passengerStates.Ticket_Queueing)
         {
-            passenger.targetTicketMachine.RemovePassengerOnWay(passenger);
-            passenger.currentState = Passenger.passengerStates.GoingToPlatform;
-            passenger.targetTicketMachine = null;
+            passenger.currentTarget.RemovePassenger(passenger);
+            passenger.currentState = Passenger.passengerStates.Platform_Travelling;
+            passenger.currentTarget = null;
+            passenger.hasTicket = true;
+        }
+    }
+    
+    public void OnTicketBarrierDenial(Passenger passenger)
+    {
+        switch (passenger.currentState)
+        {
+            // Innocent passengers will leave the station
+            // Ticket evaders will bypass the barrier
+            // "Rage Quit" behaviour to provide feedback of player design flaw
+            case Passenger.passengerStates.Ticket_FindingMachine:
+            case Passenger.passengerStates.Ticket_Queueing:
+            case Passenger.passengerStates.Platform_Travelling:
+            case Passenger.passengerStates.Platform_Waiting:
+            case Passenger.passengerStates.Train_Boarding:
+                if (passenger.isTicketEvader)
+                {
+                    passenger.hasBypassedBarrier = true;
+                    return;
+                }
+                if (!passenger.hasTicket) passenger.currentState = Passenger.passengerStates.LeaveStation;
+                break;
         }
     }
     
@@ -180,10 +210,10 @@ public class PassengerManager : MonoBehaviour
         {
             Passenger passenger = activePassengers[i];
             
-            if (passenger.currentState == Passenger.passengerStates.WaitingForTrain &&
+            if (passenger.currentState == Passenger.passengerStates.Platform_Waiting &&
                 passenger.assignedTrainService == arrivingService)
             {
-                passenger.currentState = Passenger.passengerStates.BoardingTrain;
+                passenger.currentState = Passenger.passengerStates.Train_Boarding;
                 passenger.GetComponent<NavMeshAgent>().stoppingDistance = 1f;
                 
                 float closestDist = Mathf.Infinity;
@@ -212,6 +242,11 @@ public class PassengerManager : MonoBehaviour
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 
+        newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
+        if (newPassenger.isTicketEvader)
+        {
+            newPassenger.currentState = Passenger.passengerStates.Platform_Travelling;
+        }
         
         RegisterPassenger(newPassenger);
     }
@@ -223,7 +258,6 @@ public class PassengerManager : MonoBehaviour
             activePassengers.Add(passenger);
         }
     }
-    
     public void UnregisterPassenger(Passenger passenger)
     {
         if (activePassengers.Contains(passenger))
