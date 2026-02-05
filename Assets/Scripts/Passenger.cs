@@ -38,7 +38,7 @@ public class Passenger : MonoBehaviour
     
     public Vector3 trainWaitPosition; // Position where the passenger waits for the train
     
-    void Start()
+    void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.speed = Random.Range(3f, 4f);

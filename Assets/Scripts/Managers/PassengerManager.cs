@@ -160,6 +160,11 @@ public class PassengerManager : MonoBehaviour
                     agent.SetDestination(exitPosition);
                     passenger.currentState = Passenger.passengerStates.LeavingStation;
                     agent.stoppingDistance = 1f;
+
+                    if (passenger.currentTarget != null)
+                    {
+                        passenger.currentTarget.RemovePassenger(passenger);
+                    }
                     break;
                 case Passenger.passengerStates.LeavingStation:
                     if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
@@ -238,6 +243,8 @@ public class PassengerManager : MonoBehaviour
     
     void SpawnPassenger()
     {
+        if (TrainManager.Instance.activeTrainServices.Count == 0) return;
+        
         Passenger newPassenger = Instantiate(passengerPrefab, passengerSpawnPoint, Quaternion.identity).GetComponent<Passenger>();
         newPassenger.transform.parent = transform;
 

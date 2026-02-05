@@ -7,7 +7,7 @@ public class Train : ScriptableObject
     public string name = "New Train";
     [TextArea]
     public string description = "Description of the train.";
-    public Texture2D icon;
+    public Sprite icon;
     
     public GameObject trainPrefab;
     public GameObject carriagePrefab;

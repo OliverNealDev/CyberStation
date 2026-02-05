@@ -24,7 +24,6 @@ public class TrainManager : MonoBehaviour
             {
                 TrainService newService = new TrainService(train);
                 activeTrainServices.Add(newService);
-                //newService.AddTrainToService();
             }
         }
     }
@@ -116,6 +115,12 @@ public class TrainManager : MonoBehaviour
         }
         Debug.LogWarning("Platform " + platformNumber + " not found!");
     }
+    
+    public void AddTrainToService(Train train)
+    {
+        TrainService newService = new TrainService(train);
+        activeTrainServices.Add(newService);
+    }
 
     public class Platform
     {
@@ -124,12 +129,4 @@ public class TrainManager : MonoBehaviour
         public int platformNumber;
         public int maxTrainLength;
     }
-    
-    /* TO DO
-     Train has a controller and pulls into the platform, waits, then departs
-     Train triggers platform to free up after departure, and schedules next arrival
-     Platform creates area of waiting for passengers?
-     
-     Passenger spawning and boarding system, probably do ticket machine first
-     */
 }
