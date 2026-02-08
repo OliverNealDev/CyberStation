@@ -37,7 +37,7 @@ public class TicketMachineManager : MonoBehaviour
 
             foreach (var machine in AllTicketMachines)
             {
-                int passengerCount = machine.PassengersOnWay.Count;
+                int passengerCount = machine.PeopleOnWay.Count;
                 if (passengerCount < minPassengers)
                 {
                     minPassengers = passengerCount;

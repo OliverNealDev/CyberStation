@@ -8,7 +8,7 @@ public class PassengerManager : MonoBehaviour
 {
     public static PassengerManager Instance;
     
-    private List<Passenger> activePassengers = new List<Passenger>();
+    public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
     private Vector3 passengerSpawnPoint;
     
@@ -62,150 +62,239 @@ public class PassengerManager : MonoBehaviour
 
             NavMeshAgent agent = passenger.agent;
             
-            switch (passenger.currentState)
+            switch (passenger.currentSubState)
             {
-                case Passenger.passengerStates.Ticket_FindingMachine:
-                    if (passenger.currentTarget == null)
+                case Passenger.passengerSubStates.Idle:
+                    DecideNextAction(passenger, 0); // Decide next state based on highest priority need
+                    break;
+                
+                case Passenger.passengerSubStates.MovingToTarget:
+                    if (passenger.currentSpecialTarget != Passenger.passengerSpecialTargets.None)
                     {
-                        //List<TicketMachineController> availableTicketMachines = TicketMachineManager.Instance.AvailableTicketMachines;
-                        TicketMachineController bestMachine = TicketMachineManager.Instance.leastOccupiedTicketMachine;
-                        if (bestMachine != null)
+                        if (HasReachedTarget(passenger)) 
                         {
-                            passenger.currentTarget = bestMachine; /*availableTicketMachines[Random.Range(0, availableTicketMachines.Count)];*/
-                            passenger.currentTarget.AssignPassenger(passenger);
-                            
-                            Vector3 frontOfMachinePosition = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
-                            
-                            NavMeshHit hit;
-                            if(NavMesh.SamplePosition(frontOfMachinePosition, out hit, 4, NavMesh.AllAreas))
+                            switch (passenger.currentSpecialTarget)
                             {
-                                agent.SetDestination(hit.position);
+                                case Passenger.passengerSpecialTargets.Platform:
+                                    passenger.timeOfLastPlatformWander = Time.time;
+                                    passenger.currentMasterState = Passenger.passengerMasterStates.OnPlatform;
+                                    passenger.currentSubState = Passenger.passengerSubStates.Idle;
+                                    break;
+                                case Passenger.passengerSpecialTargets.TrainDoor:
+                                case Passenger.passengerSpecialTargets.Exit:
+                                    UnregisterPassenger(passenger);
+                                    break;
                             }
-                            else
-                            {
-                                agent.SetDestination(frontOfMachinePosition);
-                            }
+                            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
                         }
+        
+                        break; 
+                    }
+                    
+                    if (passenger.currentTarget == null) // Null check for safety (target is destroyed etc.)
+                    {
+                        DecideNextAction(passenger, 0);
                     }
                     else
                     {
-                        int queueIndex = passenger.currentTarget.PassengersOnWay.IndexOf(passenger);
-                        
-                        float baseDistance = 0.25f; 
-                        float queueSpacing = 1.5f; 
-                        float newStoppingDistance = baseDistance + (queueIndex * queueSpacing);
-                        
-                        if (Mathf.Abs(agent.stoppingDistance - newStoppingDistance) > 0.1f)
+                        UpdateQueuePosition(passenger); // pre-emptively update queue position
+                        if (HasReachedTarget(passenger))
                         {
-                            agent.stoppingDistance = newStoppingDistance;
-                        }
-
-                        if (queueIndex == 0)
-                        {
-                            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+                            if (passenger.currentTarget != null)
                             {
-                                passenger.currentState = Passenger.passengerStates.Ticket_Queueing;
-                                passenger.currentTarget.ProcessInteraction(passenger); 
+                                int queueIndex = passenger.currentTarget.PeopleOnWay.IndexOf(passenger);
+                                if (queueIndex == 0 && passenger.currentTarget.IsAvailable)
+                                {
+                                    passenger.currentTarget.ProcessInteraction(passenger);
+                                    passenger.currentSubState = Passenger.passengerSubStates.InteractingWithTarget;
+                                }
                             }
                         }
                     }
                     break;
-                case Passenger.passengerStates.Ticket_Queueing:
-                    if (passenger.currentTarget == null)
-                    {
-                        passenger.currentState = Passenger.passengerStates.Ticket_FindingMachine;
-                    }
-                    break;
                 
-                case Passenger.passengerStates.Platform_Travelling:
-                    if (passenger.trainWaitPosition == Vector3.zero)
-                    {
-                        float waitPositionX = Random.Range(0, platformLength);
-                        float waitPositionZ = TrainManager.Instance.activePlatforms[0].trainStopPosition.z - 6f; 
-
-                        passenger.trainWaitPosition = new Vector3(waitPositionX, 0, waitPositionZ);
-                        
-                        NavMeshHit hit;
-                        if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 4, NavMesh.AllAreas))
-                        {
-                            passenger.trainWaitPosition = hit.position;
-                            agent.SetDestination(passenger.trainWaitPosition);
-                            agent.stoppingDistance = Random.Range(2f, 8f); 
-                        }
-                    }
-                    else
-                    {
-                        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance)
-                        {
-                            passenger.currentState = Passenger.passengerStates.Platform_Waiting;
-                        }
-                    }
-                    break;
-                case Passenger.passengerStates.Platform_Waiting:
-
-                    break;
-                
-                case Passenger.passengerStates.Train_Boarding:
-                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-                    {
-                        passenger.currentState = Passenger.passengerStates.Train_Seated;
-                    }
-                    break;
-                case Passenger.passengerStates.Train_Seated:
-                    UnregisterPassenger(passenger);
-                    break;
-                
-                case Passenger.passengerStates.LeaveStation:
-                    Vector3 exitPosition = NavMesh.SamplePosition(passengerSpawnPoint, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : passengerSpawnPoint;
-                    agent.SetDestination(exitPosition);
-                    passenger.currentState = Passenger.passengerStates.LeavingStation;
-                    agent.stoppingDistance = 1f;
-
-                    if (passenger.currentTarget != null)
-                    {
-                        passenger.currentTarget.RemovePassenger(passenger);
-                    }
-                    break;
-                case Passenger.passengerStates.LeavingStation:
-                    if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
-                    {
-                        UnregisterPassenger(passenger);
-                    }
+                case Passenger.passengerSubStates.InteractingWithTarget:
+                    UpdateQueuePosition(passenger);
                     break;
             }
         }
     }
     
+    void DecideNextAction(Passenger passenger, int priorityNeed) // priorityNeed should be 0 but will increment if need can't be fulfilled
+    {
+        // RESET CODE - ensures decision is fresh without influence
+        if (passenger.currentTarget != null)
+        {
+            Debug.LogWarning("Passenger " + passenger.name + " had a non-null target during decision reset. Removing passenger from target's list to prevent bugs.");
+            Debug.LogWarning(passenger.currentTarget.name);
+            passenger.currentTarget.RemovePerson(passenger);
+            passenger.currentTarget = null;
+        }
+        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+        //
+        
+        var needsInPriorityOrder = passenger.GetNeedsInPriorityOrder();
+        Passenger.NeedType nextNeed = needsInPriorityOrder[priorityNeed];
+        
+        switch (passenger.currentMasterState)
+        {
+            case Passenger.passengerMasterStates.InStation:
+                if (!passenger.hasTicket && 
+                    passenger.isTicketEvader)
+                {
+                    MoveToPlatformPosition(passenger);
+                    return;
+                }
+                
+                if (!passenger.hasTicket && 
+                         !passenger.isTicketEvader)
+                {
+                    FindTicketMachine(passenger);
+                    Debug.Log("Passenger " + passenger.name + " is looking for a ticket machine.");
+                    return;
+                }
+                
+                if (passenger.TimeToGoToPlatform < Time.time)
+                {
+                    MoveToPlatformPosition(passenger);
+                    return;
+                }
+
+                switch (nextNeed)
+                {
+                    case Person.NeedType.Comfort:
+                        break;
+                    case Person.NeedType.Satiation:
+                        break;
+                    case Person.NeedType.Hydration:
+                        break;
+                    case Person.NeedType.Hygiene:
+                        break;
+                }
+                
+                MoveToPlatformPosition(passenger);
+                break;
+            
+            case Passenger.passengerMasterStates.OnPlatform:
+                if (Time.time - passenger.timeOfLastPlatformWander > 20f) // If it's been more than 10 seconds since wandering, force wander again to prevent passengers just standing still on the platform
+                {
+                    MoveToPlatformPosition(passenger);
+                }
+                break;
+        }
+    }
+    
+    private void LeaveStation(Passenger passenger)
+    {
+        Vector3 exitPosition = NavMesh.SamplePosition(passengerSpawnPoint, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : passengerSpawnPoint;
+        passenger.agent.SetDestination(exitPosition);
+        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+        passenger.agent.stoppingDistance = 1f;
+
+        if (passenger.currentTarget != null)
+        {
+            passenger.currentTarget.RemovePerson(passenger);
+            passenger.currentTarget = null;
+        }
+
+        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Exit;
+        passenger.currentMasterState = Passenger.passengerMasterStates.InStation;
+    }
+    
+    private void FindTicketMachine(Passenger passenger)
+    {
+        TicketMachineController bestMachine = TicketMachineManager.Instance.leastOccupiedTicketMachine;
+        if (bestMachine != null)
+        {
+            passenger.currentTarget = bestMachine;
+            passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+            passenger.currentTarget.AssignPerson(passenger);
+                            
+            Vector3 frontOfMachinePosition = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
+                            
+            NavMeshHit hit;
+            if(NavMesh.SamplePosition(frontOfMachinePosition, out hit, 4, NavMesh.AllAreas))
+            {
+                passenger.agent.SetDestination(hit.position);
+            }
+            else
+            {
+                passenger.agent.SetDestination(frontOfMachinePosition);
+            }
+        }
+    }
+    
+    private void UpdateQueuePosition(Passenger passenger)
+    {
+        int queueIndex = passenger.currentTarget.PeopleOnWay.IndexOf(passenger);
+                        
+        float baseDistance = 0.25f; 
+        float queueSpacing = 1.5f; 
+        float newStoppingDistance = baseDistance + (queueIndex * queueSpacing);
+                        
+        if (Mathf.Abs(passenger.agent.stoppingDistance - newStoppingDistance) > 0.1f)
+        {
+            passenger.agent.stoppingDistance = newStoppingDistance;
+        }
+    }
+    
+    private void MoveToPlatformPosition(Passenger passenger)
+    {
+        float waitPositionX = Random.Range(0, platformLength);
+        float waitPositionZ = TrainManager.Instance.activePlatforms[0].trainStopPosition.z - 6f; 
+
+        passenger.trainWaitPosition = new Vector3(waitPositionX, 0, waitPositionZ);
+                        
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 4, NavMesh.AllAreas))
+        {
+            passenger.trainWaitPosition = hit.position;
+            passenger.agent.SetDestination(passenger.trainWaitPosition);
+            passenger.agent.stoppingDistance = Random.Range(2f, 8f); 
+        }
+        else
+        {
+            passenger.agent.SetDestination(passenger.trainWaitPosition);
+            passenger.agent.stoppingDistance = Random.Range(2f, 8f); 
+        }
+        
+        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Platform;
+    }
+    
     public void ReceiveTicket(Passenger passenger)
     {
-        if (passenger.currentState == Passenger.passengerStates.Ticket_Queueing)
+        passenger.currentTarget.RemovePerson(passenger);
+        passenger.currentTarget = null;
+        passenger.hasTicket = true;
+        passenger.currentSubState = Passenger.passengerSubStates.Idle;
+    }
+
+    public bool HasReachedTarget(Passenger passenger)
+    {
+        if (!passenger.agent.pathPending && 
+            passenger.agent.hasPath &&
+            passenger.agent.remainingDistance <= passenger.agent.stoppingDistance)
         {
-            passenger.currentTarget.RemovePassenger(passenger);
-            passenger.currentState = Passenger.passengerStates.Platform_Travelling;
-            passenger.currentTarget = null;
-            passenger.hasTicket = true;
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
     
     public void OnTicketBarrierDenial(Passenger passenger)
     {
-        switch (passenger.currentState)
+        if (passenger.isTicketEvader)
         {
-            // Innocent passengers will leave the station
-            // Ticket evaders will bypass the barrier
-            // "Rage Quit" behaviour to provide feedback of player design flaw
-            case Passenger.passengerStates.Ticket_FindingMachine:
-            case Passenger.passengerStates.Ticket_Queueing:
-            case Passenger.passengerStates.Platform_Travelling:
-            case Passenger.passengerStates.Platform_Waiting:
-            case Passenger.passengerStates.Train_Boarding:
-                if (passenger.isTicketEvader)
-                {
-                    passenger.hasBypassedBarrier = true;
-                    return;
-                }
-                if (!passenger.hasTicket) passenger.currentState = Passenger.passengerStates.LeaveStation;
-                break;
+            passenger.hasBypassedBarrier = true;
+            return;
+        }
+
+        if (!passenger.hasTicket)
+        {
+            LeaveStation(passenger);
         }
     }
     
@@ -215,10 +304,9 @@ public class PassengerManager : MonoBehaviour
         {
             Passenger passenger = activePassengers[i];
             
-            if (passenger.currentState == Passenger.passengerStates.Platform_Waiting &&
+            if (passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform &&
                 passenger.assignedTrainService == arrivingService)
             {
-                passenger.currentState = Passenger.passengerStates.Train_Boarding;
                 passenger.GetComponent<NavMeshAgent>().stoppingDistance = 1f;
                 
                 float closestDist = Mathf.Infinity;
@@ -236,6 +324,14 @@ public class PassengerManager : MonoBehaviour
                 if (closestDoor != Vector3.zero)
                 {
                     passenger.GetComponent<NavMeshAgent>().SetDestination(closestDoor);
+                    if (passenger.currentTarget != null)
+                    {
+                        passenger.currentTarget.RemovePerson(passenger);
+                        passenger.currentTarget = null;
+                    }
+
+                    passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+                    passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.TrainDoor;
                 }
             }
         }
@@ -250,12 +346,12 @@ public class PassengerManager : MonoBehaviour
 
         newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
-        if (newPassenger.isTicketEvader)
-        {
-            newPassenger.currentState = Passenger.passengerStates.Platform_Travelling;
-        }
         
         RegisterPassenger(newPassenger);
+        
+        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); // Random time before passenger decides to go to platform, simulating time spent in station before heading to platform
+        
+        DecideNextAction(newPassenger, 0);
     }
     
     public void RegisterPassenger(Passenger passenger)

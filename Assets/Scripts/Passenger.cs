@@ -1,46 +1,44 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
 
-public class Passenger : MonoBehaviour
+public class Passenger : Staff
 {
     public TrainService assignedTrainService;
+
+    public float TimeToGoToPlatform;
     
     public bool hasTicket = false;
     public bool isTicketEvader = false;
     public bool hasBypassedBarrier = false;
-
-    // Needs
-    public float patience = 1f;
-    public float satiation = 1f;
-    public float hydration = 1f;
-    public float hygiene = 1f;
     
-    public QueuableObject currentTarget;
+    public QueuableObject currentTarget; // The current target the passenger is moving towards (e.g., ticket machine, vending machine)
+    public Vector3 trainWaitPosition; // Position where the passenger waits for the train
+    public float timeOfLastPlatformWander; // Time since the passenger started wandering on the platform
     
-    public NavMeshAgent agent;
-    
-    public passengerStates currentState = passengerStates.Ticket_FindingMachine;
-    public enum passengerStates
+    public passengerMasterStates currentMasterState = passengerMasterStates.InStation;
+    public enum passengerMasterStates
     {
-        Ticket_FindingMachine,
-        Ticket_Queueing,
-        
-        Platform_Travelling,
-        Platform_Waiting,
-        
-        Train_Boarding,
-        Train_Seated,
-        
-        LeaveStation,
-        LeavingStation
+        InStation,
+        OnPlatform,
+        OnTrain
     }
     
-    public Vector3 trainWaitPosition; // Position where the passenger waits for the train
-    
-    void Awake()
+    public passengerSubStates currentSubState = passengerSubStates.Idle;
+    public enum passengerSubStates
     {
-        agent = GetComponent<NavMeshAgent>();
-        agent.speed = Random.Range(3f, 4f);
+        Idle,
+        MovingToTarget,
+        InteractingWithTarget
+    }
+    
+    public passengerSpecialTargets currentSpecialTarget = passengerSpecialTargets.None;
+    public enum passengerSpecialTargets // None-QueuableObject targets, these are for things like wandering on the platform or moving to the exit
+    {
+        None,
+        Platform,
+        TrainDoor,
+        Exit
     }
 }

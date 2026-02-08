@@ -1,6 +1,8 @@
+using UnityEngine.Serialization;
+
 public class TicketMachineController : QueuableObject // Inherits from Parent
 {
-    public Passenger currentPassenger;
+    public Person currentPerson;
     public enum MachineState { Idle, Processing }
     public MachineState state = MachineState.Idle;
     
@@ -11,22 +13,22 @@ public class TicketMachineController : QueuableObject // Inherits from Parent
         TicketMachineManager.Instance.RegisterTicketMachine(this);
     }
     
-    public override void ProcessInteraction(Passenger passenger)
+    public override void ProcessInteraction(Person person)
     {
         if (state == MachineState.Idle)
         {
             state = MachineState.Processing;
-            currentPassenger = passenger;
+            currentPerson = person;
             Invoke(nameof(FinishProcessing), 3f);
         }
     }
 
     private void FinishProcessing()
     {
-        if (currentPassenger != null)
+        if (currentPerson != null)
         {
-            PassengerManager.Instance.ReceiveTicket(currentPassenger);
-            currentPassenger = null;
+            PassengerManager.Instance.ReceiveTicket((Passenger)currentPerson);
+            currentPerson = null;
         }
         state = MachineState.Idle;
     }

@@ -6680,6 +6680,55 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1270575223
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1270575224}
+  - component: {fileID: 1270575225}
+  m_Layer: 0
+  m_Name: SecurityGuardManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1270575224
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1270575223}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1367154127}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1270575225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1270575223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5af81f07e7b48e142bfe2a557444a323, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  AllSecurityGuards: []
+  securityGuardPrefab: {fileID: 0}
+  securityGuardSpawnPoint: {x: 0, y: 0, z: 0}
+  tickLength: 0.5
+  tickTimer: 0
 --- !u!1 &1301867130
 GameObject:
   m_ObjectHideFlags: 0
@@ -7090,6 +7139,38 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1367154126
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1367154127}
+  m_Layer: 0
+  m_Name: StaffManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1367154127
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1367154126}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1270575224}
+  m_Father: {fileID: 1368748814}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1368748813
 GameObject:
   m_ObjectHideFlags: 0
@@ -7123,6 +7204,7 @@ Transform:
   - {fileID: 1832696139}
   - {fileID: 2131610378}
   - {fileID: 778538371}
+  - {fileID: 1367154127}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1421046169
@@ -9297,7 +9379,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   activeTrainServices: []
-  unlockAllTrains: 0
+  unlockAllTrains: 1
 --- !u!4 &1832696139
 Transform:
   m_ObjectHideFlags: 0
@@ -9884,9 +9966,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a51b77c8e92742469d1f3770a6f01f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  activePassengers: []
   passengerPrefab: {fileID: 2991288983431714229, guid: d457faba8c381e94dbc79fdd56f74a28, type: 3}
   platformLength: 32
-  autoSpawnPassengers: 1
+  autoSpawnPassengers: 0
   minPassengers: 12
 --- !u!1 &2132349712
 GameObject:
