@@ -51,6 +51,7 @@ public class SecurityCoordinator : MonoBehaviour
         foreach (var evader in knownEvaders)
         {
             if (currentPursuits.ContainsKey(evader)) continue;
+            if (evader.currentMasterState == Passenger.passengerMasterStates.OnTrain) continue; // Don't pursue if they're already on a train
 
             float dist = Vector3.Distance(securityGuard.transform.position, evader.transform.position);
             if (dist < closestDist)

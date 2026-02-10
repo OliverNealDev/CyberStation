@@ -487,22 +487,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48355b1a62366404da87c5499ff962c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  navAgent: {fileID: 0}
+  PersonalCanvasPrefab: {fileID: 5797679199824923170, guid: c6a6c5cfcf86f0a4591c7e56df18bf40, type: 3}
+  comfort: 100
+  satiation: 1
+  hydration: 1
+  hygiene: 1
+  needReductionRate: 0.5
   assignedTrainService:
     trainData: {fileID: 0}
     arrivalTimes: []
     trainsInService: 0
     physicalTrainInstance: {fileID: 0}
+  TimeToGoToPlatform: 0
+  personalCanvas: {fileID: 0}
   hasTicket: 0
   isTicketEvader: 0
   hasBypassedBarrier: 0
-  patience: 1
-  satiation: 1
-  hydration: 1
-  hygiene: 1
+  isBeingEscorted: 0
   currentTarget: {fileID: 0}
-  agent: {fileID: 0}
-  currentState: 1
   trainWaitPosition: {x: 0, y: 0, z: 0}
+  timeOfLastPlatformWander: 0
+  currentMasterState: 0
+  currentSubState: 0
+  currentSpecialTarget: 0
 --- !u!195 &4359780042288420435
 NavMeshAgent:
   m_ObjectHideFlags: 0

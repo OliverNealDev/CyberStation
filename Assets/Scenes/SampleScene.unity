@@ -10069,6 +10069,7 @@ MonoBehaviour:
   platformLength: 32
   autoSpawnPassengers: 0
   minPassengers: 12
+  dialogueData: {fileID: 11400000, guid: 7e847c57b3abb6640bc4b9b9018c3ed1, type: 2}
 --- !u!1 &2132349712
 GameObject:
   m_ObjectHideFlags: 0

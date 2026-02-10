@@ -10,8 +10,6 @@ public class PassengerManager : MonoBehaviour
 {
     public static PassengerManager Instance;
     
-    [SerializeField] private GameObject PersonalCanvasPrefab;
-    
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
     private Vector3 passengerSpawnPoint;
@@ -23,6 +21,9 @@ public class PassengerManager : MonoBehaviour
 
     public bool autoSpawnPassengers = false;
     public int minPassengers = 4;
+
+    public DialogueData dialogueData;
+    
     
     void Awake()
     {
@@ -209,6 +210,10 @@ public class PassengerManager : MonoBehaviour
             passenger.currentTarget = null;
         }
 
+        if (passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.TrainDoor)
+        {
+            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+        }
         passenger.navAgent.ResetPath();
     }
     
@@ -355,59 +360,12 @@ public class PassengerManager : MonoBehaviour
         UnassignTarget(passenger);
         
         passenger.hasBypassedBarrier = false; // untags passenger from being caught by security
+        passenger.isBeingEscorted = true;
         
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
-        Dialogue(passenger, "Don't you have better things to do?", 2f);
-        StartCoroutine(ExecuteAfterDelay(2, () => LeaveStation(passenger)));
-    }
-    
-    void CreateNewPersonalCanvas(Passenger passenger)
-    {
-        if (passenger.personalCanvas != null)
-        {
-            Destroy(passenger.personalCanvas.gameObject);
-        }
-
-        GameObject personalCanvas = Instantiate(PersonalCanvasPrefab);
-        passenger.personalCanvas = personalCanvas;
-        personalCanvas.transform.SetParent(passenger.transform, false);
-        personalCanvas.transform.localPosition = Vector3.up * 5f;
-    }
-
-    void DestroyPersonalCanvas(Passenger passenger)
-    {
-        if (passenger.personalCanvas != null)
-        {
-            Destroy(passenger.personalCanvas.gameObject);
-            passenger.personalCanvas = null;
-        }
-    }
-
-    void Dialogue(Passenger passenger, string text, float duration)
-    {
-        CreateNewPersonalCanvas(passenger);
-
-        if (text.Length != 0)
-        {
-            passenger.personalCanvas.transform.GetChild(0).gameObject.SetActive(true);
-            TextMeshProUGUI dialogueText = passenger.personalCanvas.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
-            dialogueText.text = text;
-        }
-        
-        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(passenger)));
-    }
-    
-    void Expression(Passenger passenger, string expressionName, float duration)
-    {
-        CreateNewPersonalCanvas(passenger);
-
-        if (expressionName.Length != 0)
-        {
-            passenger.personalCanvas.transform.GetChild(1).gameObject.SetActive(true);
-            Image expressionImage = passenger.personalCanvas.transform.GetChild(1).GetComponent<Image>();
-        }
-        
-        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(passenger)));
+        string randomText = dialogueData.GetRandomLine(DialogueType.CaughtBySecurity);
+        passenger.Dialogue(passenger, randomText, 2f);
+        StartCoroutine(Person.ExecuteAfterDelay(2, () => LeaveStation(passenger)));
     }
 
     void SpawnPassenger()
@@ -418,7 +376,7 @@ public class PassengerManager : MonoBehaviour
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 
-        newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
+        newPassenger.isTicketEvader = Random.Range(1, 100) <= 50;
         
         RegisterPassenger(newPassenger);
         
@@ -441,11 +399,5 @@ public class PassengerManager : MonoBehaviour
             activePassengers.Remove(passenger);
             Destroy(passenger.gameObject);
         }
-    }
-    
-    private System.Collections.IEnumerator ExecuteAfterDelay(float delay, System.Action action)
-    {
-        yield return new WaitForSeconds(delay);
-        action.Invoke();
     }
 }

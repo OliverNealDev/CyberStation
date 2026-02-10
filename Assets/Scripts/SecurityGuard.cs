@@ -5,6 +5,7 @@ using UnityEngine.AI;
 public class SecurityGuard : Staff
 {
     private Passenger targetEvadingPassenger;
+    private float defaultStoppingDistance;
 
     public float detectionRadius = 4f;
     
@@ -12,8 +13,15 @@ public class SecurityGuard : Staff
     public enum securitySubStates
     {
         Idle,
-        MovingToTarget,
-        InteractingWithTarget
+        ApproachingTarget,
+        InteractingWithTarget,
+        EscortingTarget
+    }
+
+    protected override void Awake() 
+    {
+        base.Awake();
+        if(navAgent != null) defaultStoppingDistance = navAgent.stoppingDistance;
     }
 
     public override void PerformDuties()
@@ -25,55 +33,85 @@ public class SecurityGuard : Staff
                 SecurityCoordinator.Instance.RequestAssignment(this);
                 break;
             
-            case securitySubStates.MovingToTarget:
-                if (targetEvadingPassenger != null)
+            case securitySubStates.ApproachingTarget:
+                if (targetEvadingPassenger == null)
                 {
-                    navAgent.SetDestination(targetEvadingPassenger.transform.position);
-                    if (Vector3.Distance(transform.position, targetEvadingPassenger.transform.position) < 1.5f)
-                    {
-                        PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger);
-                        
-                        SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
-                        
-                        currentSubState = securitySubStates.InteractingWithTarget;
-                        Invoke("ReturnToIdle", 2f);
-                    }
+                    ReturnToIdle();
+                    return;
                 }
-                else
+                
+                navAgent.SetDestination(targetEvadingPassenger.transform.position);
+                
+                // Use a slightly larger catch radius than stopping distance to prevent jitters
+                if (Vector3.Distance(transform.position, targetEvadingPassenger.transform.position) <= 2.0f)
                 {
-                    currentSubState = securitySubStates.Idle;
+                    PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger);
+                    SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
+                        
+                    currentSubState = securitySubStates.InteractingWithTarget;
+                    Invoke("BeginEscort", 2f);
                 }
                 break;
             
             case securitySubStates.InteractingWithTarget:
-                // Handle interaction with the evading passenger (e.g., confront them, call for backup, etc.)
+                navAgent.ResetPath();
                 break;
+
+            case securitySubStates.EscortingTarget:
+                if (targetEvadingPassenger != null)
+                {
+                    navAgent.SetDestination(targetEvadingPassenger.transform.position);
+                    
+                    if(targetEvadingPassenger == null) ReturnToIdle();
+                }
+                else
+                {
+                    ReturnToIdle();
+                }
+                break;
+        }
+    }
+    
+    void BeginEscort()
+    {
+        if (targetEvadingPassenger != null)
+        {
+            targetEvadingPassenger.isBeingEscorted = true;
+            currentSubState = securitySubStates.EscortingTarget;
+            
+            navAgent.stoppingDistance = 2.5f; 
+            
+            navAgent.SetDestination(targetEvadingPassenger.transform.position);
+        }
+        else
+        {
+            ReturnToIdle();
         }
     }
     
     public void AssignEvader(Passenger evader)
     {
         targetEvadingPassenger = evader;
-        currentSubState = securitySubStates.MovingToTarget;
+        currentSubState = securitySubStates.ApproachingTarget;
     }
     
     void ReturnToIdle()
     {
+        navAgent.stoppingDistance = defaultStoppingDistance;
+        
         targetEvadingPassenger = null;
         currentSubState = securitySubStates.Idle;
     }
     
     private void ReportNearbyEvaders(float detectionRadius)
     {
-        Debug.Log("Security guard is scanning for evaders...");
         Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, detectionRadius);
-        Debug.Log($"Found {nearbyColliders.Length} colliders within detection radius.");
         foreach (Collider collider in nearbyColliders)
         {
             if (collider.CompareTag("Passenger"))
             {
                 Passenger passenger = collider.GetComponent<Passenger>();
-                if (passenger != null && passenger.hasBypassedBarrier)
+                if (passenger != null && passenger.hasBypassedBarrier && !passenger.isBeingEscorted)
                 {
                     SecurityCoordinator.Instance.ReportEvader(passenger);
                 }
