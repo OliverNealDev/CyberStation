@@ -1,12 +1,16 @@
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PassengerManager : MonoBehaviour
 {
     public static PassengerManager Instance;
+    
+    [SerializeField] private GameObject PersonalCanvasPrefab;
     
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
@@ -14,7 +18,7 @@ public class PassengerManager : MonoBehaviour
     
     public int platformLength = 64; 
 
-    private float tickLength = 0.05f; 
+    private float tickLength = 0.1f; 
     private float tickTimer;
 
     public bool autoSpawnPassengers = false;
@@ -60,7 +64,7 @@ public class PassengerManager : MonoBehaviour
         {
             Passenger passenger = activePassengers[i];
 
-            NavMeshAgent agent = passenger.agent;
+            NavMeshAgent agent = passenger.navAgent;
             
             switch (passenger.currentSubState)
             {
@@ -106,14 +110,14 @@ public class PassengerManager : MonoBehaviour
                                 if (queueIndex == 0 && passenger.currentTarget.IsAvailable)
                                 {
                                     passenger.currentTarget.ProcessInteraction(passenger);
-                                    passenger.currentSubState = Passenger.passengerSubStates.InteractingWithTarget;
+                                    passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
                                 }
                             }
                         }
                     }
                     break;
                 
-                case Passenger.passengerSubStates.InteractingWithTarget:
+                case Passenger.passengerSubStates.InteractingWithSomething:
                     UpdateQueuePosition(passenger);
                     break;
             }
@@ -172,7 +176,7 @@ public class PassengerManager : MonoBehaviour
                         break;
                 }
                 
-                MoveToPlatformPosition(passenger);
+                MoveToPlatformPosition(passenger); // If needs are all fulfilled or no actionable needs, head to platform to wait for train, as that's the main purpose of passengers being in the station
                 break;
             
             case Passenger.passengerMasterStates.OnPlatform:
@@ -186,19 +190,26 @@ public class PassengerManager : MonoBehaviour
     
     private void LeaveStation(Passenger passenger)
     {
+        UnassignTarget(passenger);
+        
         Vector3 exitPosition = NavMesh.SamplePosition(passengerSpawnPoint, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : passengerSpawnPoint;
-        passenger.agent.SetDestination(exitPosition);
+        passenger.navAgent.SetDestination(exitPosition);
         passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
-        passenger.agent.stoppingDistance = 1f;
+        passenger.navAgent.stoppingDistance = 1f;
 
+        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Exit;
+        passenger.currentMasterState = Passenger.passengerMasterStates.InStation;
+    }
+    
+    private void UnassignTarget(Passenger passenger)
+    {
         if (passenger.currentTarget != null)
         {
             passenger.currentTarget.RemovePerson(passenger);
             passenger.currentTarget = null;
         }
 
-        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Exit;
-        passenger.currentMasterState = Passenger.passengerMasterStates.InStation;
+        passenger.navAgent.ResetPath();
     }
     
     private void FindTicketMachine(Passenger passenger)
@@ -215,26 +226,28 @@ public class PassengerManager : MonoBehaviour
             NavMeshHit hit;
             if(NavMesh.SamplePosition(frontOfMachinePosition, out hit, 4, NavMesh.AllAreas))
             {
-                passenger.agent.SetDestination(hit.position);
+                passenger.navAgent.SetDestination(hit.position);
             }
             else
             {
-                passenger.agent.SetDestination(frontOfMachinePosition);
+                passenger.navAgent.SetDestination(frontOfMachinePosition);
             }
         }
     }
     
     private void UpdateQueuePosition(Passenger passenger)
     {
+        if (passenger.currentTarget == null) return;
+        
         int queueIndex = passenger.currentTarget.PeopleOnWay.IndexOf(passenger);
                         
         float baseDistance = 0.25f; 
         float queueSpacing = 1.5f; 
         float newStoppingDistance = baseDistance + (queueIndex * queueSpacing);
                         
-        if (Mathf.Abs(passenger.agent.stoppingDistance - newStoppingDistance) > 0.1f)
+        if (Mathf.Abs(passenger.navAgent.stoppingDistance - newStoppingDistance) > 0.1f)
         {
-            passenger.agent.stoppingDistance = newStoppingDistance;
+            passenger.navAgent.stoppingDistance = newStoppingDistance;
         }
     }
     
@@ -249,13 +262,13 @@ public class PassengerManager : MonoBehaviour
         if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 4, NavMesh.AllAreas))
         {
             passenger.trainWaitPosition = hit.position;
-            passenger.agent.SetDestination(passenger.trainWaitPosition);
-            passenger.agent.stoppingDistance = Random.Range(2f, 8f); 
+            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
+            passenger.navAgent.stoppingDistance = Random.Range(2f, 8f); 
         }
         else
         {
-            passenger.agent.SetDestination(passenger.trainWaitPosition);
-            passenger.agent.stoppingDistance = Random.Range(2f, 8f); 
+            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
+            passenger.navAgent.stoppingDistance = Random.Range(2f, 8f); 
         }
         
         passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
@@ -272,9 +285,9 @@ public class PassengerManager : MonoBehaviour
 
     public bool HasReachedTarget(Passenger passenger)
     {
-        if (!passenger.agent.pathPending && 
-            passenger.agent.hasPath &&
-            passenger.agent.remainingDistance <= passenger.agent.stoppingDistance)
+        if (!passenger.navAgent.pathPending && 
+            passenger.navAgent.hasPath &&
+            passenger.navAgent.remainingDistance <= passenger.navAgent.stoppingDistance)
         {
             return true;
         }
@@ -337,6 +350,66 @@ public class PassengerManager : MonoBehaviour
         }
     }
     
+    public void OnCaughtBySecurity(Passenger passenger)
+    {
+        UnassignTarget(passenger);
+        
+        passenger.hasBypassedBarrier = false; // untags passenger from being caught by security
+        
+        passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
+        Dialogue(passenger, "Don't you have better things to do?", 2f);
+        StartCoroutine(ExecuteAfterDelay(2, () => LeaveStation(passenger)));
+    }
+    
+    void CreateNewPersonalCanvas(Passenger passenger)
+    {
+        if (passenger.personalCanvas != null)
+        {
+            Destroy(passenger.personalCanvas.gameObject);
+        }
+
+        GameObject personalCanvas = Instantiate(PersonalCanvasPrefab);
+        passenger.personalCanvas = personalCanvas;
+        personalCanvas.transform.SetParent(passenger.transform, false);
+        personalCanvas.transform.localPosition = Vector3.up * 5f;
+    }
+
+    void DestroyPersonalCanvas(Passenger passenger)
+    {
+        if (passenger.personalCanvas != null)
+        {
+            Destroy(passenger.personalCanvas.gameObject);
+            passenger.personalCanvas = null;
+        }
+    }
+
+    void Dialogue(Passenger passenger, string text, float duration)
+    {
+        CreateNewPersonalCanvas(passenger);
+
+        if (text.Length != 0)
+        {
+            passenger.personalCanvas.transform.GetChild(0).gameObject.SetActive(true);
+            TextMeshProUGUI dialogueText = passenger.personalCanvas.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            dialogueText.text = text;
+        }
+        
+        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(passenger)));
+    }
+    
+    void Expression(Passenger passenger, string expressionName, float duration)
+    {
+        CreateNewPersonalCanvas(passenger);
+
+        if (expressionName.Length != 0)
+        {
+            passenger.personalCanvas.transform.GetChild(1).gameObject.SetActive(true);
+            Image expressionImage = passenger.personalCanvas.transform.GetChild(1).GetComponent<Image>();
+        }
+        
+        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(passenger)));
+    }
+
     void SpawnPassenger()
     {
         if (TrainManager.Instance.activeTrainServices.Count == 0) return;
@@ -368,5 +441,11 @@ public class PassengerManager : MonoBehaviour
             activePassengers.Remove(passenger);
             Destroy(passenger.gameObject);
         }
+    }
+    
+    private System.Collections.IEnumerator ExecuteAfterDelay(float delay, System.Action action)
+    {
+        yield return new WaitForSeconds(delay);
+        action.Invoke();
     }
 }

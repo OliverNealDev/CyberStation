@@ -1,14 +1,14 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
-public class Staff : Person
+public abstract class Staff : Person
 {
-    public StaffMasterState masterState = StaffMasterState.Idle;
-    public enum StaffMasterState
+    public float hiringCost;
+    public float salaryPerMinute;
+
+    protected override void OnTick()
     {
-        Idle,
-        MovingToTarget,
-        InteractingWithTarget
+        PerformDuties();
     }
+
+    public abstract void PerformDuties();
 }
