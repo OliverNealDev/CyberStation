@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7329066530114912625}
   - component: {fileID: 3808361051262776662}
   - component: {fileID: 74656419516927239}
-  - component: {fileID: 5880896346508731057}
   m_Layer: 0
   m_Name: Hair (2)
   m_TagString: Untagged
@@ -91,29 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &5880896346508731057
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 402204713136404033}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &1691461225997497199
 GameObject:
   m_ObjectHideFlags: 0
@@ -125,7 +101,6 @@ GameObject:
   - component: {fileID: 1862640827828023011}
   - component: {fileID: 812928679052273246}
   - component: {fileID: 4919935897288545020}
-  - component: {fileID: 8665660566819210399}
   m_Layer: 0
   m_Name: Hair (3)
   m_TagString: Untagged
@@ -205,29 +180,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &8665660566819210399
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1691461225997497199}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &2356433978610239715
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,7 +281,6 @@ GameObject:
   - component: {fileID: 3099602593499419449}
   - component: {fileID: 6100531720092416646}
   - component: {fileID: 1050023808389666215}
-  - component: {fileID: 4033178739202735746}
   m_Layer: 0
   m_Name: Hair
   m_TagString: Untagged
@@ -409,29 +360,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &4033178739202735746
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2806606449429015985}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &2991288983431714229
 GameObject:
   m_ObjectHideFlags: 0
@@ -494,13 +422,15 @@ MonoBehaviour:
   hydration: 1
   hygiene: 1
   needReductionRate: 0.5
+  personalCanvas: {fileID: 0}
+  dialogueData: {fileID: 11400000, guid: 7e847c57b3abb6640bc4b9b9018c3ed1, type: 2}
+  PreviousPosition: {x: 0, y: 0, z: 0}
   assignedTrainService:
     trainData: {fileID: 0}
     arrivalTimes: []
     trainsInService: 0
     physicalTrainInstance: {fileID: 0}
   TimeToGoToPlatform: 0
-  personalCanvas: {fileID: 0}
   hasTicket: 0
   isTicketEvader: 0
   hasBypassedBarrier: 0
@@ -532,7 +462,7 @@ NavMeshAgent:
   m_Height: 2
   m_BaseOffset: -1
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 0
 --- !u!136 &7271281077939084549
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -548,7 +478,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -684,7 +614,6 @@ GameObject:
   - component: {fileID: 4726360834683146772}
   - component: {fileID: 2527311860682194660}
   - component: {fileID: 5060743222518312644}
-  - component: {fileID: 7496746145736714717}
   m_Layer: 0
   m_Name: Eye_R
   m_TagString: Untagged
@@ -764,27 +693,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &7496746145736714717
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5951189695384447001}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7519387638020316361
 GameObject:
   m_ObjectHideFlags: 0
@@ -796,7 +704,6 @@ GameObject:
   - component: {fileID: 3901752345760369217}
   - component: {fileID: 3720549050946815311}
   - component: {fileID: 6872264082051820653}
-  - component: {fileID: 3892018668206584233}
   m_Layer: 0
   m_Name: Eye_L
   m_TagString: Untagged
@@ -876,27 +783,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &3892018668206584233
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7519387638020316361}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &9203370695591141827
 GameObject:
   m_ObjectHideFlags: 0
@@ -908,7 +794,6 @@ GameObject:
   - component: {fileID: 6283454849156261767}
   - component: {fileID: 6822359974352464751}
   - component: {fileID: 6694299412048900060}
-  - component: {fileID: 6555439027457463667}
   m_Layer: 0
   m_Name: Hair (1)
   m_TagString: Untagged
@@ -988,26 +873,3 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &6555439027457463667
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9203370695591141827}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}

@@ -6,6 +6,8 @@ MonoImporter:
   defaultReferences:
   - navAgent: {instanceID: 0}
   - PersonalCanvasPrefab: {fileID: 5797679199824923170, guid: c6a6c5cfcf86f0a4591c7e56df18bf40, type: 3}
+  - personalCanvas: {instanceID: 0}
+  - dialogueData: {fileID: 11400000, guid: 7e847c57b3abb6640bc4b9b9018c3ed1, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

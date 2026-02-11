@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Serialization;
@@ -20,6 +21,11 @@ public abstract class Person : MonoBehaviour
     private float tickTimer = 0f;
     
     public float needReductionRate = 0.5f;
+
+    public GameObject personalCanvas;
+    public DialogueData dialogueData;
+
+    public Vector3 PreviousPosition;
 
     protected virtual void Awake()
     {
@@ -94,54 +100,75 @@ public abstract class Person : MonoBehaviour
         };
     }
     
-    public virtual void CreateNewPersonalCanvas(Passenger passenger)
+    public virtual void CreateNewPersonalCanvas(Person person)
     {
-        if (passenger.personalCanvas != null)
+        if (person.personalCanvas != null)
         {
-            Destroy(passenger.personalCanvas.gameObject);
+            Destroy(person.personalCanvas.gameObject);
         }
 
         GameObject personalCanvas = Instantiate(PersonalCanvasPrefab);
-        passenger.personalCanvas = personalCanvas;
-        personalCanvas.transform.SetParent(passenger.transform, false);
+        person.personalCanvas = personalCanvas;
+        personalCanvas.transform.SetParent(person.transform, false);
         personalCanvas.transform.localPosition = Vector3.up * 5f;
+        
     }
 
-    public virtual void DestroyPersonalCanvas(Passenger passenger)
+    public virtual void DestroyPersonalCanvas(Person person)
     {
-        if (passenger.personalCanvas != null)
+        if (person.personalCanvas != null)
         {
-            Destroy(passenger.personalCanvas.gameObject);
-            passenger.personalCanvas = null;
+            Destroy(person.personalCanvas.gameObject);
+            person.personalCanvas = null;
         }
     }
 
-    public virtual void Dialogue(Passenger passenger, string text, float duration)
+    public virtual void Dialogue(Person person, string text, float duration)
     {
-        CreateNewPersonalCanvas(passenger);
+        CreateNewPersonalCanvas(person);
 
         if (text.Length != 0)
         {
-            passenger.personalCanvas.transform.GetChild(0).gameObject.SetActive(true);
-            TextMeshProUGUI dialogueText = passenger.personalCanvas.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
             dialogueText.text = text;
+            person.personalCanvas.transform.GetChild(0).gameObject.SetActive(true);
         }
         
-        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(passenger)));
+        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
     }
     
-    public virtual void Expression(Passenger passenger, string expressionName, float duration)
+    public virtual void Expression(Person person, string expressionName, float duration)
     {
-        CreateNewPersonalCanvas(passenger);
+        CreateNewPersonalCanvas(person);
 
         if (expressionName.Length != 0)
         {
-            passenger.personalCanvas.transform.GetChild(1).gameObject.SetActive(true);
-            Image expressionImage = passenger.personalCanvas.transform.GetChild(1).GetComponent<Image>();
+            Image expressionImage = person.personalCanvas.transform.GetChild(1).GetComponent<Image>();
+            person.personalCanvas.transform.GetChild(1).gameObject.SetActive(true);
         }
         
-        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(passenger)));
+        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
     }
+
+    /*private void CheckIfStuck()
+    {
+        float distance = Vector3.Distance(PreviousPosition, transform.position);
+        if (distance < 0.1f)
+        {
+            if (navAgent.obstacleAvoidanceType != ObstacleAvoidanceType.NoObstacleAvoidance)
+            {
+                navAgent.obstacleAvoidanceType = ObstacleAvoidanceType.NoObstacleAvoidance;
+                Invoke("EnableObstacleAvoidance", 1f);
+            }
+        }
+        PreviousPosition = transform.position;
+        Invoke("CheckIfStuck", 1f);
+    }
+    
+    private void EnableObstacleAvoidance()
+    {
+        navAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+    }*/
     
     public static System.Collections.IEnumerator ExecuteAfterDelay(float delay, System.Action action)
     {

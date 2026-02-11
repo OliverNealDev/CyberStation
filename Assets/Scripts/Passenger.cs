@@ -4,7 +4,6 @@ public class Passenger : Person
 {
     public TrainService assignedTrainService;
     public float TimeToGoToPlatform;
-    public GameObject personalCanvas;
     
     public bool hasTicket = false;
     public bool isTicketEvader = false;

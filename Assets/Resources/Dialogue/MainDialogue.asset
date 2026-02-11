@@ -12,14 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 124d3f6f0babfbb4db179ef77b744ab7, type: 3}
   m_Name: MainDialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  caughtBySecurity:
-  - You got the wrong guy!
-  - Ay up mush!
-  - Ah shucks you got me!
-  - Sorry mr security man
-  - i hate you
-  - nooooooooo
   lowComfort: []
   lowSatiation: []
   lowHydration: []
   lowHygeine: []
+  caughtBySecurity:
+  - "You got the wrong person! \U0001F600"
+  - "Ay up mush! \U0001F600"
+  - "Ah shucks you got me! \U0001F600"
+  - "Sorry security person! \U0001F600"
+  - "i hate you \U0001F600"
+  - "nooooooooo \U0001F600"
+  caughtEvader:
+  - GET OUT!
+  - You need to leave
+  - You don't have a ticket!
+  - You bypassed the ticket barrier!
+  - You're coming with me...

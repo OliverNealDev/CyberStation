@@ -4,10 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewDialogueData", menuName = "Game Data/Dialogue Data")]
 public class DialogueData : ScriptableObject
 {
-    [Header("Security Catch Lines")]
-    [TextArea(2, 5)]
-    public List<string> caughtBySecurity = new List<string>();
-
+    // Person Dialogue Lines
     [Header("Low Comfort Lines")]
     [TextArea(2, 5)]
     public List<string> lowComfort = new List<string>();
@@ -23,6 +20,19 @@ public class DialogueData : ScriptableObject
     [Header("Low Hygeine Lines")]
     [TextArea(2, 5)]
     public List<string> lowHygeine = new List<string>();
+    //
+    
+    // Passenger Dialogue Lines
+    [Header("Caught By Security Lines")]
+    [TextArea(2, 5)]
+    public List<string> caughtBySecurity = new List<string>();
+    
+    // Security Dialogue Lines
+    [Header("Catching Evader Lines")]
+    [TextArea(2, 5)]
+    public List<string> caughtEvader = new List<string>();
+    
+    
     
     public string GetRandomLine(DialogueType type)
     {
@@ -33,6 +43,7 @@ public class DialogueData : ScriptableObject
             DialogueType.LowSatiation => lowSatiation,
             DialogueType.LowHydration => lowHydration,
             DialogueType.LowHygeine => lowHygeine,
+            DialogueType.CaughtEvader => caughtEvader,
             _ => null
         };
 
@@ -47,5 +58,6 @@ public enum DialogueType
     LowComfort,
     LowSatiation,
     LowHydration,
-    LowHygeine
+    LowHygeine,
+    CaughtEvader
 }

@@ -50,6 +50,10 @@ public class SecurityCoordinator : MonoBehaviour
         
         foreach (var evader in knownEvaders)
         {
+            if (evader == null)
+            {
+                continue;
+            }
             if (currentPursuits.ContainsKey(evader)) continue;
             if (evader.currentMasterState == Passenger.passengerMasterStates.OnTrain) continue; // Don't pursue if they're already on a train
 

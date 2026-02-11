@@ -6,13 +6,16 @@ public class SecurityGuard : Staff
 {
     private Passenger targetEvadingPassenger;
     private float defaultStoppingDistance;
+    private Vector3 startPosition;
 
     public float detectionRadius = 4f;
+    public float patrolRadius = 15f;
     
     public securitySubStates currentSubState = securitySubStates.Idle;
     public enum securitySubStates
     {
         Idle,
+        Patrolling,
         ApproachingTarget,
         InteractingWithTarget,
         EscortingTarget
@@ -22,6 +25,7 @@ public class SecurityGuard : Staff
     {
         base.Awake();
         if(navAgent != null) defaultStoppingDistance = navAgent.stoppingDistance;
+        startPosition = transform.position;
     }
 
     public override void PerformDuties()
@@ -31,6 +35,31 @@ public class SecurityGuard : Staff
             case securitySubStates.Idle:
                 ReportNearbyEvaders(detectionRadius);
                 SecurityCoordinator.Instance.RequestAssignment(this);
+                
+                if (targetEvadingPassenger != null)
+                {
+                    currentSubState = securitySubStates.ApproachingTarget;
+                }
+                else
+                {
+                    currentSubState = securitySubStates.Patrolling;
+                }
+                break;
+
+            case securitySubStates.Patrolling:
+                ReportNearbyEvaders(detectionRadius);
+                SecurityCoordinator.Instance.RequestAssignment(this);
+
+                if (targetEvadingPassenger != null)
+                {
+                    currentSubState = securitySubStates.ApproachingTarget;
+                    return;
+                }
+
+                if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance)
+                {
+                    SetRandomPatrolDestination();
+                }
                 break;
             
             case securitySubStates.ApproachingTarget:
@@ -42,14 +71,14 @@ public class SecurityGuard : Staff
                 
                 navAgent.SetDestination(targetEvadingPassenger.transform.position);
                 
-                // Use a slightly larger catch radius than stopping distance to prevent jitters
                 if (Vector3.Distance(transform.position, targetEvadingPassenger.transform.position) <= 2.0f)
                 {
                     PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger);
                     SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
+                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), 2);
                         
                     currentSubState = securitySubStates.InteractingWithTarget;
-                    Invoke("BeginEscort", 2f);
+                    Invoke("BeginEscort", 4f);
                 }
                 break;
             
@@ -58,17 +87,26 @@ public class SecurityGuard : Staff
                 break;
 
             case securitySubStates.EscortingTarget:
-                if (targetEvadingPassenger != null)
-                {
-                    navAgent.SetDestination(targetEvadingPassenger.transform.position);
-                    
-                    if(targetEvadingPassenger == null) ReturnToIdle();
-                }
-                else
+                if (targetEvadingPassenger == null)
                 {
                     ReturnToIdle();
+                    return;
                 }
+
+                navAgent.SetDestination(targetEvadingPassenger.transform.position);
                 break;
+        }
+    }
+
+    void SetRandomPatrolDestination()
+    {
+        Vector3 randomDirection = Random.insideUnitSphere * patrolRadius;
+        randomDirection += startPosition;
+        
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(randomDirection, out hit, patrolRadius, 1))
+        {
+            navAgent.SetDestination(hit.position);
         }
     }
     
@@ -80,7 +118,6 @@ public class SecurityGuard : Staff
             currentSubState = securitySubStates.EscortingTarget;
             
             navAgent.stoppingDistance = 2.5f; 
-            
             navAgent.SetDestination(targetEvadingPassenger.transform.position);
         }
         else
@@ -98,6 +135,7 @@ public class SecurityGuard : Staff
     void ReturnToIdle()
     {
         navAgent.stoppingDistance = defaultStoppingDistance;
+        navAgent.ResetPath();
         
         targetEvadingPassenger = null;
         currentSubState = securitySubStates.Idle;

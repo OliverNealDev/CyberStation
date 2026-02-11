@@ -8,8 +8,15 @@ public class FaceCamera : MonoBehaviour
         {
             mainCamera = Camera.main; // Automatically assign the main camera
         }
+        
+        FaceCameraMethod();
     }
     void Update()
+    {
+        FaceCameraMethod();
+    }
+
+    void FaceCameraMethod()
     {
         // Make the text face the camera
         transform.LookAt(mainCamera.transform);

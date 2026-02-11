@@ -21,9 +21,6 @@ public class PassengerManager : MonoBehaviour
 
     public bool autoSpawnPassengers = false;
     public int minPassengers = 4;
-
-    public DialogueData dialogueData;
-    
     
     void Awake()
     {
@@ -214,7 +211,7 @@ public class PassengerManager : MonoBehaviour
         {
             passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
         }
-        passenger.navAgent.ResetPath();
+        if(passenger.navAgent != null) passenger.navAgent.ResetPath();
     }
     
     private void FindTicketMachine(Passenger passenger)
@@ -363,9 +360,13 @@ public class PassengerManager : MonoBehaviour
         passenger.isBeingEscorted = true;
         
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
-        string randomText = dialogueData.GetRandomLine(DialogueType.CaughtBySecurity);
-        passenger.Dialogue(passenger, randomText, 2f);
-        StartCoroutine(Person.ExecuteAfterDelay(2, () => LeaveStation(passenger)));
+        StartCoroutine(Person.ExecuteAfterDelay(4, () => LeaveStation(passenger)));
+        StartCoroutine(Person.ExecuteAfterDelay(2, () => ReplyToBeingCaught(passenger)));
+    }
+
+    void ReplyToBeingCaught(Passenger passenger)
+    {
+        passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), 2f);
     }
 
     void SpawnPassenger()
