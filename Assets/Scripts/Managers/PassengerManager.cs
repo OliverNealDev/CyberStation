@@ -23,6 +23,9 @@ public class PassengerManager : MonoBehaviour
 
     public bool autoSpawnPassengers = false;
     public int minPassengers = 4;
+
+    public bool spawnPerSecond = false;
+    public int passengersPerSecond = 1;
     
     void Awake()
     {
@@ -33,7 +36,21 @@ public class PassengerManager : MonoBehaviour
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
         
         InvokeRepeating("DropLitter", 1, 1);
+        
+        InvokeRepeating("SpawnPassengers", 1, 1);
     }
+    
+        void SpawnPassengers()
+        {
+            if (spawnPerSecond)
+            {
+                for (int i = 0; i < passengersPerSecond; i++)
+                {
+                    SpawnPassenger();
+                }
+            }
+        }
+    
     void Update()
     {
         tickTimer += Time.deltaTime;
@@ -85,7 +102,10 @@ public class PassengerManager : MonoBehaviour
                                     passenger.currentSubState = Passenger.passengerSubStates.Idle;
                                     break;
                                 case Passenger.passengerSpecialTargets.TrainDoor:
+                                    UnregisterPassenger(passenger);
+                                    break;
                                 case Passenger.passengerSpecialTargets.Exit:
+                                    EconomyManager.Instance.AddMoney(50);
                                     UnregisterPassenger(passenger);
                                     break;
                             }
@@ -317,6 +337,7 @@ public class PassengerManager : MonoBehaviour
         passenger.currentTarget = null;
         passenger.hasTicket = true;
         passenger.currentSubState = Passenger.passengerSubStates.Idle;
+        EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
     }
 
     public bool HasReachedTarget(Passenger passenger)
@@ -400,7 +421,7 @@ public class PassengerManager : MonoBehaviour
 
     void ReplyToBeingCaught(Passenger passenger)
     {
-        passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), 2f);
+        passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), Color.white, 2);
     }
 
     void SpawnPassenger()
@@ -411,7 +432,7 @@ public class PassengerManager : MonoBehaviour
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 
-        newPassenger.isTicketEvader = Random.Range(1, 100) <= 50;
+        newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);
         

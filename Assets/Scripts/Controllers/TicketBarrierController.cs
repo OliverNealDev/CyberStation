@@ -44,5 +44,9 @@ public class TicketBarrierController : MonoBehaviour
     private void DenyAccess(Passenger passenger)
     {
         PassengerManager.Instance.OnTicketBarrierDenial(passenger);
+        if (passenger.isTicketEvader)
+        {
+            SecurityCoordinator.Instance.ReportEvader(passenger);
+        }
     }
 }

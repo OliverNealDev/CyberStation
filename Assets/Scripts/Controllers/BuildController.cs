@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -36,7 +37,9 @@ public class BuildController : MonoBehaviour
             {
                 Vector3Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
                 
-                if (GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z))
+                if (
+                    GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z)/* &&
+                    EconomyManager.Instance.money >= selectedPreviewObject*/)
                 {
                     GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
                     placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(); // Tells object to enable its functionality

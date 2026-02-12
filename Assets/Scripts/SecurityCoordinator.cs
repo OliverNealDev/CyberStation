@@ -48,10 +48,13 @@ public class SecurityCoordinator : MonoBehaviour
         Passenger bestTarget = null;
         float closestDist = float.MaxValue;
         
-        foreach (var evader in knownEvaders)
+        for (int i = knownEvaders.Count - 1; i >= 0; i--)
         {
+            Passenger evader = knownEvaders[i];
+            
             if (evader == null)
             {
+                knownEvaders.Remove(evader);
                 continue;
             }
             if (currentPursuits.ContainsKey(evader)) continue;

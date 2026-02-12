@@ -47,11 +47,11 @@ public class Janitor : Staff
                 {
                     
                     JanitorCoordinator.Instance.ResolveClean(targetLitter);
-                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), 2);
+                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.yellow, 2);
                         
                     currentSubState = janitorSubStates.InteractingWithLitter;
                     Invoke("ReturnToIdle", targetLitter.timeToClean);
-                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.StartingClean), 2);
+                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.StartingClean), Color.yellow, 2);
                 }
                 break;
             

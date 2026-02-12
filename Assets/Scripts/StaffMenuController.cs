@@ -68,7 +68,15 @@ public class StaffMenuController : MonoBehaviour
 
     public void OnHireStaffButtonClicked()
     {
-        GameObject newStaffMember = Instantiate(selectedStaff.staffPrefab, GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity);
+        if (EconomyManager.Instance.money >= selectedStaff.hiringCost)
+        {
+            EconomyManager.Instance.SpendMoney(selectedStaff.hiringCost);
+            GameObject newStaffMember = Instantiate(selectedStaff.staffPrefab, GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity);
+        }
+        else
+        {
+            Debug.Log("Not enough money to hire " + selectedStaff.name);
+        }
     }
     
     private void UpdateDetailView(StaffMember data)

@@ -123,13 +123,14 @@ public abstract class Person : MonoBehaviour
         }
     }
 
-    public virtual void Dialogue(Person person, string text, float duration)
+    public virtual void Dialogue(Person person, string text, Color color, float duration)
     {
         CreateNewPersonalCanvas(person);
 
         if (text.Length != 0)
         {
             TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            dialogueText.color = color;
             dialogueText.text = text;
             person.personalCanvas.transform.GetChild(0).gameObject.SetActive(true);
         }

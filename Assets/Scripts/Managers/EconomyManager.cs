@@ -11,4 +11,21 @@ public class EconomyManager : MonoBehaviour
     {
         Instance = this;
     }
+
+    void Start()
+    {
+        UIController.Instance.UpdateMoneyDisplay(money);
+    }
+    
+    public void AddMoney(int amount)
+    {
+        money += amount;
+        UIController.Instance.UpdateMoneyDisplay(money);
+    }
+    
+    public void SpendMoney(int amount)
+    {
+        money -= amount;
+        UIController.Instance.UpdateMoneyDisplay(money);
+    }
 }

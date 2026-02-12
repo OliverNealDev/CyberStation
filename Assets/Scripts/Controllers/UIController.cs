@@ -1,8 +1,12 @@
+using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
+    public static UIController Instance;
+    
     [Header("Button References")]
     public Button settingsButton;
     public Button cameraSwitchButton;
@@ -20,8 +24,16 @@ public class UIController : MonoBehaviour
 
     [Header("System References")]
     [SerializeField] private BuildController buildController;
+    
+    [Header("UI References")]
+    public TextMeshProUGUI moneyText;
 
     private GameObject currentActivePanel;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -111,5 +123,13 @@ public class UIController : MonoBehaviour
         if (buildMenuButton) buildMenuButton.onClick.RemoveAllListeners();
         if (staffMenuButton) staffMenuButton.onClick.RemoveAllListeners();
         if (manageStationButton) manageStationButton.onClick.RemoveAllListeners();
+    }
+    
+    public void UpdateMoneyDisplay(int amount)
+    {
+        if (moneyText != null)
+        {
+            moneyText.text = $"${amount}";
+        }
     }
 }

@@ -33,7 +33,7 @@ public class SecurityGuard : Staff
         switch (currentSubState)
         {
             case securitySubStates.Idle:
-                ReportNearbyEvaders(detectionRadius);
+                //ReportNearbyEvaders(detectionRadius);
                 SecurityCoordinator.Instance.RequestAssignment(this);
                 
                 if (targetEvadingPassenger != null)
@@ -47,7 +47,7 @@ public class SecurityGuard : Staff
                 break;
 
             case securitySubStates.Patrolling:
-                ReportNearbyEvaders(detectionRadius);
+                //ReportNearbyEvaders(detectionRadius);
                 SecurityCoordinator.Instance.RequestAssignment(this);
 
                 if (targetEvadingPassenger != null)
@@ -75,7 +75,7 @@ public class SecurityGuard : Staff
                 {
                     PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger);
                     SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
-                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), 2);
+                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.mediumBlue, 2);
                         
                     currentSubState = securitySubStates.InteractingWithTarget;
                     Invoke("BeginEscort", 4f);
@@ -141,7 +141,7 @@ public class SecurityGuard : Staff
         currentSubState = securitySubStates.Idle;
     }
     
-    private void ReportNearbyEvaders(float detectionRadius)
+    /*private void ReportNearbyEvaders(float detectionRadius)
     {
         Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, detectionRadius);
         foreach (Collider collider in nearbyColliders)
@@ -155,5 +155,5 @@ public class SecurityGuard : Staff
                 }
             }
         }
-    }
+    }*/
 }

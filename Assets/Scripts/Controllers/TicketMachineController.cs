@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.Serialization;
 
 public class TicketMachineController : QueuableObject // Inherits from Parent
@@ -27,7 +28,12 @@ public class TicketMachineController : QueuableObject // Inherits from Parent
     {
         if (currentPerson != null)
         {
-            PassengerManager.Instance.ReceiveTicket((Passenger)currentPerson);
+            Passenger passenger = (Passenger)currentPerson;
+            PassengerManager.Instance.ReceiveTicket(passenger);
+            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                "+$" + passenger.assignedTrainService.trainData.costPerRide, 
+                transform.position + Vector3.up * 7f,
+                Color.darkGreen);
             currentPerson = null;
         }
         state = MachineState.Idle;
