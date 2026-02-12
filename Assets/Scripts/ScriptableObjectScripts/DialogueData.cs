@@ -32,6 +32,11 @@ public class DialogueData : ScriptableObject
     [TextArea(2, 5)]
     public List<string> caughtEvader = new List<string>();
     
+    // Janitor Dialogue Lines
+    [Header("Cleaning Lines")]
+    [TextArea(2, 5)]
+    public List<string> startingClean = new List<string>();
+    
     
     
     public string GetRandomLine(DialogueType type)
@@ -44,6 +49,7 @@ public class DialogueData : ScriptableObject
             DialogueType.LowHydration => lowHydration,
             DialogueType.LowHygeine => lowHygeine,
             DialogueType.CaughtEvader => caughtEvader,
+            DialogueType.StartingClean => startingClean,
             _ => null
         };
 
@@ -59,5 +65,6 @@ public enum DialogueType
     LowSatiation,
     LowHydration,
     LowHygeine,
-    CaughtEvader
+    CaughtEvader,
+    StartingClean
 }

@@ -14,6 +14,8 @@ public class PassengerManager : MonoBehaviour
     [SerializeField] private GameObject passengerPrefab;
     private Vector3 passengerSpawnPoint;
     
+    public List<GameObject> litterPrefabs = new List<GameObject>();
+    
     public int platformLength = 64; 
 
     private float tickLength = 0.1f; 
@@ -30,7 +32,7 @@ public class PassengerManager : MonoBehaviour
     {
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
         
-        //InvokeRepeating("ok", 1, 2);
+        InvokeRepeating("DropLitter", 1, 1);
     }
     void Update()
     {
@@ -185,9 +187,41 @@ public class PassengerManager : MonoBehaviour
                 break;
         }
     }
+
+    public void DropLitter()
+    {
+        if (litterPrefabs.Count == 0) return;
+        if (activePassengers.Count == 0) return;
+        
+        List<Passenger> passengersLittered = new List<Passenger>();
+        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 100f)); // Up to 1% of passengers will drop litter per second
+        if (passengersToLitter == 0)
+        {
+            if (Random.Range(0, 1000) < activePassengers.Count) // Up to 10% chance per second for 1 passenger to drop litter, to add some variability and ensure litter is dropped even with low passenger counts
+            {
+                passengersToLitter = 1;
+            }
+            else
+            {
+                return;
+            }
+        }
+        
+        for (int i = 0; i < passengersToLitter; i++) 
+        { 
+            Passenger randomPassenger = activePassengers[Random.Range(0, activePassengers.Count)];
+            if (passengersLittered.Contains(randomPassenger)) continue; // prevents the same passenger from littering multiple times in the same drop event, which can look erroneous
+
+            GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
+            Instantiate(litterPrefab, new Vector3(randomPassenger.transform.position.x, 1.05f, randomPassenger.transform.position.z), Quaternion.identity);
+            passengersLittered.Add(randomPassenger);
+        }
+    }
     
     private void LeaveStation(Passenger passenger)
     {
+        if (!passenger.navAgent) return; // safety check in case agent was destroyed or not assigned for some reason
+        
         UnassignTarget(passenger);
         
         Vector3 exitPosition = NavMesh.SamplePosition(passengerSpawnPoint, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : passengerSpawnPoint;
@@ -373,7 +407,7 @@ public class PassengerManager : MonoBehaviour
     {
         if (TrainManager.Instance.activeTrainServices.Count == 0) return;
         
-        Passenger newPassenger = Instantiate(passengerPrefab, passengerSpawnPoint, Quaternion.identity).GetComponent<Passenger>();
+        Passenger newPassenger = Instantiate(passengerPrefab, passengerSpawnPoint + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity).GetComponent<Passenger>();
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 

@@ -9,6 +9,7 @@ TagManager:
   - TrainCarriage
   - TicketMachine
   - Passenger
+  - Litter
   layers:
   - Default
   - TransparentFX
