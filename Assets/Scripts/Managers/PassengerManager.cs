@@ -105,7 +105,6 @@ public class PassengerManager : MonoBehaviour
                                     UnregisterPassenger(passenger);
                                     break;
                                 case Passenger.passengerSpecialTargets.Exit:
-                                    EconomyManager.Instance.AddMoney(50);
                                     UnregisterPassenger(passenger);
                                     break;
                             }
@@ -415,8 +414,20 @@ public class PassengerManager : MonoBehaviour
         passenger.isBeingEscorted = true;
         
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
+        
         StartCoroutine(Person.ExecuteAfterDelay(4, () => LeaveStation(passenger)));
+        StartCoroutine(Person.ExecuteAfterDelay(4, () => PayEvasionFine(passenger)));
+        
         StartCoroutine(Person.ExecuteAfterDelay(2, () => ReplyToBeingCaught(passenger)));
+    }
+    
+    void PayEvasionFine(Passenger passenger)
+    {
+        EconomyManager.Instance.AddMoney(50);
+        WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+            "+$50", 
+            TrainManager.Instance.activeTrainServices[0].physicalTrainInstance.transform.position + Vector3.up * 5f, 
+            Color.green);
     }
 
     void ReplyToBeingCaught(Passenger passenger)

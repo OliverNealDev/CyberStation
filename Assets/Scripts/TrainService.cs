@@ -1,63 +1,30 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
 public class TrainService
 {
     public Train trainData;
-    public List<float> arrivalTimes = new List<float>();
-
-    public int trainsInService; 
-    
+    public float nextArrivalTime;
     public TrainController physicalTrainInstance;
     
     public TrainService(Train data)
     {
         trainData = data;
-        AddTrainToService();
-    }
-
-    public void ConfirmArrival() 
-    {
-        if (arrivalTimes.Count > 0)
-        {
-            arrivalTimes.RemoveAt(0); 
-        }
+        nextArrivalTime = Time.time;
     }
     
-    public void ScheduleNextArrival() 
+    public void OnTrainSpawned() 
     {
-        arrivalTimes.Add(Time.time + trainData.secondsBetweenArrivals); 
+        nextArrivalTime = Time.time + trainData.secondsBetweenArrivals; 
     }
     
-    public void RescheduleCurrentArrival() 
+    public void OnTrainDelayed() 
     {
-        if (arrivalTimes.Count > 0)
-        {
-            arrivalTimes.RemoveAt(0); 
-        }
-        arrivalTimes.Add(Time.time + 1.0f); 
-    }
-    
-    public float nextArrivalTime
-    {
-        get
-        {
-            if (arrivalTimes.Count > 0) return arrivalTimes[0];
-            return float.MaxValue;
-        }
-    }
-    
-    public void AddTrainToService()
-    {
-        trainsInService++;
-        arrivalTimes.Add(Time.time); 
-        Debug.Log("Train added. Total in service: " + trainsInService);
+        nextArrivalTime = Time.time + 1.0f; 
     }
     
     public int TrainPassengerCapacity()
     {
-       // Debug.Log("Calculating capacity: " + trainsInService + " trains, " + trainData.carriageCount + " carriages each, " + trainData.capacityPerCarriage + " per carriage.");
-        return trainsInService * (trainData.carriageCount * trainData.capacityPerCarriage);
+        return trainData.carriageCount * trainData.capacityPerCarriage;
     }
 }

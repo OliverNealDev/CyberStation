@@ -17,6 +17,11 @@ public class Train : ScriptableObject
     public float carriageLength = 34;
     public int capacityPerCarriage = 50;
     public int costPerRide = 5;
+    
     public float secondsBetweenArrivals = 30;
     public float secondsStationary = 10;
+
+    [Header("Economy")]
+    public float upfrontCost = 100f;
+    public float costPerMinute = 10f;
 }

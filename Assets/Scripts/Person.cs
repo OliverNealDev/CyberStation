@@ -102,6 +102,8 @@ public abstract class Person : MonoBehaviour
     
     public virtual void CreateNewPersonalCanvas(Person person)
     {
+        if (person == null) return;
+        
         if (person.personalCanvas != null)
         {
             Destroy(person.personalCanvas.gameObject);
@@ -111,7 +113,6 @@ public abstract class Person : MonoBehaviour
         person.personalCanvas = personalCanvas;
         personalCanvas.transform.SetParent(person.transform, false);
         personalCanvas.transform.localPosition = Vector3.up * 5f;
-        
     }
 
     public virtual void DestroyPersonalCanvas(Person person)

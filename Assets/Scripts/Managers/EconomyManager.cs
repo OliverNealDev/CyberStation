@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class EconomyManager : MonoBehaviour
 {
@@ -15,6 +16,14 @@ public class EconomyManager : MonoBehaviour
     void Start()
     {
         UIController.Instance.UpdateMoneyDisplay(money);
+    }
+
+    void Update()
+    {
+        if (Keyboard.current.mKey.wasPressedThisFrame)
+        {
+            AddMoney(money);
+        }
     }
     
     public void AddMoney(int amount)

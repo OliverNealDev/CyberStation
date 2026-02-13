@@ -8,7 +8,6 @@ public class TrainManager : MonoBehaviour
     private Train[] allTrains;
     public List<TrainService> activeTrainServices = new List<TrainService>();
     public bool unlockAllTrains = false;
-    //public List<TrainController> trainInstances = new List<TrainController>();
     
     [SerializeField]
     public List<Platform> activePlatforms = new List<Platform>();
@@ -54,19 +53,20 @@ public class TrainManager : MonoBehaviour
                 {
                     if (!platform.isOccupied)
                     {
-                        // Spawn the train at the platform
                         GameObject trainInstance = Instantiate(service.trainData.trainPrefab,
                             platform.trainStopPosition + new Vector3(1000, 0, 0), Quaternion.identity);
-                        service.physicalTrainInstance = trainInstance.GetComponent<TrainController>();
+                        
+                        TrainController controller = trainInstance.GetComponent<TrainController>();
+                        service.physicalTrainInstance = controller;
+                        
                         platform.isOccupied = true;
-                        trainInstance.GetComponent<TrainController>().trainData = service.trainData; // needs optimised
-                        trainInstance.GetComponent<TrainController>().trainStopPosition = platform.trainStopPosition; // needs optimised
-                        trainInstance.GetComponent<TrainController>().platformNumber = platform.platformNumber; // needs optimised
-                        trainInstance.GetComponent<TrainController>().trainService = service;
-                        //trainInstances.Add(trainInstance.GetComponent<TrainController>());
+                        
+                        controller.trainData = service.trainData;
+                        controller.trainStopPosition = platform.trainStopPosition;
+                        controller.platformNumber = platform.platformNumber;
+                        controller.trainService = service;
 
-                        // Schedule next arrival
-                        service.ConfirmArrival();
+                        service.OnTrainSpawned();
                         isAnyPlatformAvailable = true;
                         break;
                     }
@@ -74,8 +74,7 @@ public class TrainManager : MonoBehaviour
 
                 if (!isAnyPlatformAvailable)
                 {
-                    service.RescheduleCurrentArrival(); // Try again in 1 second
-                    //Debug.Log("Train rescheduled due to no available platforms.");
+                    service.OnTrainDelayed();
                 }
             }
         }
@@ -83,6 +82,8 @@ public class TrainManager : MonoBehaviour
 
     public TrainService AssignTrainServiceToPassenger()
     {
+        if (activeTrainServices.Count == 0) return null;
+
         int totalSeatsInService = 0;
         foreach (var service in activeTrainServices)
         {
@@ -99,7 +100,7 @@ public class TrainManager : MonoBehaviour
             }
             randomlyAssignedSeat -= serviceCapacity;
         }
-        return null; // Should never reach here
+        return activeTrainServices[0];
     }
     
     public void FreePlatform(int platformNumber)
@@ -109,11 +110,9 @@ public class TrainManager : MonoBehaviour
             if (platform.platformNumber == platformNumber)
             {
                 platform.isOccupied = false;
-                Debug.Log("Platform " + platformNumber + " is now free.");
                 return;
             }
         }
-        Debug.LogWarning("Platform " + platformNumber + " not found!");
     }
     
     public void AddTrainToService(Train train)
@@ -122,9 +121,10 @@ public class TrainManager : MonoBehaviour
         activeTrainServices.Add(newService);
     }
 
+    [System.Serializable]
     public class Platform
     {
-        public Vector3 trainStopPosition; // Specifically where the train stops
+        public Vector3 trainStopPosition; 
         public bool isOccupied;
         public int platformNumber;
         public int maxTrainLength;

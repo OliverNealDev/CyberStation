@@ -75,7 +75,7 @@ public class SecurityGuard : Staff
                 {
                     PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger);
                     SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
-                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.mediumBlue, 2);
+                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.cornflowerBlue, 2);
                         
                     currentSubState = securitySubStates.InteractingWithTarget;
                     Invoke("BeginEscort", 4f);

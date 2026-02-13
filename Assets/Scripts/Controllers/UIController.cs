@@ -27,6 +27,8 @@ public class UIController : MonoBehaviour
     
     [Header("UI References")]
     public TextMeshProUGUI moneyText;
+    public Color positiveMoneyColor = new Color(6, 159, 0);
+    public Color negativeMoneyColor = new Color(188, 0, 0);
 
     private GameObject currentActivePanel;
 
@@ -127,9 +129,46 @@ public class UIController : MonoBehaviour
     
     public void UpdateMoneyDisplay(int amount)
     {
+        string abbreviatedAmount = AbbreviateNumber(amount);
+        
         if (moneyText != null)
         {
-            moneyText.text = $"${amount}";
+            if (amount >= 0 && moneyText.color != positiveMoneyColor)
+            {
+                moneyText.color = positiveMoneyColor;
+            }
+            else if (amount < 0 && moneyText.color != negativeMoneyColor)
+            {
+                moneyText.color = negativeMoneyColor;
+            }
+            moneyText.text = "$" + abbreviatedAmount;
         }
+    }
+    
+    public string AbbreviateNumber(int number)
+    {
+        if (number < 10000) return number.ToString();
+
+        // Limited to Qi due to 64-bit constraints
+        string[] suffixes = { "", "k", "M", "B", "T", "Qa", "Qi" };
+        int suffixIndex = 0;
+        double abbreviatedNumber = number;
+
+        while (abbreviatedNumber >= 1000 && suffixIndex < suffixes.Length - 1)
+        {
+            abbreviatedNumber /= 1000;
+            suffixIndex++;
+        }
+
+        // Format string depends on the value
+        string format;
+        if (abbreviatedNumber >= 100)
+            format = "0";
+        else if (abbreviatedNumber >= 10)
+            format = "0.#";
+        else
+            format = "0.##";
+
+        return $"{abbreviatedNumber.ToString(format)}{suffixes[suffixIndex]}";
     }
 }

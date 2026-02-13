@@ -17,6 +17,7 @@ public class StaffMenuController : MonoBehaviour
     public TextMeshProUGUI detailDescription;
 
     public Button hireStaffButton;
+    public Button fireStaffButton;
     
     private StaffMember selectedStaff;
     
@@ -54,6 +55,12 @@ public class StaffMenuController : MonoBehaviour
         Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
         if (iconImage) iconImage.sprite = data.icon;
         
+        TextMeshProUGUI nameText = newButton.transform.Find("Name").GetComponent<TextMeshProUGUI>();
+        if (nameText) nameText.text = data.name;
+        
+        TextMeshProUGUI amountHiredText = newButton.transform.Find("AmountHired").GetComponent<TextMeshProUGUI>();
+        if (amountHiredText) amountHiredText.text = "x" + StaffManager.Instance.GetHiredStaffAmount(data);
+        
         Button btnComp = newButton.GetComponent<Button>();
         btnComp.onClick.AddListener(() => OnStaffButtonClicked(data));
     }
@@ -64,6 +71,14 @@ public class StaffMenuController : MonoBehaviour
 
         selectedStaff = data;
         UpdateDetailView(data);
+        
+        checkFireButtonInteractability(data);
+    }
+
+    private void checkFireButtonInteractability(StaffMember data)
+    {
+        bool canFire = StaffManager.Instance.GetHiredStaffAmount(data) > 0;
+        fireStaffButton.interactable = canFire;
     }
 
     public void OnHireStaffButtonClicked()
@@ -71,11 +86,27 @@ public class StaffMenuController : MonoBehaviour
         if (EconomyManager.Instance.money >= selectedStaff.hiringCost)
         {
             EconomyManager.Instance.SpendMoney(selectedStaff.hiringCost);
-            GameObject newStaffMember = Instantiate(selectedStaff.staffPrefab, GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity);
+            Staff newStaffMember = Instantiate(selectedStaff.staffPrefab, GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity).GetComponent<Staff>();
+            newStaffMember.salaryPerMinute = selectedStaff.salaryPerMinute;
+            newStaffMember.staffType = selectedStaff;
+            StaffManager.Instance.HireStaff(newStaffMember);
+            
+            checkFireButtonInteractability(selectedStaff);
+            
+            LoadItems();
         }
         else
         {
             Debug.Log("Not enough money to hire " + selectedStaff.name);
+        }
+    }
+
+    public void OnFireStaffButtonClicked()
+    {
+        if (StaffManager.Instance.GetHiredStaffAmount(selectedStaff) > 0)
+        {
+            StaffManager.Instance.FireStaffMember(selectedStaff);
+            LoadItems();
         }
     }
     
