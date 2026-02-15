@@ -15,8 +15,11 @@ public class TrainMenuController : MonoBehaviour
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
+    public TextMeshProUGUI upfrontServiceCost;
+    public TextMeshProUGUI costPerMinute;
 
-    public Button purchaseTrainButton;
+    public Button buyServiceButton;
+    public Button endServiceButton;
     
     private Train selectedTrain;
     
@@ -66,9 +69,16 @@ public class TrainMenuController : MonoBehaviour
         UpdateDetailView(data);
     }
 
-    public void OnPurchaseTrainButtonClicked()
+    public void OnBuyServiceButtonClicked()
     {
         TrainManager.Instance.AddTrainToService(selectedTrain);
+        UpdateDetailView(selectedTrain);
+    }
+
+    public void OnEndServiceButtonClicked()
+    {
+        TrainManager.Instance.RemoveTrainFromService(selectedTrain);
+        UpdateDetailView(selectedTrain);
     }
     
     private void UpdateDetailView(Train data)
@@ -76,5 +86,10 @@ public class TrainMenuController : MonoBehaviour
         if (detailIcon) detailIcon.sprite = data.icon;
         if (detailName) detailName.text = data.name;
         if (detailDescription) detailDescription.text = data.description;
+        if (upfrontServiceCost) upfrontServiceCost.text = $"Buy ${data.upfrontCost}";
+        if (costPerMinute) costPerMinute.text = $"${data.costPerMinute}/min";
+        
+        buyServiceButton.interactable = !TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
+        endServiceButton.interactable = TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
     }
 }

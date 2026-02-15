@@ -73,7 +73,7 @@ public class SecurityGuard : Staff
                 
                 if (Vector3.Distance(transform.position, targetEvadingPassenger.transform.position) <= 2.0f)
                 {
-                    PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger);
+                    PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger, this);
                     SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
                     Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.cornflowerBlue, 2);
                         

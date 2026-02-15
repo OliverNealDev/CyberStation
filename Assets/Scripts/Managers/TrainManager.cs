@@ -117,8 +117,28 @@ public class TrainManager : MonoBehaviour
     
     public void AddTrainToService(Train train)
     {
+        foreach (var service in activeTrainServices) // Don't add a new service if one already exists for this train type
+        {
+            if (service.trainData == train)
+            {
+                return;
+            }
+        }
+        
         TrainService newService = new TrainService(train);
         activeTrainServices.Add(newService);
+    }
+    
+    public void RemoveTrainFromService(Train train)
+    {
+        for (int i = activeTrainServices.Count - 1; i >= 0; i--)
+        {
+            if (activeTrainServices[i].trainData == train)
+            {
+                activeTrainServices[i].EndTotalService();
+                activeTrainServices.RemoveAt(i);
+            }
+        }
     }
 
     [System.Serializable]

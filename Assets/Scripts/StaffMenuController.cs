@@ -15,6 +15,8 @@ public class StaffMenuController : MonoBehaviour
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
+    public TextMeshProUGUI hiringCostText;
+    public TextMeshProUGUI costPerMinuteText;
 
     public Button hireStaffButton;
     public Button fireStaffButton;
@@ -115,5 +117,7 @@ public class StaffMenuController : MonoBehaviour
         if (detailIcon) detailIcon.sprite = data.icon;
         if (detailName) detailName.text = data.name;
         if (detailDescription) detailDescription.text = data.description;
+        if (hiringCostText) hiringCostText.text = "Hire $" + data.hiringCost;
+        if (costPerMinuteText) costPerMinuteText.text = "$" + data.salaryPerMinute + "/min";
     }
 }

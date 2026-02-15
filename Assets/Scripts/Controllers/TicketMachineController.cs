@@ -29,11 +29,28 @@ public class TicketMachineController : QueuableObject // Inherits from Parent
         if (currentPerson != null)
         {
             Passenger passenger = (Passenger)currentPerson;
+        
             PassengerManager.Instance.ReceiveTicket(passenger);
-            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$" + passenger.assignedTrainService.trainData.costPerRide, 
-                transform.position + Vector3.up * 7f,
-                Color.darkGreen);
+
+            int ticketPrice = 0;
+
+            if (passenger.assignedTrainService != null && passenger.assignedTrainService.trainData != null)
+            {
+                ticketPrice = passenger.assignedTrainService.trainData.costPerRide;
+                
+                if (WorldSpacePromptCoordinator.Instance != null)
+                {
+                    WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                        "+$" + ticketPrice, 
+                        transform.position + Vector3.up * 7f,
+                        Color.darkGreen);
+                }
+            }
+            else
+            {
+                ticketPrice = 0;
+            }
+
             currentPerson = null;
         }
         state = MachineState.Idle;

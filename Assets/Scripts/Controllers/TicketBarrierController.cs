@@ -20,7 +20,8 @@ public class TicketBarrierController : MonoBehaviour
             if (other.GetComponent<Passenger>() != null)
             {
                 Passenger passenger = other.GetComponent<Passenger>();
-                if (passenger.hasTicket)
+                
+                if (passenger.hasTicket || passenger.assignedTrainService == null) // Allow access if they have a ticket or are not assigned to any train service (service likely manually ended)
                 {
                     OpenBarrier();
                 }
@@ -43,10 +44,11 @@ public class TicketBarrierController : MonoBehaviour
     
     private void DenyAccess(Passenger passenger)
     {
-        PassengerManager.Instance.OnTicketBarrierDenial(passenger);
-        if (passenger.isTicketEvader)
+        if (passenger.isTicketEvader && !passenger.hasBypassedBarrier)
         {
             SecurityCoordinator.Instance.ReportEvader(passenger);
+            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt("[Unauthorised Access Detected]", transform.position + Vector3.up * 7f, Color.softRed);
         }
+        PassengerManager.Instance.OnTicketBarrierDenial(passenger);
     }
 }

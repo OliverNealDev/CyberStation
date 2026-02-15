@@ -18,17 +18,25 @@ MonoBehaviour:
   lowHygeine: []
   caughtBySecurity:
   - You got the wrong person!
-  - Ay up mush!
-  - You got me!
-  - Sorry security person!
-  - i hate you
-  - nooooooooo
+  - Ugh
+  - Fair enough...
+  - Sorry!
+  - I hate you!
+  - Nooo
+  trainServiceEnded:
+  - What do you mean it's no longer in service?!
+  - Seriously?!
+  - That's completely unfair...
+  - What happened to the service??
+  - I need to get home and my train is gone!
+  - Who is running this circus? My service is gone!
   caughtEvader:
-  - GET OUT!
-  - You need to leave
-  - You don't have a ticket!
-  - You bypassed the ticket barrier!
+  - Get out!
+  - You need to leave!
+  - I saw you bypass the ticket barrier!
+  - Follow me to the exit immediately.
   - You're coming with me...
   startingClean:
-  - I hate my job
-  - what a mess...
+  - Gross
+  - Disgusting
+  - I better clean this quickly!

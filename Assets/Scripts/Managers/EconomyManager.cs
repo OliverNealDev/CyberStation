@@ -37,4 +37,12 @@ public class EconomyManager : MonoBehaviour
         money -= amount;
         UIController.Instance.UpdateMoneyDisplay(money);
     }
+    
+    public void RefundTicket(Passenger passenger)
+    {
+        if (!passenger.hasTicket || passenger.isTicketEvader) return; // No refund for evaders or those without tickets
+
+        int refundAmount = passenger.assignedTrainService.trainData.costPerRide;
+        AddMoney(refundAmount);
+    }
 }

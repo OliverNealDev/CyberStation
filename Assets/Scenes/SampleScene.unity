@@ -498,7 +498,7 @@ Transform:
   m_GameObject: {fileID: 28735986}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 23, y: 0, z: 50}
+  m_LocalPosition: {x: 23, y: -0.5, z: 50}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -559,7 +559,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4cbddddeca5adac499010e0dcd61c2c4, type: 2}
+  - {fileID: 2100000, guid: 0f8931946eadf0f499e947a1bd46078f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -598,8 +598,8 @@ MonoBehaviour:
   m_Shape:
     rid: 6629386022880018617
   m_ShapeRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_UnmodifiedMeshVersion: 5094
-  m_Size: {x: 46, y: 1, z: 28}
+  m_UnmodifiedMeshVersion: 5105
+  m_Size: {x: 46, y: 2, z: 28}
   m_LocalCenter: {x: 0, y: 0, z: 0}
   references:
     version: 2
@@ -734,45 +734,45 @@ MonoBehaviour:
   - m_Vertices: 0b0000000e00000012000000
   m_SharedTextures: []
   m_Positions:
-  - {x: -23, y: -0.5, z: 14}
-  - {x: 23, y: -0.5, z: 14}
-  - {x: -23, y: 0.5, z: 14}
-  - {x: 23, y: 0.5, z: 14}
-  - {x: 23, y: -0.5, z: 14}
-  - {x: 23, y: -0.5, z: -14}
-  - {x: 23, y: 0.5, z: 14}
-  - {x: 23, y: 0.5, z: -14}
-  - {x: 23, y: -0.5, z: -14}
-  - {x: -23, y: -0.5, z: -14}
-  - {x: 23, y: 0.5, z: -14}
-  - {x: -23, y: 0.5, z: -14}
-  - {x: -23, y: -0.5, z: -14}
-  - {x: -23, y: -0.5, z: 14}
-  - {x: -23, y: 0.5, z: -14}
-  - {x: -23, y: 0.5, z: 14}
-  - {x: -23, y: 0.5, z: 14}
-  - {x: 23, y: 0.5, z: 14}
-  - {x: -23, y: 0.5, z: -14}
-  - {x: 23, y: 0.5, z: -14}
-  - {x: -23, y: -0.5, z: -14}
-  - {x: 23, y: -0.5, z: -14}
-  - {x: -23, y: -0.5, z: 14}
-  - {x: 23, y: -0.5, z: 14}
+  - {x: -23, y: -1, z: 14}
+  - {x: 23, y: -1, z: 14}
+  - {x: -23, y: 1, z: 14}
+  - {x: 23, y: 1, z: 14}
+  - {x: 23, y: -1, z: 14}
+  - {x: 23, y: -1, z: -14}
+  - {x: 23, y: 1, z: 14}
+  - {x: 23, y: 1, z: -14}
+  - {x: 23, y: -1, z: -14}
+  - {x: -23, y: -1, z: -14}
+  - {x: 23, y: 1, z: -14}
+  - {x: -23, y: 1, z: -14}
+  - {x: -23, y: -1, z: -14}
+  - {x: -23, y: -1, z: 14}
+  - {x: -23, y: 1, z: -14}
+  - {x: -23, y: 1, z: 14}
+  - {x: -23, y: 1, z: 14}
+  - {x: 23, y: 1, z: 14}
+  - {x: -23, y: 1, z: -14}
+  - {x: 23, y: 1, z: -14}
+  - {x: -23, y: -1, z: -14}
+  - {x: 23, y: -1, z: -14}
+  - {x: -23, y: -1, z: 14}
+  - {x: 23, y: -1, z: 14}
   m_Textures0:
-  - {x: 46, y: 0}
-  - {x: 0, y: 0}
+  - {x: 46, y: -1}
+  - {x: 0, y: -1}
   - {x: 46, y: 1}
   - {x: 0, y: 1}
-  - {x: 28, y: 0}
-  - {x: 0, y: 0}
+  - {x: 28, y: -1}
+  - {x: 0, y: -1}
   - {x: 28, y: 1}
   - {x: 0, y: 1}
-  - {x: 46, y: 0}
-  - {x: 0, y: 0}
+  - {x: 46, y: -1}
+  - {x: 0, y: -1}
   - {x: 46, y: 1}
   - {x: 0, y: 1}
-  - {x: 28, y: 0}
-  - {x: 0, y: 0}
+  - {x: 28, y: -1}
+  - {x: 0, y: -1}
   - {x: 28, y: 1}
   - {x: 0, y: 1}
   - {x: 0, y: 1}
@@ -819,7 +819,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 1353744542}
-  m_VersionIndex: 5094
+  m_VersionIndex: 5105
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1082,7 +1082,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '[Service]'
+  m_text: Train Service
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1872,7 +1872,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: $10/min
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
   m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
@@ -4147,14 +4147,14 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 588298077}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1762652416}
-        m_TargetAssemblyTypeName: StaffMenuController, Assembly-CSharp
-        m_MethodName: OnHireStaffButtonClicked
+      - m_Target: {fileID: 2097309843}
+        m_TargetAssemblyTypeName: TrainMenuController, Assembly-CSharp
+        m_MethodName: OnBuyServiceButtonClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8312,14 +8312,14 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1172924227}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1762652416}
-        m_TargetAssemblyTypeName: StaffMenuController, Assembly-CSharp
-        m_MethodName: OnFireStaffButtonClicked
+      - m_Target: {fileID: 2097309843}
+        m_TargetAssemblyTypeName: TrainMenuController, Assembly-CSharp
+        m_MethodName: OnEndServiceButtonClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -9244,7 +9244,7 @@ Mesh:
     vertexCount: 24
     localAABB:
       m_Center: {x: 0, y: 0, z: 0}
-      m_Extent: {x: 23, y: 0.5, z: 14}
+      m_Extent: {x: 23, y: 1, z: 14}
   m_Shapes:
     vertices: []
     shapes: []
@@ -9323,7 +9323,7 @@ Mesh:
       format: 0
       dimension: 0
     m_DataSize: 1152
-    _typelessdata: 0000b8c1000000bf0000604100000000000000000000803f000080bf0000000000000000000080bf00003842000000000000b841000000bf0000604100000000000000000000803f000080bf0000000000000000000080bf00000000000000000000b8c10000003f0000604100000000000000000000803f000080bf0000000000000000000080bf000038420000803f0000b8410000003f0000604100000000000000000000803f000080bf0000000000000000000080bf000000000000803f0000b841000000bf000060410000803f000000000000000000000000000000000000803f000080bf0000e041000000000000b841000000bf000060c10000803f000000000000000000000000000000000000803f000080bf00000000000000000000b8410000003f000060410000803f000000000000000000000000000000000000803f000080bf0000e0410000803f0000b8410000003f000060c10000803f000000000000000000000000000000000000803f000080bf000000000000803f0000b841000000bf000060c10000000000000000000080bf0000803f0000000000000000000080bf00003842000000000000b8c1000000bf000060c10000000000000000000080bf0000803f0000000000000000000080bf00000000000000000000b8410000003f000060c10000000000000000000080bf0000803f0000000000000000000080bf000038420000803f0000b8c10000003f000060c10000000000000000000080bf0000803f0000000000000000000080bf000000000000803f0000b8c1000000bf000060c1000080bf00000000000000000000000000000000000080bf000080bf0000e041000000000000b8c1000000bf00006041000080bf00000000000000000000000000000000000080bf000080bf00000000000000000000b8c10000003f000060c1000080bf00000000000000000000000000000000000080bf000080bf0000e0410000803f0000b8c10000003f00006041000080bf00000000000000000000000000000000000080bf000080bf000000000000803f0000b8c10000003f00006041000000000000803f000000000000803f0000000000000000000080bf000000000000803f0000b8410000003f00006041000000000000803f000000000000803f0000000000000000000080bf000038420000803f0000b8c10000003f000060c1000000000000803f000000000000803f0000000000000000000080bf000000000000d8c10000b8410000003f000060c1000000000000803f000000000000803f0000000000000000000080bf000038420000d8c10000b8c1000000bf000060c100000000000080bf00000000000080bf0000000000000000000080bf000038420000d8c10000b841000000bf000060c100000000000080bf00000000000080bf0000000000000000000080bf000000000000d8c10000b8c1000000bf0000604100000000000080bf00000000000080bf0000000000000000000080bf000038420000803f0000b841000000bf0000604100000000000080bf00000000000080bf0000000000000000000080bf000000000000803f
+    _typelessdata: 0000b8c1000080bf0000604100000000000000000000803f000080bf0000000000000000000080bf00003842000080bf0000b841000080bf0000604100000000000000000000803f000080bf0000000000000000000080bf00000000000080bf0000b8c10000803f0000604100000000000000000000803f000080bf0000000000000000000080bf000038420000803f0000b8410000803f0000604100000000000000000000803f000080bf0000000000000000000080bf000000000000803f0000b841000080bf000060410000803f000000000000000000000000000000000000803f000080bf0000e041000080bf0000b841000080bf000060c10000803f000000000000000000000000000000000000803f000080bf00000000000080bf0000b8410000803f000060410000803f000000000000000000000000000000000000803f000080bf0000e0410000803f0000b8410000803f000060c10000803f000000000000000000000000000000000000803f000080bf000000000000803f0000b841000080bf000060c10000000000000000000080bf0000803f0000000000000000000080bf00003842000080bf0000b8c1000080bf000060c10000000000000000000080bf0000803f0000000000000000000080bf00000000000080bf0000b8410000803f000060c10000000000000000000080bf0000803f0000000000000000000080bf000038420000803f0000b8c10000803f000060c10000000000000000000080bf0000803f0000000000000000000080bf000000000000803f0000b8c1000080bf000060c1000080bf00000000000000000000000000000000000080bf000080bf0000e041000080bf0000b8c1000080bf00006041000080bf00000000000000000000000000000000000080bf000080bf00000000000080bf0000b8c10000803f000060c1000080bf00000000000000000000000000000000000080bf000080bf0000e0410000803f0000b8c10000803f00006041000080bf00000000000000000000000000000000000080bf000080bf000000000000803f0000b8c10000803f00006041000000000000803f000000000000803f0000000000000000000080bf000000000000803f0000b8410000803f00006041000000000000803f000000000000803f0000000000000000000080bf000038420000803f0000b8c10000803f000060c1000000000000803f000000000000803f0000000000000000000080bf000000000000d8c10000b8410000803f000060c1000000000000803f000000000000803f0000000000000000000080bf000038420000d8c10000b8c1000080bf000060c100000000000080bf00000000000080bf0000000000000000000080bf000038420000d8c10000b841000080bf000060c100000000000080bf00000000000080bf0000000000000000000080bf000000000000d8c10000b8c1000080bf0000604100000000000080bf00000000000080bf0000000000000000000080bf000038420000803f0000b841000080bf0000604100000000000080bf00000000000080bf0000000000000000000080bf000000000000803f
   m_CompressedMesh:
     m_Vertices:
       m_NumItems: 0
@@ -9378,7 +9378,7 @@ Mesh:
     m_UVInfo: 0
   m_LocalAABB:
     m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 23, y: 0.5, z: 14}
+    m_Extent: {x: 23, y: 1, z: 14}
   m_MeshUsageFlags: 0
   m_CookingOptions: 30
   m_BakedConvexCollisionMesh: 
@@ -9530,8 +9530,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: This is a description and this is a description and this is a big description
-    and this is a small description and this is a massive description.
+  m_text: Select a service.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -10799,7 +10798,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4cbddddeca5adac499010e0dcd61c2c4, type: 2}
+  - {fileID: 2100000, guid: 0f8931946eadf0f499e947a1bd46078f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -11741,6 +11740,8 @@ MonoBehaviour:
   detailIcon: {fileID: 269803949}
   detailName: {fileID: 1037446607}
   detailDescription: {fileID: 623563128}
+  hiringCostText: {fileID: 1500604873}
+  costPerMinuteText: {fileID: 484736393}
   hireStaffButton: {fileID: 131703944}
   fireStaffButton: {fileID: 962371693}
 --- !u!1 &1764548424
@@ -12231,7 +12232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   activeTrainServices: []
-  unlockAllTrains: 1
+  unlockAllTrains: 0
   activePlatforms: []
 --- !u!4 &1832696139
 Transform:
@@ -13335,12 +13336,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   targetFolderPath: Trains
   TrainItemButtonPrefab: {fileID: 7900709587236796253, guid: 67eb76246ca28c84096fc6fb7bcc029d, type: 3}
-  contentContainer: {fileID: 0}
+  contentContainer: {fileID: 275904884}
   trains: []
   detailIcon: {fileID: 2094267190}
-  detailName: {fileID: 0}
-  detailDescription: {fileID: 0}
-  purchaseTrainButton: {fileID: 0}
+  detailName: {fileID: 77622943}
+  detailDescription: {fileID: 1378768162}
+  upfrontServiceCost: {fileID: 1973794246}
+  costPerMinute: {fileID: 184408624}
+  buyServiceButton: {fileID: 588298076}
+  endServiceButton: {fileID: 1172924226}
 --- !u!1 &2105090925
 GameObject:
   m_ObjectHideFlags: 0

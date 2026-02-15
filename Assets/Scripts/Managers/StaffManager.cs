@@ -42,7 +42,6 @@ public class StaffManager : MonoBehaviour
                 count++;
             }
         }
-        Debug.LogWarning(count);
         return count;
     }
     

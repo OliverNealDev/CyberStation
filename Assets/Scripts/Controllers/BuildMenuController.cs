@@ -55,7 +55,7 @@ public class BuildMenuController : MonoBehaviour
     
     private void OnItemButtonClicked(ObjectBuildable data)
     {
-        Debug.Log("Clicked on build item: " + data.name);
+        Debug.Log("Clicked on build item: " + data.objectName);
         
         BuildController.Instance.ChangePreviewObject(data.prefab);
         
@@ -65,7 +65,7 @@ public class BuildMenuController : MonoBehaviour
     private void UpdateDetailView(ObjectBuildable data)
     {
         if (detailIcon) detailIcon.sprite = data.icon;
-        if (detailName) detailName.text = data.name;
+        if (detailName) detailName.text = data.objectName;
         if (detailDescription) detailDescription.text = data.description;
     }
 }

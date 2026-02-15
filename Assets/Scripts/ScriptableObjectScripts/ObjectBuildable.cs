@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "ObjectBuildable", menuName = "Scriptable Objects/ObjectBuildable")]
 public class ObjectBuildable : ScriptableObject
 {
-    public string name = "New Buildable Object";
+    public string objectName = "New Buildable Object";
     [TextArea]
     public string description = "Description of the buildable object.";
     public Sprite icon;

@@ -143,18 +143,27 @@ public class PassengerManager : MonoBehaviour
         }
     }
     
-    void DecideNextAction(Passenger passenger, int priorityNeed) // priorityNeed should be 0 but will increment if need can't be fulfilled
+    void DecideNextAction(Passenger passenger, int priorityNeed)
     {
-        // RESET CODE - ensures decision is fresh without influence
         if (passenger.currentTarget != null)
         {
-            Debug.LogWarning("Passenger " + passenger.name + " had a non-null target during decision reset. Removing passenger from target's list to prevent bugs.");
-            Debug.LogWarning(passenger.currentTarget.name);
             passenger.currentTarget.RemovePerson(passenger);
             passenger.currentTarget = null;
         }
         passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
-        //
+
+        if (passenger.assignedTrainService == null)
+        {
+            LeaveStation(passenger);
+            return;
+        }
+
+        if (!TrainManager.Instance.activeTrainServices.Contains(passenger.assignedTrainService))
+        {
+            passenger.assignedTrainService = null;
+            LeaveStation(passenger);
+            return;
+        }
         
         var needsInPriorityOrder = passenger.GetNeedsInPriorityOrder();
         Passenger.NeedType nextNeed = needsInPriorityOrder[priorityNeed];
@@ -162,18 +171,15 @@ public class PassengerManager : MonoBehaviour
         switch (passenger.currentMasterState)
         {
             case Passenger.passengerMasterStates.InStation:
-                if (!passenger.hasTicket && 
-                    passenger.isTicketEvader)
+                if (!passenger.hasTicket && passenger.isTicketEvader)
                 {
                     MoveToPlatformPosition(passenger);
                     return;
                 }
                 
-                if (!passenger.hasTicket && 
-                         !passenger.isTicketEvader)
+                if (!passenger.hasTicket && !passenger.isTicketEvader)
                 {
                     FindTicketMachine(passenger);
-                    Debug.Log("Passenger " + passenger.name + " is looking for a ticket machine.");
                     return;
                 }
                 
@@ -195,11 +201,11 @@ public class PassengerManager : MonoBehaviour
                         break;
                 }
                 
-                MoveToPlatformPosition(passenger); // If needs are all fulfilled or no actionable needs, head to platform to wait for train, as that's the main purpose of passengers being in the station
+                MoveToPlatformPosition(passenger);
                 break;
             
             case Passenger.passengerMasterStates.OnPlatform:
-                if (Time.time - passenger.timeOfLastPlatformWander > 20f) // If it's been more than 10 seconds since wandering, force wander again to prevent passengers just standing still on the platform
+                if (Time.time - passenger.timeOfLastPlatformWander > 20f)
                 {
                     MoveToPlatformPosition(passenger);
                 }
@@ -332,11 +338,20 @@ public class PassengerManager : MonoBehaviour
     
     public void ReceiveTicket(Passenger passenger)
     {
-        passenger.currentTarget.RemovePerson(passenger);
-        passenger.currentTarget = null;
-        passenger.hasTicket = true;
-        passenger.currentSubState = Passenger.passengerSubStates.Idle;
-        EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
+        if (passenger != null)
+        {
+            if (passenger.currentTarget != null)
+            {
+                passenger.currentTarget.RemovePerson(passenger);
+                passenger.currentTarget = null;
+            }
+            passenger.hasTicket = true;
+            passenger.currentSubState = Passenger.passengerSubStates.Idle;
+            if (passenger.assignedTrainService != null)
+            {
+                EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
+            }
+        }
     }
 
     public bool HasReachedTarget(Passenger passenger)
@@ -406,7 +421,38 @@ public class PassengerManager : MonoBehaviour
         }
     }
     
-    public void OnCaughtBySecurity(Passenger passenger)
+    public void TrainServiceEnded(TrainService concludingService)
+    {
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        {
+            Passenger passenger = activePassengers[i];
+        
+            if (passenger == null) continue;
+
+            if (passenger.assignedTrainService == concludingService)
+            {
+                if (EconomyManager.Instance != null)
+                {
+                    EconomyManager.Instance.RefundTicket(passenger);
+                }
+
+                LeaveStation(passenger);
+                
+                if (Random.Range(0f, 1f) < 0.25f) 
+                {
+                    if (passenger.dialogueData != null)
+                    {
+                        string line = passenger.dialogueData.GetRandomLine(DialogueType.TrainServiceEnded);
+                        passenger.Dialogue(passenger, line, Color.softRed, Random.Range(3f, 8f));
+                    }
+                }
+                
+                passenger.assignedTrainService = null;
+            }
+        }
+    }
+    
+    public void OnCaughtBySecurity(Passenger passenger, SecurityGuard securityGuard)
     {
         UnassignTarget(passenger);
         
@@ -416,18 +462,18 @@ public class PassengerManager : MonoBehaviour
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
         
         StartCoroutine(Person.ExecuteAfterDelay(4, () => LeaveStation(passenger)));
-        StartCoroutine(Person.ExecuteAfterDelay(4, () => PayEvasionFine(passenger)));
+        StartCoroutine(Person.ExecuteAfterDelay(4, () => PayEvasionFine(passenger, securityGuard)));
         
         StartCoroutine(Person.ExecuteAfterDelay(2, () => ReplyToBeingCaught(passenger)));
     }
     
-    void PayEvasionFine(Passenger passenger)
+    void PayEvasionFine(Passenger passenger, SecurityGuard securityGuard)
     {
         EconomyManager.Instance.AddMoney(50);
         WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
             "+$50", 
-            TrainManager.Instance.activeTrainServices[0].physicalTrainInstance.transform.position + Vector3.up * 5f, 
-            Color.green);
+            securityGuard.transform.position + Vector3.up * 7f, 
+            Color.darkGreen);
     }
 
     void ReplyToBeingCaught(Passenger passenger)

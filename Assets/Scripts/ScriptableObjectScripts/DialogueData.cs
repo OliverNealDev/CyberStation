@@ -27,6 +27,10 @@ public class DialogueData : ScriptableObject
     [TextArea(2, 5)]
     public List<string> caughtBySecurity = new List<string>();
     
+    [Header("Train Service Ended")]
+    [TextArea(2, 5)]
+    public List<string> trainServiceEnded = new List<string>();
+    
     // Security Dialogue Lines
     [Header("Catching Evader Lines")]
     [TextArea(2, 5)]
@@ -44,6 +48,7 @@ public class DialogueData : ScriptableObject
         List<string> targetList = type switch
         {
             DialogueType.CaughtBySecurity => caughtBySecurity,
+            DialogueType.TrainServiceEnded => trainServiceEnded,
             DialogueType.LowComfort => lowComfort,
             DialogueType.LowSatiation => lowSatiation,
             DialogueType.LowHydration => lowHydration,
@@ -61,6 +66,7 @@ public class DialogueData : ScriptableObject
 public enum DialogueType
 {
     CaughtBySecurity,
+    TrainServiceEnded,
     LowComfort,
     LowSatiation,
     LowHydration,
