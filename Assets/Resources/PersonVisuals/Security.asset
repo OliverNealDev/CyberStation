@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf867751e119d2b42a986073f95fb255, type: 3}
+  m_Name: Security
+  m_EditorClassIdentifier: Assembly-CSharp::PersonVisualsData
+  BodyModels:
+  - {fileID: 7693751020259606013, guid: 1531ca7498959b24cab090eee6900e2e, type: 3}
+  HairModels:
+  - {fileID: 8379589643490649641, guid: f3ddd8a485fb1e44e816e88ff79d4b18, type: 3}
+  HeadModels:
+  - {fileID: 6733366342944572912, guid: e7cccf99bf302794588dfd4419c9b498, type: 3}

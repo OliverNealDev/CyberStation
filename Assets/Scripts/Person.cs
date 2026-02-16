@@ -130,10 +130,10 @@ public abstract class Person : MonoBehaviour
 
         if (text.Length != 0)
         {
-            TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
             dialogueText.color = color;
             dialogueText.text = text;
-            person.personalCanvas.transform.GetChild(0).gameObject.SetActive(true);
+            person.personalCanvas.transform.GetChild(0).GetChild(0).gameObject.SetActive(true);
         }
         
         StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));

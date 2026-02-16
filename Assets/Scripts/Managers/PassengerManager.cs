@@ -31,9 +31,6 @@ public class PassengerManager : MonoBehaviour
     public List<GameObject> passengerHairModels = new List<GameObject>();
     public List<GameObject> passengerHeadModels = new List<GameObject>();
     
-    public List<Material> passengerSkinMaterials = new List<Material>();
-    public List<Material> passengerHairMaterials = new List<Material>();
-    
     void Awake()
     {
         Instance = this;
@@ -486,6 +483,12 @@ public class PassengerManager : MonoBehaviour
     void ReplyToBeingCaught(Passenger passenger)
     {
         passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), Color.white, 2);
+        StartCoroutine(Person.ExecuteAfterDelay(2, () => CaughtEmoji(passenger)));
+    }
+
+    void CaughtEmoji(Passenger passenger)
+    {
+        passenger.Dialogue(passenger, "\ud83d\udc6e", Color.white, 3600f);
     }
 
     void SpawnPassenger()
@@ -517,8 +520,8 @@ public class PassengerManager : MonoBehaviour
         GameObject hairInstance = Instantiate(hairModel, passenger.transform);
         GameObject headInstance = Instantiate(headModel, passenger.transform);
         
-        Material skinMaterial = passengerSkinMaterials[Random.Range(0, passengerSkinMaterials.Count)];
-        Material hairMaterial = passengerHairMaterials[Random.Range(0, passengerHairMaterials.Count)];
+        Material skinMaterial = GlobalPersonVisuals.Instance.GetRandomSkinMaterial();
+        Material hairMaterial = GlobalPersonVisuals.Instance.GetRandomHairMaterial();
 
         foreach (Transform child in hairInstance.transform)
         {

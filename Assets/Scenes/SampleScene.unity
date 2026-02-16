@@ -9471,6 +9471,7 @@ Transform:
   - {fileID: 778538371}
   - {fileID: 1367154127}
   - {fileID: 1636185207}
+  - {fileID: 2086364365}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1378768160
@@ -13071,6 +13072,72 @@ Transform:
   - {fileID: 351533626}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2086364364
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2086364365}
+  - component: {fileID: 2086364366}
+  m_Layer: 0
+  m_Name: GlobalPersonVisual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2086364365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2086364364}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368748814}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2086364366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2086364364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca72d3af3284e654899878595841c332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GlobalPersonVisuals
+  skinMaterials:
+  - {fileID: 2100000, guid: cdd5d9b23ba04fe46bdfe1c8b448e50a, type: 2}
+  - {fileID: 2100000, guid: 10c1d2d5e0fa18d4896e957e4d941e37, type: 2}
+  - {fileID: 2100000, guid: 63de2b934d0e2444b91a0294adc5934c, type: 2}
+  - {fileID: 2100000, guid: c67171fbd8475a045b7a12087c7f52f4, type: 2}
+  - {fileID: 2100000, guid: f309b73c9ff9f024baa44d1a2e8d952b, type: 2}
+  - {fileID: 2100000, guid: 08be39d42935c6842a778858d679d389, type: 2}
+  - {fileID: 2100000, guid: fd9405461ec98334287562f761832894, type: 2}
+  - {fileID: 2100000, guid: 8165fe9b4f12f8b47b5bb31a10c4349b, type: 2}
+  hairMaterials:
+  - {fileID: 2100000, guid: de5c8aedd68a0b742ba94d8915f68875, type: 2}
+  - {fileID: 2100000, guid: 36fb5eacf412eef46ab7e84977d7dd93, type: 2}
+  - {fileID: 2100000, guid: 18191723af4036c41b056c1cb854dda1, type: 2}
+  - {fileID: 2100000, guid: 49b0bf286c3633e47a3cb11b82ccfe35, type: 2}
+  - {fileID: 2100000, guid: 157d333626d2812419d7f85bd3a64fff, type: 2}
+  - {fileID: 2100000, guid: b6759c799cd7d0f46a3c3e8f675a6b44, type: 2}
+  - {fileID: 2100000, guid: 0af1403aa928c1c4abc20bf0fafad11d, type: 2}
+  - {fileID: 2100000, guid: b727f29ff626d02408c21e7be7a22b63, type: 2}
+  - {fileID: 2100000, guid: 380d2516b06abe74ca3e9b2d086dff21, type: 2}
+  - {fileID: 2100000, guid: 0f3bd07996fd8134a9f6a45e8182939f, type: 2}
+  securityVisualsData: {fileID: 11400000, guid: a449044561696fb47a5ba24766f9214a, type: 2}
+  janitorVisualsData: {fileID: 11400000, guid: 7c669ed36a81d9d458d88e60f73f3bb2, type: 2}
 --- !u!1 &2087904897
 GameObject:
   m_ObjectHideFlags: 0
@@ -13553,26 +13620,6 @@ MonoBehaviour:
   - {fileID: 7024997701244839846, guid: 007964c4a1906664e9b291e2b4961d2c, type: 3}
   passengerHeadModels:
   - {fileID: 5815992581063023196, guid: feeb8169c26dac34fbf230a05393038b, type: 3}
-  passengerSkinMaterials:
-  - {fileID: 2100000, guid: cdd5d9b23ba04fe46bdfe1c8b448e50a, type: 2}
-  - {fileID: 2100000, guid: 10c1d2d5e0fa18d4896e957e4d941e37, type: 2}
-  - {fileID: 2100000, guid: 63de2b934d0e2444b91a0294adc5934c, type: 2}
-  - {fileID: 2100000, guid: c67171fbd8475a045b7a12087c7f52f4, type: 2}
-  - {fileID: 2100000, guid: f309b73c9ff9f024baa44d1a2e8d952b, type: 2}
-  - {fileID: 2100000, guid: 08be39d42935c6842a778858d679d389, type: 2}
-  - {fileID: 2100000, guid: fd9405461ec98334287562f761832894, type: 2}
-  - {fileID: 2100000, guid: 8165fe9b4f12f8b47b5bb31a10c4349b, type: 2}
-  passengerHairMaterials:
-  - {fileID: 2100000, guid: de5c8aedd68a0b742ba94d8915f68875, type: 2}
-  - {fileID: 2100000, guid: 36fb5eacf412eef46ab7e84977d7dd93, type: 2}
-  - {fileID: 2100000, guid: 18191723af4036c41b056c1cb854dda1, type: 2}
-  - {fileID: 2100000, guid: 49b0bf286c3633e47a3cb11b82ccfe35, type: 2}
-  - {fileID: 2100000, guid: 157d333626d2812419d7f85bd3a64fff, type: 2}
-  - {fileID: 2100000, guid: b6759c799cd7d0f46a3c3e8f675a6b44, type: 2}
-  - {fileID: 2100000, guid: 0af1403aa928c1c4abc20bf0fafad11d, type: 2}
-  - {fileID: 2100000, guid: b727f29ff626d02408c21e7be7a22b63, type: 2}
-  - {fileID: 2100000, guid: 380d2516b06abe74ca3e9b2d086dff21, type: 2}
-  - {fileID: 2100000, guid: 0f3bd07996fd8134a9f6a45e8182939f, type: 2}
 --- !u!1 &2147477611
 GameObject:
   m_ObjectHideFlags: 0

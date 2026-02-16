@@ -58,7 +58,7 @@ public class StaffMenuController : MonoBehaviour
         if (iconImage) iconImage.sprite = data.icon;
         
         TextMeshProUGUI nameText = newButton.transform.Find("Name").GetComponent<TextMeshProUGUI>();
-        if (nameText) nameText.text = data.name;
+        if (nameText) nameText.text = data.staffName;
         
         TextMeshProUGUI amountHiredText = newButton.transform.Find("AmountHired").GetComponent<TextMeshProUGUI>();
         if (amountHiredText) amountHiredText.text = "x" + StaffManager.Instance.GetHiredStaffAmount(data);
@@ -69,7 +69,7 @@ public class StaffMenuController : MonoBehaviour
     
     private void OnStaffButtonClicked(StaffMember data)
     {
-        Debug.Log("Clicked on staff member: " + data.name);
+        Debug.Log("Clicked on staff member: " + data.staffName);
 
         selectedStaff = data;
         UpdateDetailView(data);
@@ -99,7 +99,7 @@ public class StaffMenuController : MonoBehaviour
         }
         else
         {
-            Debug.Log("Not enough money to hire " + selectedStaff.name);
+            Debug.Log("Not enough money to hire " + selectedStaff.staffName);
         }
     }
 
@@ -115,7 +115,7 @@ public class StaffMenuController : MonoBehaviour
     private void UpdateDetailView(StaffMember data)
     {
         if (detailIcon) detailIcon.sprite = data.icon;
-        if (detailName) detailName.text = data.name;
+        if (detailName) detailName.text = data.staffName;
         if (detailDescription) detailDescription.text = data.description;
         if (hiringCostText) hiringCostText.text = "Hire $" + data.hiringCost;
         if (costPerMinuteText) costPerMinuteText.text = "$" + data.salaryPerMinute + "/min";
