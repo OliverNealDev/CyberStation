@@ -24,6 +24,7 @@ public abstract class Person : MonoBehaviour
 
     public GameObject personalCanvas;
     public DialogueData dialogueData;
+    public ExpressionData expressionData;
 
     public Vector3 PreviousPosition;
 
@@ -36,6 +37,12 @@ public abstract class Person : MonoBehaviour
         satiation = Random.Range(50f, 100f);
         hydration = Random.Range(50f, 100f);
         hygiene = Random.Range(50f, 100f);
+    }
+
+    void Start()
+    {
+        float randomScale = Random.Range(0.9f, 1.1f);
+        transform.localScale = new Vector3(randomScale, randomScale, randomScale);
     }
 
     protected virtual void Update()
@@ -139,13 +146,14 @@ public abstract class Person : MonoBehaviour
         StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
     }
     
-    public virtual void Expression(Person person, string expressionName, float duration)
+    public virtual void Expression(Person person, Sprite sprite, float duration)
     {
         CreateNewPersonalCanvas(person);
 
-        if (expressionName.Length != 0)
+        if (sprite != null)
         {
             Image expressionImage = person.personalCanvas.transform.GetChild(1).GetComponent<Image>();
+            expressionImage.sprite = sprite;
             person.personalCanvas.transform.GetChild(1).gameObject.SetActive(true);
         }
         

@@ -483,12 +483,12 @@ public class PassengerManager : MonoBehaviour
     void ReplyToBeingCaught(Passenger passenger)
     {
         passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), Color.white, 2);
-        StartCoroutine(Person.ExecuteAfterDelay(2, () => CaughtEmoji(passenger)));
+        //StartCoroutine(Person.ExecuteAfterDelay(2, () => CaughtEmoji(passenger)));
     }
 
     void CaughtEmoji(Passenger passenger)
     {
-        passenger.Dialogue(passenger, "\ud83d\udc6e", Color.white, 3600f);
+        passenger.Expression(passenger, passenger.expressionData.policeOfficer, 3600f);
     }
 
     void SpawnPassenger()

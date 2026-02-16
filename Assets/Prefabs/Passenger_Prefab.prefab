@@ -56,6 +56,7 @@ MonoBehaviour:
   needReductionRate: 0.5
   personalCanvas: {fileID: 0}
   dialogueData: {fileID: 11400000, guid: 7e847c57b3abb6640bc4b9b9018c3ed1, type: 2}
+  expressionData: {fileID: 11400000, guid: a4dcb2b2304df31498985418ce66e355, type: 2}
   PreviousPosition: {x: 0, y: 0, z: 0}
   assignedTrainService:
     trainData: {fileID: 0}
