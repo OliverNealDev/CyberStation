@@ -511,7 +511,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -568,6 +568,8 @@ MonoBehaviour:
   personalCanvas: {fileID: 0}
   dialogueData: {fileID: 11400000, guid: 7e847c57b3abb6640bc4b9b9018c3ed1, type: 2}
   PreviousPosition: {x: 0, y: 0, z: 0}
+  salaryPerMinute: 0
+  staffType: {fileID: 0}
   currentSubState: 0
 --- !u!1 &3977244660359051893
 GameObject:

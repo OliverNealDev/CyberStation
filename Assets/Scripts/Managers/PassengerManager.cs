@@ -27,6 +27,13 @@ public class PassengerManager : MonoBehaviour
     public bool spawnPerSecond = false;
     public int passengersPerSecond = 1;
     
+    public List<GameObject> passengerBodyModels = new List<GameObject>();
+    public List<GameObject> passengerHairModels = new List<GameObject>();
+    public List<GameObject> passengerHeadModels = new List<GameObject>();
+    
+    public List<Material> passengerSkinMaterials = new List<Material>();
+    public List<Material> passengerHairMaterials = new List<Material>();
+    
     void Awake()
     {
         Instance = this;
@@ -488,6 +495,8 @@ public class PassengerManager : MonoBehaviour
         Passenger newPassenger = Instantiate(passengerPrefab, passengerSpawnPoint + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity).GetComponent<Passenger>();
         newPassenger.transform.parent = transform;
 
+        SpawnPassengerModels(newPassenger);
+
         newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
@@ -496,6 +505,27 @@ public class PassengerManager : MonoBehaviour
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); // Random time before passenger decides to go to platform, simulating time spent in station before heading to platform
         
         DecideNextAction(newPassenger, 0);
+    }
+    
+    void SpawnPassengerModels(Passenger passenger)
+    {
+        GameObject bodyModel = passengerBodyModels[Random.Range(0, passengerBodyModels.Count)];
+        GameObject hairModel = passengerHairModels[Random.Range(0, passengerHairModels.Count)];
+        GameObject headModel = passengerHeadModels[Random.Range(0, passengerHeadModels.Count)];
+
+        GameObject bodyInstance = Instantiate(bodyModel, passenger.transform);
+        GameObject hairInstance = Instantiate(hairModel, passenger.transform);
+        GameObject headInstance = Instantiate(headModel, passenger.transform);
+        
+        Material skinMaterial = passengerSkinMaterials[Random.Range(0, passengerSkinMaterials.Count)];
+        Material hairMaterial = passengerHairMaterials[Random.Range(0, passengerHairMaterials.Count)];
+
+        foreach (Transform child in hairInstance.transform)
+        {
+            child.GetComponent<MeshRenderer>().material = hairMaterial;
+        }
+        
+        headInstance.transform.GetChild(0).GetComponent<MeshRenderer>().material = skinMaterial;
     }
     
     public void RegisterPassenger(Passenger passenger)

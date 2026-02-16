@@ -2372,7 +2372,7 @@ MonoBehaviour:
   managePanel: {fileID: 1764548424}
   buildController: {fileID: 330585548}
   moneyText: {fileID: 1002516322}
-  positiveMoneyColor: {r: 6, g: 159, b: 0, a: 1}
+  positiveMoneyColor: {r: 0.2784314, g: 0.7490196, b: 0, a: 1}
   negativeMoneyColor: {r: 188, g: 0, b: 0, a: 1}
 --- !u!1 &269803947
 GameObject:
@@ -2961,7 +2961,7 @@ RectTransform:
   m_Father: {fileID: 924747456}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -3493,9 +3493,9 @@ RectTransform:
   m_Father: {fileID: 1682876644}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -17, y: -17}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &503802508
 MonoBehaviour:
@@ -5479,7 +5479,7 @@ RectTransform:
   m_Father: {fileID: 2011281996}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6851,9 +6851,9 @@ RectTransform:
   m_Father: {fileID: 1682876644}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 20}
+  m_SizeDelta: {x: -17, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &881451384
 MonoBehaviour:
@@ -9905,9 +9905,9 @@ RectTransform:
   m_Father: {fileID: 1682876644}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 0}
+  m_SizeDelta: {x: 20, y: -17}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &1464758872
 MonoBehaviour:
@@ -12232,7 +12232,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   activeTrainServices: []
-  unlockAllTrains: 0
+  unlockAllTrains: 1
   activePlatforms: []
 --- !u!4 &1832696139
 Transform:
@@ -13299,7 +13299,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2097309842
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13541,7 +13541,38 @@ MonoBehaviour:
   autoSpawnPassengers: 0
   minPassengers: 16
   spawnPerSecond: 1
-  passengersPerSecond: 2
+  passengersPerSecond: 1
+  passengerBodyModels:
+  - {fileID: 3100022144818865042, guid: bdbf50f34d8d20f47b539e2f662e483b, type: 3}
+  passengerHairModels:
+  - {fileID: 4053409260982987895, guid: 93bc44dda75ccac4f8062d42db1e265e, type: 3}
+  - {fileID: 5870020145043724422, guid: 0fd14738cb7f4454da8e8eb9b3160cdf, type: 3}
+  - {fileID: 2581293214650870928, guid: 63561db702d32da41b472b2d28b6d8ab, type: 3}
+  - {fileID: 8102020889558035531, guid: 3cddeef25c3170e40b6e97397ea24789, type: 3}
+  - {fileID: 4053409260982987895, guid: 93bc44dda75ccac4f8062d42db1e265e, type: 3}
+  - {fileID: 7024997701244839846, guid: 007964c4a1906664e9b291e2b4961d2c, type: 3}
+  passengerHeadModels:
+  - {fileID: 5815992581063023196, guid: feeb8169c26dac34fbf230a05393038b, type: 3}
+  passengerSkinMaterials:
+  - {fileID: 2100000, guid: cdd5d9b23ba04fe46bdfe1c8b448e50a, type: 2}
+  - {fileID: 2100000, guid: 10c1d2d5e0fa18d4896e957e4d941e37, type: 2}
+  - {fileID: 2100000, guid: 63de2b934d0e2444b91a0294adc5934c, type: 2}
+  - {fileID: 2100000, guid: c67171fbd8475a045b7a12087c7f52f4, type: 2}
+  - {fileID: 2100000, guid: f309b73c9ff9f024baa44d1a2e8d952b, type: 2}
+  - {fileID: 2100000, guid: 08be39d42935c6842a778858d679d389, type: 2}
+  - {fileID: 2100000, guid: fd9405461ec98334287562f761832894, type: 2}
+  - {fileID: 2100000, guid: 8165fe9b4f12f8b47b5bb31a10c4349b, type: 2}
+  passengerHairMaterials:
+  - {fileID: 2100000, guid: de5c8aedd68a0b742ba94d8915f68875, type: 2}
+  - {fileID: 2100000, guid: 36fb5eacf412eef46ab7e84977d7dd93, type: 2}
+  - {fileID: 2100000, guid: 18191723af4036c41b056c1cb854dda1, type: 2}
+  - {fileID: 2100000, guid: 49b0bf286c3633e47a3cb11b82ccfe35, type: 2}
+  - {fileID: 2100000, guid: 157d333626d2812419d7f85bd3a64fff, type: 2}
+  - {fileID: 2100000, guid: b6759c799cd7d0f46a3c3e8f675a6b44, type: 2}
+  - {fileID: 2100000, guid: 0af1403aa928c1c4abc20bf0fafad11d, type: 2}
+  - {fileID: 2100000, guid: b727f29ff626d02408c21e7be7a22b63, type: 2}
+  - {fileID: 2100000, guid: 380d2516b06abe74ca3e9b2d086dff21, type: 2}
+  - {fileID: 2100000, guid: 0f3bd07996fd8134a9f6a45e8182939f, type: 2}
 --- !u!1 &2147477611
 GameObject:
   m_ObjectHideFlags: 0
