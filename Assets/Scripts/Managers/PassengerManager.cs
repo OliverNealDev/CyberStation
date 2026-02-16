@@ -1,10 +1,7 @@
 using System.Collections.Generic;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class PassengerManager : MonoBehaviour
 {
@@ -14,6 +11,10 @@ public class PassengerManager : MonoBehaviour
     [SerializeField] private GameObject passengerPrefab;
     private Vector3 passengerSpawnPoint;
     
+    [Header("Station Areas")]
+    public Transform concourseCenter; 
+    public float concourseWanderRadius = 8f;
+
     public List<GameObject> litterPrefabs = new List<GameObject>();
     
     public int platformLength = 64; 
@@ -35,25 +36,38 @@ public class PassengerManager : MonoBehaviour
     {
         Instance = this;
     }
+
     void Start()
     {
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
         
         InvokeRepeating("DropLitter", 1, 1);
-        
         InvokeRepeating("SpawnPassengers", 1, 1);
+
+        if (TrainManager.Instance != null)
+        {
+            TrainManager.Instance.OnPlatformAnnounced += HandlePlatformAnnouncement;
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (TrainManager.Instance != null)
+        {
+            TrainManager.Instance.OnPlatformAnnounced -= HandlePlatformAnnouncement;
+        }
     }
     
-        void SpawnPassengers()
+    void SpawnPassengers()
+    {
+        if (spawnPerSecond)
         {
-            if (spawnPerSecond)
+            for (int i = 0; i < passengersPerSecond; i++)
             {
-                for (int i = 0; i < passengersPerSecond; i++)
-                {
-                    SpawnPassenger();
-                }
+                SpawnPassenger();
             }
         }
+    }
     
     void Update()
     {
@@ -74,6 +88,7 @@ public class PassengerManager : MonoBehaviour
             autoSpawnPassengers = !autoSpawnPassengers; 
         }
     }
+
     void LogicUpdate()
     {
         if (activePassengers.Count < minPassengers && autoSpawnPassengers)
@@ -84,13 +99,14 @@ public class PassengerManager : MonoBehaviour
         for (int i = activePassengers.Count - 1; i >= 0; i--)
         {
             Passenger passenger = activePassengers[i];
+            if (passenger == null) continue;
 
             NavMeshAgent agent = passenger.navAgent;
             
             switch (passenger.currentSubState)
             {
                 case Passenger.passengerSubStates.Idle:
-                    DecideNextAction(passenger, 0); // Decide next state based on highest priority need
+                    DecideNextAction(passenger, 0); 
                     break;
                 
                 case Passenger.passengerSubStates.MovingToTarget:
@@ -114,17 +130,16 @@ public class PassengerManager : MonoBehaviour
                             }
                             passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
                         }
-        
                         break; 
                     }
                     
-                    if (passenger.currentTarget == null) // Null check for safety (target is destroyed etc.)
+                    if (passenger.currentTarget == null) 
                     {
                         DecideNextAction(passenger, 0);
                     }
                     else
                     {
-                        UpdateQueuePosition(passenger); // pre-emptively update queue position
+                        UpdateQueuePosition(passenger); 
                         if (HasReachedTarget(passenger))
                         {
                             if (passenger.currentTarget != null)
@@ -177,7 +192,7 @@ public class PassengerManager : MonoBehaviour
             case Passenger.passengerMasterStates.InStation:
                 if (!passenger.hasTicket && passenger.isTicketEvader)
                 {
-                    MoveToPlatformPosition(passenger);
+                    MoveToConcourse(passenger); 
                     return;
                 }
                 
@@ -187,34 +202,103 @@ public class PassengerManager : MonoBehaviour
                     return;
                 }
                 
-                if (passenger.TimeToGoToPlatform < Time.time)
-                {
-                    MoveToPlatformPosition(passenger);
-                    return;
-                }
-
-                switch (nextNeed)
-                {
-                    case Person.NeedType.Comfort:
-                        break;
-                    case Person.NeedType.Satiation:
-                        break;
-                    case Person.NeedType.Hydration:
-                        break;
-                    case Person.NeedType.Hygiene:
-                        break;
-                }
-                
-                MoveToPlatformPosition(passenger);
+                // If they have a ticket, they wait in the concourse until announcement
+                MoveToConcourse(passenger);
                 break;
             
             case Passenger.passengerMasterStates.OnPlatform:
                 if (Time.time - passenger.timeOfLastPlatformWander > 20f)
                 {
-                    MoveToPlatformPosition(passenger);
+                    // Wander slightly on platform
+                    Vector3 randomOffset = Random.insideUnitSphere * 3f;
+                    randomOffset.y = 0;
+                    passenger.navAgent.SetDestination(passenger.transform.position + randomOffset);
+                    passenger.timeOfLastPlatformWander = Time.time;
                 }
                 break;
         }
+    }
+    
+    // Triggered by TrainManager when a train is 10s away
+    private void HandlePlatformAnnouncement(ScheduledArrival arrival, int platformID)
+    {
+        TrainManager.Platform targetPlat = TrainManager.Instance.activePlatforms.Find(p => p.platformNumber == platformID);
+        if (targetPlat == null) return;
+
+        foreach (var passenger in activePassengers)
+        {
+            // If they have the ticket and are currently waiting in the station/concourse
+            if (passenger.assignedTrainService == arrival.service && 
+                passenger.currentMasterState == Passenger.passengerMasterStates.InStation)
+            {
+                SendPassengerToPlatform(passenger, targetPlat);
+            }
+        }
+    }
+
+    private void MoveToConcourse(Passenger passenger)
+    {
+        Vector3 wanderTarget = passengerSpawnPoint; // Default fallback
+
+        if (concourseCenter != null)
+        {
+            Vector2 rand = Random.insideUnitCircle * concourseWanderRadius;
+            wanderTarget = concourseCenter.position + new Vector3(rand.x, 0, rand.y);
+        }
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(wanderTarget, out hit, 4, NavMesh.AllAreas))
+        {
+            passenger.navAgent.SetDestination(hit.position);
+            passenger.navAgent.stoppingDistance = 1f;
+        }
+        else
+        {
+             passenger.navAgent.SetDestination(wanderTarget);
+        }
+        
+        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+        // We treat Concourse wandering as "MovingToTarget" with no special target, 
+        // so they will eventually go Idle and call DecideNextAction again (looping the wander).
+    }
+
+    private void SendPassengerToPlatform(Passenger passenger, TrainManager.Platform platform)
+    {
+        Vector3 targetPos = platform.trainStopPosition.position;
+
+        if (platform.passengerWaitingArea != null)
+        {
+            Vector3 randomLocalPoint = new Vector3(
+                Random.Range(-0.5f, 0.5f), 
+                0f, 
+                Random.Range(-0.5f, 0.5f)
+            );
+            
+            targetPos = platform.passengerWaitingArea.TransformPoint(randomLocalPoint);
+        }
+        else
+        {
+            float waitPositionX = Random.Range(0, platformLength);
+            float waitPositionZ = platform.trainStopPosition.position.z - 6f; 
+            targetPos = new Vector3(waitPositionX, 0, waitPositionZ);
+        }
+
+        passenger.trainWaitPosition = targetPos;
+        
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 5, NavMesh.AllAreas))
+        {
+            passenger.trainWaitPosition = hit.position;
+            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
+            passenger.navAgent.stoppingDistance = Random.Range(0.2f, 1.0f); 
+        }
+        else
+        {
+            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
+        }
+        
+        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Platform;
     }
 
     public void DropLitter()
@@ -223,10 +307,10 @@ public class PassengerManager : MonoBehaviour
         if (activePassengers.Count == 0) return;
         
         List<Passenger> passengersLittered = new List<Passenger>();
-        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 100f)); // Up to 1% of passengers will drop litter per second
+        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 100f)); 
         if (passengersToLitter == 0)
         {
-            if (Random.Range(0, 1000) < activePassengers.Count) // Up to 10% chance per second for 1 passenger to drop litter, to add some variability and ensure litter is dropped even with low passenger counts
+            if (Random.Range(0, 1000) < activePassengers.Count) 
             {
                 passengersToLitter = 1;
             }
@@ -239,7 +323,7 @@ public class PassengerManager : MonoBehaviour
         for (int i = 0; i < passengersToLitter; i++) 
         { 
             Passenger randomPassenger = activePassengers[Random.Range(0, activePassengers.Count)];
-            if (passengersLittered.Contains(randomPassenger)) continue; // prevents the same passenger from littering multiple times in the same drop event, which can look erroneous
+            if (passengersLittered.Contains(randomPassenger)) continue; 
 
             GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
             Instantiate(litterPrefab, new Vector3(randomPassenger.transform.position.x, 1.05f, randomPassenger.transform.position.z), Quaternion.identity);
@@ -249,7 +333,7 @@ public class PassengerManager : MonoBehaviour
     
     private void LeaveStation(Passenger passenger)
     {
-        if (!passenger.navAgent) return; // safety check in case agent was destroyed or not assigned for some reason
+        if (!passenger.navAgent) return; 
         
         UnassignTarget(passenger);
         
@@ -314,30 +398,6 @@ public class PassengerManager : MonoBehaviour
         {
             passenger.navAgent.stoppingDistance = newStoppingDistance;
         }
-    }
-    
-    private void MoveToPlatformPosition(Passenger passenger)
-    {
-        float waitPositionX = Random.Range(0, platformLength);
-        float waitPositionZ = TrainManager.Instance.activePlatforms[0].trainStopPosition.z - 6f; 
-
-        passenger.trainWaitPosition = new Vector3(waitPositionX, 0, waitPositionZ);
-                        
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 4, NavMesh.AllAreas))
-        {
-            passenger.trainWaitPosition = hit.position;
-            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
-            passenger.navAgent.stoppingDistance = Random.Range(2f, 8f); 
-        }
-        else
-        {
-            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
-            passenger.navAgent.stoppingDistance = Random.Range(2f, 8f); 
-        }
-        
-        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
-        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Platform;
     }
     
     public void ReceiveTicket(Passenger passenger)
@@ -460,7 +520,7 @@ public class PassengerManager : MonoBehaviour
     {
         UnassignTarget(passenger);
         
-        passenger.hasBypassedBarrier = false; // untags passenger from being caught by security
+        passenger.hasBypassedBarrier = false; 
         passenger.isBeingEscorted = true;
         
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
@@ -483,7 +543,6 @@ public class PassengerManager : MonoBehaviour
     void ReplyToBeingCaught(Passenger passenger)
     {
         passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), Color.white, 2);
-        //StartCoroutine(Person.ExecuteAfterDelay(2, () => CaughtEmoji(passenger)));
     }
 
     void CaughtEmoji(Passenger passenger)
@@ -505,7 +564,7 @@ public class PassengerManager : MonoBehaviour
         
         RegisterPassenger(newPassenger);
         
-        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); // Random time before passenger decides to go to platform, simulating time spent in station before heading to platform
+        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); 
         
         DecideNextAction(newPassenger, 0);
     }

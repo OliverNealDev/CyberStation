@@ -72,7 +72,7 @@ public class TrainController : MonoBehaviour
                 break;
             
             case trainStates.Departing:
-                Vector3 departTarget = trainStopPosition - new Vector3(1000, 0, 0);
+                Vector3 departTarget = trainStopPosition - new Vector3(200, 0, 0);
 
                 if (transform.position != departTarget)
                 {
