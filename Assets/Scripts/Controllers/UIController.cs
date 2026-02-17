@@ -32,6 +32,8 @@ public class UIController : MonoBehaviour
 
     private GameObject currentActivePanel;
 
+    public static event Action OnDetailsViewUpdate;
+
     private void Awake()
     {
         Instance = this;
@@ -49,6 +51,16 @@ public class UIController : MonoBehaviour
         if (cameraSwitchButton) cameraSwitchButton.onClick.AddListener(OnCameraSwitchClicked);
 
         if (buildMenuButton) buildMenuButton.onClick.AddListener(OnBuildMenuClicked);
+    }
+
+    void OnEnable()
+    {
+        EconomyManager.OnMoneyChanged += OnMoneyChanged;
+    }
+    
+    void OnDisable()
+    {
+        EconomyManager.OnMoneyChanged -= OnMoneyChanged;
     }
 
     private void TogglePanel(GameObject panelToToggle)
@@ -127,7 +139,16 @@ public class UIController : MonoBehaviour
         if (manageStationButton) manageStationButton.onClick.RemoveAllListeners();
     }
     
-    public void UpdateMoneyDisplay(int amount)
+    public void OnMoneyChanged(int amount)
+    {
+        UpdateMoneyText(amount);
+        if (currentActivePanel != null)
+        {
+            OnDetailsViewUpdate?.Invoke();
+        }
+    }
+
+    void UpdateMoneyText(int amount)
     {
         string abbreviatedAmount = AbbreviateNumber(amount);
         

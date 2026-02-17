@@ -5,9 +5,11 @@ using UnityEngine.InputSystem;
 public class EconomyManager : MonoBehaviour
 {
     public static EconomyManager Instance;
+    
+    public static event Action<int> OnMoneyChanged;
 
     public int money = 1000;
-
+    
     private void Awake()
     {
         Instance = this;
@@ -15,7 +17,7 @@ public class EconomyManager : MonoBehaviour
 
     void Start()
     {
-        UIController.Instance.UpdateMoneyDisplay(money);
+        OnMoneyChanged?.Invoke(money);
     }
 
     void Update()
@@ -28,14 +30,14 @@ public class EconomyManager : MonoBehaviour
     
     public void AddMoney(int amount)
     {
-        money += amount;
-        UIController.Instance.UpdateMoneyDisplay(money);
+        money += amount; 
+        OnMoneyChanged?.Invoke(money);
     }
     
     public void SpendMoney(int amount)
     {
         money -= amount;
-        UIController.Instance.UpdateMoneyDisplay(money);
+        OnMoneyChanged?.Invoke(money);
     }
     
     public void RefundTicket(Passenger passenger)

@@ -135,7 +135,7 @@ public abstract class Person : MonoBehaviour
     {
         CreateNewPersonalCanvas(person);
 
-        if (text.Length != 0)
+        if (text.Length != 0 && person.personalCanvas != null)
         {
             TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
             dialogueText.color = color;

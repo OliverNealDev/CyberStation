@@ -24,3 +24,5 @@ MonoBehaviour:
   costPerRide: 5
   secondsBetweenArrivals: 28
   secondsStationary: 12
+  upfrontCost: 500
+  costPerMinute: 50

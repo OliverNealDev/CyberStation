@@ -28,6 +28,16 @@ public class TrainMenuController : MonoBehaviour
         LoadItems();
     }
 
+    void OnEnable()
+    {
+        UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
+    }
+    
+    void OnDisable()
+    {
+        UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
+    }
+
     public void LoadItems()
     {
         foreach (Transform child in contentContainer)
@@ -85,6 +95,27 @@ public class TrainMenuController : MonoBehaviour
         UpdateDetailView(selectedTrain);
     }
     
+    void CheckButtonInteractabilities()
+    {
+        if (selectedTrain != null)
+        {
+            checkBuyServiceButtonInteractability(selectedTrain);
+            checkEndServiceButtonInteractability(selectedTrain);
+        }
+    }
+
+    void checkBuyServiceButtonInteractability(Train data)
+    {
+        bool canBuy = EconomyManager.Instance.money >= data.upfrontCost && !TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
+        buyServiceButton.interactable = canBuy;
+    }
+    
+    void checkEndServiceButtonInteractability(Train data)
+    {
+        bool canEnd = TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
+        endServiceButton.interactable = canEnd;
+    }
+    
     private void UpdateDetailView(Train data)
     {
         if (detailIcon) detailIcon.sprite = data.icon;
@@ -92,8 +123,8 @@ public class TrainMenuController : MonoBehaviour
         if (detailDescription) detailDescription.text = data.description;
         if (upfrontServiceCost) upfrontServiceCost.text = $"Buy ${data.upfrontCost}";
         if (costPerMinute) costPerMinute.text = $"${data.costPerMinute}/min";
-        
-        buyServiceButton.interactable = !TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
-        endServiceButton.interactable = TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
+
+        checkBuyServiceButtonInteractability(data);
+        checkEndServiceButtonInteractability(data);
     }
 }

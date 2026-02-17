@@ -28,6 +28,16 @@ public class StaffMenuController : MonoBehaviour
         LoadItems();
     }
 
+    void OnEnable()
+    {
+        UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
+    }
+    
+    void OnDisable()
+    {
+        UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
+    }
+
     public void LoadItems()
     {
         foreach (Transform child in contentContainer)
@@ -73,14 +83,18 @@ public class StaffMenuController : MonoBehaviour
 
         selectedStaff = data;
         UpdateDetailView(data);
-        
-        checkFireButtonInteractability(data);
     }
 
     private void checkFireButtonInteractability(StaffMember data)
     {
         bool canFire = StaffManager.Instance.GetHiredStaffAmount(data) > 0;
         fireStaffButton.interactable = canFire;
+    }
+
+    private void checkHireButtonInteractability(StaffMember data)
+    {
+        bool canHire = EconomyManager.Instance.money >= data.hiringCost;
+        hireStaffButton.interactable = canHire;
     }
 
     public void OnHireStaffButtonClicked()
@@ -112,6 +126,15 @@ public class StaffMenuController : MonoBehaviour
         }
     }
     
+    void CheckButtonInteractabilities()
+    {
+        if (selectedStaff != null)
+        {
+            checkFireButtonInteractability(selectedStaff);
+            checkHireButtonInteractability(selectedStaff);
+        }
+    }
+    
     private void UpdateDetailView(StaffMember data)
     {
         if (detailIcon) detailIcon.sprite = data.icon;
@@ -119,5 +142,8 @@ public class StaffMenuController : MonoBehaviour
         if (detailDescription) detailDescription.text = data.description;
         if (hiringCostText) hiringCostText.text = "Hire $" + data.hiringCost;
         if (costPerMinuteText) costPerMinuteText.text = "$" + data.salaryPerMinute + "/min";
+        
+        checkFireButtonInteractability(data);
+        checkHireButtonInteractability(data);
     }
 }
