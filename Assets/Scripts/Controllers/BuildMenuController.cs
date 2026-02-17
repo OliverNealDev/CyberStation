@@ -14,6 +14,7 @@ public class BuildMenuController : MonoBehaviour
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
+    public TextMeshProUGUI detailCost;
     
     void Start()
     {
@@ -57,7 +58,7 @@ public class BuildMenuController : MonoBehaviour
     {
         Debug.Log("Clicked on build item: " + data.objectName);
         
-        BuildController.Instance.ChangePreviewObject(data.prefab);
+        BuildController.Instance.ChangePreviewObject(data);
         
         UpdateDetailView(data);
     }
@@ -67,5 +68,6 @@ public class BuildMenuController : MonoBehaviour
         if (detailIcon) detailIcon.sprite = data.icon;
         if (detailName) detailName.text = data.objectName;
         if (detailDescription) detailDescription.text = data.description;
+        if (detailCost) detailCost.text = "$" + data.cost;
     }
 }

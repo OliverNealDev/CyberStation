@@ -22,6 +22,6 @@ public class Train : ScriptableObject
     public float secondsStationary = 10;
 
     [Header("Economy")]
-    public float upfrontCost = 100f;
-    public float costPerMinute = 10f;
+    public int upfrontCost = 100;
+    public int costPerMinute = 10;
 }

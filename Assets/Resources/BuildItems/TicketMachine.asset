@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 054f86a4a0a418449892b21e1fb915d1, type: 3}
   m_Name: TicketMachine
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
-  name: Ticket Machine
+  objectName: Ticket Machine
   description: Provides tickets to passengers in an automated fasion.
-  icon: {fileID: 21300000, guid: 2572d0750ce3d484d9ac7a65b1b02cdb, type: 3}
+  icon: {fileID: 21300000, guid: 3091a6efa5b259949a3b435be9e7913c, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 3ce6f8c79b6aba34ebda92c9bbca7212, type: 3}
-  cost: 100
+  cost: 500
   size: {x: 1, y: 1}

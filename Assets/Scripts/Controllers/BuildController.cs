@@ -13,6 +13,7 @@ public class BuildController : MonoBehaviour
     public GameObject selectedPreviewObject;
     
     private GameObject previewObjectInstance;
+    private ObjectBuildable objectBuildable; // The ObjectBuildable component of the currently selected preview object, used for accessing cost and other data
 
     private int objectRotation = 0; // Rotation state (0, 90, 180, 270 degrees)
     
@@ -38,11 +39,13 @@ public class BuildController : MonoBehaviour
                 Vector3Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
                 
                 if (
-                    GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z)/* &&
-                    EconomyManager.Instance.money >= selectedPreviewObject*/)
+                    GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z) &&
+                    EconomyManager.Instance.money >= objectBuildable.cost)
                 {
+                    EconomyManager.Instance.SpendMoney(objectBuildable.cost);
+                    
                     GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
-                    placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(); // Tells object to enable its functionality
+                    placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); // Tells object to enable its functionality
                     GridManager.Instance.OccupyTile(gridPos.x, gridPos.y, gridPos.z);
                 }
                 else
@@ -106,14 +109,15 @@ public class BuildController : MonoBehaviour
         }
     }
 
-    public void ChangePreviewObject(GameObject previewObject)
+    public void ChangePreviewObject(ObjectBuildable objectBuildable)
     {
         if (previewObjectInstance != null)
         {
             Destroy(previewObjectInstance);
         }
 
-        selectedPreviewObject = previewObject;
+        selectedPreviewObject = objectBuildable.prefab;
+        this.objectBuildable = objectBuildable;
     }
     
     private Vector3 GetPreviewObjectPosition()

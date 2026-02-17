@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 054f86a4a0a418449892b21e1fb915d1, type: 3}
   m_Name: Ground
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
-  name: Ground
+  objectName: Ground
   description: Allows objects to be built on this
   icon: {fileID: 21300000, guid: 55c3d1de4826da947bb6f70e08f554d3, type: 3}
   prefab: {fileID: 9166884278294006284, guid: 47d953bd306c77a4d815aea1e325becd, type: 3}

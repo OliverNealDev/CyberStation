@@ -71,8 +71,12 @@ public class TrainMenuController : MonoBehaviour
 
     public void OnBuyServiceButtonClicked()
     {
-        TrainManager.Instance.AddTrainToService(selectedTrain);
-        UpdateDetailView(selectedTrain);
+        if (EconomyManager.Instance.money >= selectedTrain.upfrontCost)
+        {
+            EconomyManager.Instance.SpendMoney(selectedTrain.upfrontCost);
+            TrainManager.Instance.AddTrainToService(selectedTrain);
+            UpdateDetailView(selectedTrain);
+        }
     }
 
     public void OnEndServiceButtonClicked()

@@ -7,7 +7,7 @@ public class PreviewableObject : MonoBehaviour
     public bool isInPreviewMode = true;
     public List<Component> componentsToEnable = new List<Component>();
     
-    public void ExitPreviewMode()
+    public void ExitPreviewMode(int cost)
     {
         isInPreviewMode = false;
         if (componentsToEnable.Count == 0) return;
@@ -26,5 +26,9 @@ public class PreviewableObject : MonoBehaviour
                 navMeshObstacle.enabled = true;
             }
         }
+        WorldSpacePromptCoordinator.Instance.CreateWorldPrompt( 
+            "-$" + cost, 
+            transform.position + Vector3.up * 7f, 
+            Color.softRed);
     }
 }
