@@ -5,11 +5,11 @@ using UnityEngine.AI;
 public class SecurityGuard : Staff
 {
     private Passenger targetEvadingPassenger;
-    private float defaultStoppingDistance;
+    public float defaultStoppingDistance = 2;
     private Vector3 startPosition;
 
-    public float detectionRadius = 4f;
-    public float patrolRadius = 15f;
+    public float detectionRadius = 4f; // old
+    public float patrolRadius = 30f;
     
     public securitySubStates currentSubState = securitySubStates.Idle;
     public enum securitySubStates
@@ -24,7 +24,7 @@ public class SecurityGuard : Staff
     protected override void Awake() 
     {
         base.Awake();
-        if(navAgent != null) defaultStoppingDistance = navAgent.stoppingDistance;
+        if(navAgent != null) navAgent.stoppingDistance = defaultStoppingDistance;
         startPosition = transform.position;
     }
 
@@ -71,7 +71,7 @@ public class SecurityGuard : Staff
                 
                 navAgent.SetDestination(targetEvadingPassenger.transform.position);
                 
-                if (Vector3.Distance(transform.position, targetEvadingPassenger.transform.position) <= 2.0f)
+                if (Vector3.Distance(transform.position, targetEvadingPassenger.transform.position) <= defaultStoppingDistance)
                 {
                     PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger, this);
                     SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
@@ -130,6 +130,7 @@ public class SecurityGuard : Staff
     {
         targetEvadingPassenger = evader;
         currentSubState = securitySubStates.ApproachingTarget;
+        navAgent.stoppingDistance = defaultStoppingDistance;
     }
     
     void ReturnToIdle()

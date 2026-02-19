@@ -132,6 +132,7 @@ MonoBehaviour:
   PreviousPosition: {x: 0, y: 0, z: 0}
   salaryPerMinute: 0
   staffType: {fileID: 0}
+  defaultStoppingDistance: 3
   detectionRadius: 12
-  patrolRadius: 15
+  patrolRadius: 45
   currentSubState: 0

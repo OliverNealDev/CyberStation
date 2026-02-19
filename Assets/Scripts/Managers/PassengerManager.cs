@@ -187,11 +187,11 @@ public class PassengerManager : MonoBehaviour
                     return;
                 }
                 
-                if (passenger.TimeToGoToPlatform < Time.time)
+                /*if (passenger.TimeToGoToPlatform < Time.time)
                 {
                     MoveToPlatformPosition(passenger);
                     return;
-                }
+                }*/
 
                 switch (nextNeed)
                 {
@@ -200,7 +200,8 @@ public class PassengerManager : MonoBehaviour
                     case Person.NeedType.Satiation:
                         break;
                     case Person.NeedType.Hydration:
-                        break;
+                        FindCoffeeMachine(passenger);
+                        return;
                     case Person.NeedType.Hygiene:
                         break;
                 }
@@ -299,6 +300,29 @@ public class PassengerManager : MonoBehaviour
             }
         }
     }
+
+   private void FindCoffeeMachine(Passenger passenger)
+    {
+        CoffeeVendingMachineController bestMachine = CoffeeVendingMachineManager.Instance.leastOccupiedCoffeeVendingMachine;
+        if (bestMachine != null)
+        {
+            passenger.currentTarget = bestMachine;
+            passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+            passenger.currentTarget.AssignPerson(passenger);
+                            
+            Vector3 frontOfMachinePosition = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
+                            
+            NavMeshHit hit;
+            if(NavMesh.SamplePosition(frontOfMachinePosition, out hit, 4, NavMesh.AllAreas))
+            {
+                passenger.navAgent.SetDestination(hit.position);
+            }
+            else
+            {
+                passenger.navAgent.SetDestination(frontOfMachinePosition);
+            }
+        }
+    }
     
     private void UpdateQueuePosition(Passenger passenger)
     {
@@ -355,6 +379,21 @@ public class PassengerManager : MonoBehaviour
             {
                 EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
             }
+        }
+    }
+    
+    public void ReceiveCoffee(Passenger passenger)
+    {
+        if (passenger != null)
+        {
+            if (passenger.currentTarget != null)
+            {
+                passenger.currentTarget.RemovePerson(passenger);
+                passenger.currentTarget = null;
+            }
+            passenger.hydration = 100;
+            passenger.currentSubState = Passenger.passengerSubStates.Idle;
+            EconomyManager.Instance.AddMoney(CoffeeVendingMachineManager.Instance.coffeePrice);
         }
     }
 

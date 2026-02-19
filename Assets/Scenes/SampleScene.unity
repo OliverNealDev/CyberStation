@@ -6079,7 +6079,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c659562bc5a3674399de4fba720dd96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  money: 2000
+  money: 20000
 --- !u!1 &783755502
 GameObject:
   m_ObjectHideFlags: 0
@@ -9498,37 +9498,6 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &1367154126
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1367154127}
-  m_Layer: 0
-  m_Name: StaffManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1367154127
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1367154126}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1368748814}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1368748813
 GameObject:
   m_ObjectHideFlags: 0
@@ -9562,7 +9531,6 @@ Transform:
   - {fileID: 1832696139}
   - {fileID: 2131610378}
   - {fileID: 778538371}
-  - {fileID: 1367154127}
   - {fileID: 1636185207}
   - {fileID: 2086364365}
   m_Father: {fileID: 0}
@@ -11599,6 +11567,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1682876643}
   m_CullTransparentMesh: 1
+--- !u!1 &1685039440
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1685039442}
+  - component: {fileID: 1685039441}
+  m_Layer: 0
+  m_Name: CoffeeVendingMachineManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1685039441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1685039440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d426e299dee5d7c4aa5e692fb15236f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  AllCoffeeVendingMachines: []
+  coffeePrice: 0
+--- !u!4 &1685039442
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1685039440}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 25.57862, y: 1, z: 57.97762}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &1694291969
 Mesh:
   m_ObjectHideFlags: 0
@@ -13631,7 +13645,7 @@ MonoBehaviour:
   autoSpawnPassengers: 0
   minPassengers: 16
   spawnPerSecond: 1
-  passengersPerSecond: 1
+  passengersPerSecond: 2
   passengerBodyModels:
   - {fileID: 3100022144818865042, guid: bdbf50f34d8d20f47b539e2f662e483b, type: 3}
   passengerHairModels:
@@ -13750,3 +13764,4 @@ SceneRoots:
   - {fileID: 481834205}
   - {fileID: 67115363}
   - {fileID: 568982315}
+  - {fileID: 1685039442}

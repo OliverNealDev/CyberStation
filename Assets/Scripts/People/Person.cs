@@ -14,7 +14,7 @@ public abstract class Person : MonoBehaviour
     
     public float comfort = 100f;
     public float satiation = 100f;
-    public float hydration = 100f;
+    public float hydration = 0f;
     public float hygiene = 100f;
 
     private float tickLength = 0.1f;
@@ -35,7 +35,7 @@ public abstract class Person : MonoBehaviour
         
         comfort = Random.Range(50f, 100f);
         satiation = Random.Range(50f, 100f);
-        hydration = Random.Range(50f, 100f);
+        hydration = Random.Range(5f, 10f);
         hygiene = Random.Range(50f, 100f);
     }
 
@@ -133,17 +133,20 @@ public abstract class Person : MonoBehaviour
 
     public virtual void Dialogue(Person person, string text, Color color, float duration)
     {
-        CreateNewPersonalCanvas(person);
-
-        if (text.Length != 0 && person.personalCanvas != null)
+        if (person.personalCanvas != null)
         {
-            TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
-            dialogueText.color = color;
-            dialogueText.text = text;
-            person.personalCanvas.transform.GetChild(0).GetChild(0).gameObject.SetActive(true);
-        }
+            CreateNewPersonalCanvas(person);
+
+            if (text.Length != 0 && person.personalCanvas != null)
+            {
+                TextMeshProUGUI dialogueText = person.personalCanvas.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
+                dialogueText.color = color;
+                dialogueText.text = text;
+                person.personalCanvas.transform.GetChild(0).GetChild(0).gameObject.SetActive(true);
+            }
         
-        StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
+            StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
+        }
     }
     
     public virtual void Expression(Person person, Sprite sprite, float duration)
