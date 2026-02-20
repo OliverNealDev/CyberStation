@@ -817,8 +817,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   PeopleOnWay: []
+  facilityType: 1
   currentPerson: {fileID: 0}
   state: 0
+  drinkPrice: 4
 --- !u!1 &1917684518232488148
 GameObject:
   m_ObjectHideFlags: 0

@@ -31,6 +31,10 @@ public class DialogueData : ScriptableObject
     [TextArea(2, 5)]
     public List<string> trainServiceEnded = new List<string>();
     
+    [Header("Looking For Ticket Machine Lines")]
+    [TextArea(2, 5)]
+    public List<string> lookingForTicketMachine = new List<string>();
+    
     // Security Dialogue Lines
     [Header("Catching Evader Lines")]
     [TextArea(2, 5)]
@@ -49,6 +53,7 @@ public class DialogueData : ScriptableObject
         {
             DialogueType.CaughtBySecurity => caughtBySecurity,
             DialogueType.TrainServiceEnded => trainServiceEnded,
+            DialogueType.LookingForTicketMachine => lookingForTicketMachine,
             DialogueType.LowComfort => lowComfort,
             DialogueType.LowSatiation => lowSatiation,
             DialogueType.LowHydration => lowHydration,
@@ -67,6 +72,7 @@ public enum DialogueType
 {
     CaughtBySecurity,
     TrainServiceEnded,
+    LookingForTicketMachine,
     LowComfort,
     LowSatiation,
     LowHydration,

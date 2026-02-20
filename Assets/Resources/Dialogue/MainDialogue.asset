@@ -14,7 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
   lowComfort: []
   lowSatiation: []
-  lowHydration: []
+  lowHydration:
+  - "\U0001F964 I need a drink \U0001F964"
+  - "\U0001F964 I'm so thirsty! \U0001F964"
+  - "\U0001F964 All this walking has made me thirsty... \U0001F964"
   lowHygeine: []
   caughtBySecurity:
   - You got the wrong person!
@@ -30,6 +33,10 @@ MonoBehaviour:
   - What happened to the service??
   - I need to get home and my train is gone!
   - Who is running this circus? My service is gone!
+  lookingForTicketMachine:
+  - "\U0001F3AB I need a ticket! \U0001F3AB"
+  - "\U0001F3AB I better go book my train \U0001F3AB"
+  - "\U0001F3AB I'm going to buy a ticket \U0001F3AB"
   caughtEvader:
   - Get out!
   - You need to leave!

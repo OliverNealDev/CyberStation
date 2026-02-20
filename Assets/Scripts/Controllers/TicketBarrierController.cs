@@ -68,7 +68,7 @@ public class TicketBarrierController : MonoBehaviour
         if (passenger.isTicketEvader && !passenger.hasBypassedBarrier)
         {
             SecurityCoordinator.Instance.ReportEvader(passenger);
-            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt("[Unauthorised Access Detected]", transform.position + Vector3.up * 7f, Color.softRed);
+            //WorldSpacePromptCoordinator.Instance.CreateWorldPrompt("[Unauthorised Access Detected]", transform.position + Vector3.up * 7f, Color.softRed);
         }
         PassengerManager.Instance.OnTicketBarrierDenial(passenger);
     }

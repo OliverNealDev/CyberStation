@@ -59,7 +59,7 @@ public abstract class Staff : Person
         headInstance.transform.GetChild(0).GetComponent<MeshRenderer>().material = skinMaterial;
     }
 
-    protected override void OnTick()
+    protected override void OnTick(float tickLength)
     {
         PerformDuties();
     }

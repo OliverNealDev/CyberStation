@@ -43,15 +43,13 @@ public class Janitor : Staff
                 
                 navAgent.SetDestination(targetLitter.transform.position);
                 
-                if (Vector3.Distance(transform.position, targetLitter.transform.position) <= 2.0f)
+                if (Vector3.Distance(transform.position, targetLitter.transform.position) <= defaultStoppingDistance)
                 {
                     
                     JanitorCoordinator.Instance.ResolveClean(targetLitter);
-                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.yellow, 2);
-                        
                     currentSubState = janitorSubStates.InteractingWithLitter;
                     Invoke("ReturnToIdle", targetLitter.timeToClean);
-                    Dialogue(this, dialogueData.GetRandomLine(DialogueType.StartingClean), Color.yellow, 2);
+                    //Dialogue(this, dialogueData.GetRandomLine(DialogueType.StartingClean), Color.yellow, 2);
                 }
                 break;
             

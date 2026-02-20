@@ -35,25 +35,25 @@ public class PassengerManager : MonoBehaviour
     {
         Instance = this;
     }
+    
     void Start()
     {
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
         
         InvokeRepeating("DropLitter", 1, 1);
-        
         InvokeRepeating("SpawnPassengers", 1, 1);
     }
     
-        void SpawnPassengers()
+    void SpawnPassengers()
+    {
+        if (spawnPerSecond)
         {
-            if (spawnPerSecond)
+            for (int i = 0; i < passengersPerSecond; i++)
             {
-                for (int i = 0; i < passengersPerSecond; i++)
-                {
-                    SpawnPassenger();
-                }
+                SpawnPassenger();
             }
         }
+    }
     
     void Update()
     {
@@ -74,6 +74,7 @@ public class PassengerManager : MonoBehaviour
             autoSpawnPassengers = !autoSpawnPassengers; 
         }
     }
+    
     void LogicUpdate()
     {
         if (activePassengers.Count < minPassengers && autoSpawnPassengers)
@@ -85,12 +86,14 @@ public class PassengerManager : MonoBehaviour
         {
             Passenger passenger = activePassengers[i];
 
+            passenger.CalculateNeeds(tickLength);
+
             NavMeshAgent agent = passenger.navAgent;
             
             switch (passenger.currentSubState)
             {
                 case Passenger.passengerSubStates.Idle:
-                    DecideNextAction(passenger, 0); // Decide next state based on highest priority need
+                    DecideNextAction(passenger);
                     break;
                 
                 case Passenger.passengerSubStates.MovingToTarget:
@@ -114,17 +117,16 @@ public class PassengerManager : MonoBehaviour
                             }
                             passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
                         }
-        
                         break; 
                     }
                     
-                    if (passenger.currentTarget == null) // Null check for safety (target is destroyed etc.)
+                    if (passenger.currentTarget == null) 
                     {
-                        DecideNextAction(passenger, 0);
+                        DecideNextAction(passenger);
                     }
                     else
                     {
-                        UpdateQueuePosition(passenger); // pre-emptively update queue position
+                        UpdateQueuePosition(passenger);
                         if (HasReachedTarget(passenger))
                         {
                             if (passenger.currentTarget != null)
@@ -147,7 +149,7 @@ public class PassengerManager : MonoBehaviour
         }
     }
     
-    void DecideNextAction(Passenger passenger, int priorityNeed)
+    void DecideNextAction(Passenger passenger)
     {
         if (passenger.currentTarget != null)
         {
@@ -169,41 +171,34 @@ public class PassengerManager : MonoBehaviour
             return;
         }
         
-        var needsInPriorityOrder = passenger.GetNeedsInPriorityOrder();
-        Passenger.NeedType nextNeed = needsInPriorityOrder[priorityNeed];
+        Passenger.NeedType nextNeed = passenger.GetMostUrgentNeed();
         
         switch (passenger.currentMasterState)
         {
             case Passenger.passengerMasterStates.InStation:
-                if (!passenger.hasTicket && passenger.isTicketEvader)
-                {
-                    MoveToPlatformPosition(passenger);
-                    return;
-                }
-                
+                // ... inside InStation ...
                 if (!passenger.hasTicket && !passenger.isTicketEvader)
                 {
-                    FindTicketMachine(passenger);
+                    GoToFacility(FacilityType.TicketMachine, passenger);
                     return;
                 }
-                
-                /*if (passenger.TimeToGoToPlatform < Time.time)
-                {
-                    MoveToPlatformPosition(passenger);
-                    return;
-                }*/
 
                 switch (nextNeed)
                 {
-                    case Person.NeedType.Comfort:
+                    case Passenger.NeedType.Comfort:
+                        
                         break;
-                    case Person.NeedType.Satiation:
+                    case Passenger.NeedType.Satiation:
+                        
                         break;
-                    case Person.NeedType.Hydration:
-                        FindCoffeeMachine(passenger);
+                    case Passenger.NeedType.Hydration:
+                        FacilityType drinkChoice = (Random.Range(0, 100) < 50) ? FacilityType.DrinkMachine : FacilityType.CoffeeMachine;
+                        GoToFacility(drinkChoice, passenger);
                         return;
-                    case Person.NeedType.Hygiene:
+                    case Passenger.NeedType.Hygiene:
+                        
                         break;
+                    
                 }
                 
                 MoveToPlatformPosition(passenger);
@@ -224,10 +219,10 @@ public class PassengerManager : MonoBehaviour
         if (activePassengers.Count == 0) return;
         
         List<Passenger> passengersLittered = new List<Passenger>();
-        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 100f)); // Up to 1% of passengers will drop litter per second
+        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 100f)); 
         if (passengersToLitter == 0)
         {
-            if (Random.Range(0, 1000) < activePassengers.Count) // Up to 10% chance per second for 1 passenger to drop litter, to add some variability and ensure litter is dropped even with low passenger counts
+            if (Random.Range(0, 1000) < activePassengers.Count) 
             {
                 passengersToLitter = 1;
             }
@@ -240,7 +235,7 @@ public class PassengerManager : MonoBehaviour
         for (int i = 0; i < passengersToLitter; i++) 
         { 
             Passenger randomPassenger = activePassengers[Random.Range(0, activePassengers.Count)];
-            if (passengersLittered.Contains(randomPassenger)) continue; // prevents the same passenger from littering multiple times in the same drop event, which can look erroneous
+            if (passengersLittered.Contains(randomPassenger)) continue; 
 
             GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
             Instantiate(litterPrefab, new Vector3(randomPassenger.transform.position.x, 1.05f, randomPassenger.transform.position.z), Quaternion.identity);
@@ -250,7 +245,7 @@ public class PassengerManager : MonoBehaviour
     
     private void LeaveStation(Passenger passenger)
     {
-        if (!passenger.navAgent) return; // safety check in case agent was destroyed or not assigned for some reason
+        if (!passenger.navAgent) return; 
         
         UnassignTarget(passenger);
         
@@ -277,10 +272,37 @@ public class PassengerManager : MonoBehaviour
         }
         if(passenger.navAgent != null) passenger.navAgent.ResetPath();
     }
-    
-    private void FindTicketMachine(Passenger passenger)
+
+    private void GoToFacility(FacilityType type, Passenger passenger)
     {
-        TicketMachineController bestMachine = TicketMachineManager.Instance.leastOccupiedTicketMachine;
+        StationFacility bestMachine = FacilityManager.Instance.GetLeastOccupiedFacility(type);
+        
+        if (bestMachine != null)
+        {
+            passenger.currentTarget = bestMachine;
+            passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+            passenger.currentTarget.AssignPerson(passenger);
+                            
+            Vector3 frontOfMachine = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
+                            
+            if(NavMesh.SamplePosition(frontOfMachine, out NavMeshHit hit, 4, NavMesh.AllAreas))
+            {
+                passenger.navAgent.SetDestination(hit.position);
+            }
+            else
+            {
+                passenger.navAgent.SetDestination(frontOfMachine);
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Passenger wants a {type}, but none exist!");
+        }
+    }
+    
+    /*private void FindTicketMachine(Passenger passenger)
+    {
+        TicketMachineController bestMachine = TicketMachineManager.Instance.leastOccupiedFacility;
         if (bestMachine != null)
         {
             passenger.currentTarget = bestMachine;
@@ -303,7 +325,7 @@ public class PassengerManager : MonoBehaviour
 
    private void FindCoffeeMachine(Passenger passenger)
     {
-        CoffeeVendingMachineController bestMachine = CoffeeVendingMachineManager.Instance.leastOccupiedCoffeeVendingMachine;
+        CoffeeVendingMachineController bestMachine = CoffeeVendingMachineManager.Instance.leastOccupiedFacility;
         if (bestMachine != null)
         {
             passenger.currentTarget = bestMachine;
@@ -323,6 +345,29 @@ public class PassengerManager : MonoBehaviour
             }
         }
     }
+   
+    private void FindDrinkMachine(Passenger passenger)
+    {
+        DrinkVendingMachineController bestMachine = DrinkVendingMachineManager.Instance.leastOccupiedFacility;
+        if (bestMachine != null)
+        {
+            passenger.currentTarget = bestMachine;
+            passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+            passenger.currentTarget.AssignPerson(passenger);
+                            
+            Vector3 frontOfMachinePosition = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
+                            
+            NavMeshHit hit;
+            if(NavMesh.SamplePosition(frontOfMachinePosition, out hit, 4, NavMesh.AllAreas))
+            {
+                passenger.navAgent.SetDestination(hit.position);
+            }
+            else
+            {
+                passenger.navAgent.SetDestination(frontOfMachinePosition);
+            }
+        }
+    }*/
     
     private void UpdateQueuePosition(Passenger passenger)
     {
@@ -382,7 +427,7 @@ public class PassengerManager : MonoBehaviour
         }
     }
     
-    public void ReceiveCoffee(Passenger passenger)
+    public void MeetNeedFromTarget(Passenger.NeedType needType, Passenger passenger)
     {
         if (passenger != null)
         {
@@ -391,9 +436,24 @@ public class PassengerManager : MonoBehaviour
                 passenger.currentTarget.RemovePerson(passenger);
                 passenger.currentTarget = null;
             }
-            passenger.hydration = 100;
+
+            switch (needType)
+            {
+                case Passenger.NeedType.Comfort:
+                    passenger.comfort = 100f;
+                    break;
+                case Passenger.NeedType.Satiation:
+                    passenger.satiation = 100f;
+                    break;
+                case Passenger.NeedType.Hydration:
+                    passenger.hydration = 100f;
+                    break;
+                case Passenger.NeedType.Hygiene:
+                    passenger.hygiene = 100f;
+                    break;
+            }
+            
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
-            EconomyManager.Instance.AddMoney(CoffeeVendingMachineManager.Instance.coffeePrice);
         }
     }
 
@@ -436,14 +496,15 @@ public class PassengerManager : MonoBehaviour
             {
                 passenger.GetComponent<NavMeshAgent>().stoppingDistance = 1f;
                 
-                float closestDist = Mathf.Infinity;
+                float closestDistSqr = Mathf.Infinity;
                 Vector3 closestDoor = Vector3.zero;
+                
                 foreach(Vector3 doorPos in arrivingService.physicalTrainInstance.GetDoorPositions())
                 {
-                    float distToDoor = Vector3.Distance(passenger.transform.position, doorPos);
-                    if (distToDoor < closestDist)
+                    float distSqr = (passenger.transform.position - doorPos).sqrMagnitude;
+                    if (distSqr < closestDistSqr)
                     {
-                        closestDist = distToDoor;
+                        closestDistSqr = distSqr;
                         closestDoor = doorPos;
                     }
                 }
@@ -499,7 +560,7 @@ public class PassengerManager : MonoBehaviour
     {
         UnassignTarget(passenger);
         
-        passenger.hasBypassedBarrier = false; // untags passenger from being caught by security
+        passenger.hasBypassedBarrier = false; 
         passenger.isBeingEscorted = true;
         
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
@@ -522,7 +583,6 @@ public class PassengerManager : MonoBehaviour
     void ReplyToBeingCaught(Passenger passenger)
     {
         passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), Color.white, 2);
-        //StartCoroutine(Person.ExecuteAfterDelay(2, () => CaughtEmoji(passenger)));
     }
 
     void CaughtEmoji(Passenger passenger)
@@ -544,9 +604,9 @@ public class PassengerManager : MonoBehaviour
         
         RegisterPassenger(newPassenger);
         
-        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); // Random time before passenger decides to go to platform, simulating time spent in station before heading to platform
+        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); 
         
-        DecideNextAction(newPassenger, 0);
+        DecideNextAction(newPassenger);
     }
     
     void SpawnPassengerModels(Passenger passenger)
@@ -577,6 +637,7 @@ public class PassengerManager : MonoBehaviour
             activePassengers.Add(passenger);
         }
     }
+    
     public void UnregisterPassenger(Passenger passenger)
     {
         if (activePassengers.Contains(passenger))

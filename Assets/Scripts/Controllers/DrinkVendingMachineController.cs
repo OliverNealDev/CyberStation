@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CoffeeVendingMachineController : StationFacility
+public class DrinkVendingMachineController : StationFacility
 {
     public int drinkPrice = 1;
     
