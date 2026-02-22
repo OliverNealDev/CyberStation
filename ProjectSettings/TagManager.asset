@@ -10,6 +10,7 @@ TagManager:
   - TicketMachine
   - Passenger
   - Litter
+  - UnlitterableSurface
   layers:
   - Default
   - TransparentFX

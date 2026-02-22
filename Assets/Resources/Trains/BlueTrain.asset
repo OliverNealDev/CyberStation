@@ -18,11 +18,11 @@ MonoBehaviour:
   trainPrefab: {fileID: 1096767433483698802, guid: 97ac649560f1ad04eb1cd0c89e8be635, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
   speed: 120
-  carriageCount: 1
+  carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 56
   costPerRide: 5
-  secondsBetweenArrivals: 28
+  secondsBetweenArrivals: 12
   secondsStationary: 12
   upfrontCost: 500
   costPerMinute: 50

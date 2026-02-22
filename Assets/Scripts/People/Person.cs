@@ -103,6 +103,20 @@ public abstract class Person : MonoBehaviour
         StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
     }
     
+    public void FaceTarget(Vector3 targetPosition)
+    {
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        
+        direction.y = 0; 
+
+        if (direction != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+        }
+    }
+    
     public static System.Collections.IEnumerator ExecuteAfterDelay(float delay, System.Action action)
     {
         yield return new WaitForSeconds(delay);

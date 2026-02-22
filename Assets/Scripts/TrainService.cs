@@ -1,4 +1,3 @@
-using UnityEditor.Timeline.Actions;
 using UnityEngine;
 
 [System.Serializable]
@@ -7,10 +6,12 @@ public class TrainService
     public Train trainData;
     public float nextArrivalTime;
     public TrainController physicalTrainInstance;
+    public PlatformController assignedPlatform; 
     
-    public TrainService(Train data)
+    public TrainService(Train data, PlatformController platform)
     {
         trainData = data;
+        assignedPlatform = platform;
         nextArrivalTime = Time.time;
     }
     
@@ -39,6 +40,5 @@ public class TrainService
             GameObject.Destroy(physicalTrainInstance.gameObject);
             physicalTrainInstance = null;
         }
-        
     }
 }

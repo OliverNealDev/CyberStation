@@ -15,14 +15,14 @@ MonoBehaviour:
   name: Red Train
   description: Red train like tomato
   icon: {fileID: 21300000, guid: b0a5ca494f797d9489accd185a992b7d, type: 3}
-  trainPrefab: {fileID: 1096767433483698802, guid: 94391a62abe089f47bb7ace3c5cd7380, type: 3}
-  carriagePrefab: {fileID: 6338816846241299915, guid: f88fe8f03848c7d40b4ca1d3a1b518bb, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 97ac649560f1ad04eb1cd0c89e8be635, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
   speed: 100
-  carriageCount: 2
+  carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 56
   costPerRide: 10
-  secondsBetweenArrivals: 32
-  secondsStationary: 14
+  secondsBetweenArrivals: 12
+  secondsStationary: 12
   upfrontCost: 1200
   costPerMinute: 80

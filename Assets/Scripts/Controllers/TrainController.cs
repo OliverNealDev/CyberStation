@@ -5,13 +5,16 @@ public class TrainController : MonoBehaviour
 {
     public Train trainData;
     public TrainService trainService;
-    public Vector3 trainStopPosition;
+    public Transform trainStopPoint; 
     public int platformNumber;
 
     private float timeStationary;
     private float currentSpeed;
     private float acceleration;
     private float deceleration;
+    
+    // We will store all the doors here to check if they are busy
+    private TrainDoor[] trainDoors; 
 
     private trainStates currentState = trainStates.Approaching;
     private enum trainStates
@@ -27,22 +30,33 @@ public class TrainController : MonoBehaviour
         acceleration = trainData.speed / 16f;
         deceleration = trainData.speed / 16f;
 
+        if (trainStopPoint != null)
+        {
+            transform.rotation = trainStopPoint.rotation;
+        }
+
+        // Spawn carriages
         if (trainData.carriageCount > 1)
         {
             for (int i = 2; i < trainData.carriageCount + 1; i++)
             {
-                Vector3 carriagePosition = transform.position + new Vector3(i * trainData.carriageLength, 3, 0);
-                Instantiate(trainData.carriagePrefab, carriagePosition, Quaternion.identity, transform);
+                Vector3 carriagePosition = transform.position - (transform.forward * (i * trainData.carriageLength)) + new Vector3(0, 3, 0);
+                Instantiate(trainData.carriagePrefab, carriagePosition, transform.rotation, transform);
             }
         }
+        
+        // Grab all doors AFTER carriages are spawned
+        trainDoors = GetComponentsInChildren<TrainDoor>();
     }
     
     void Update()
     {
+        if (trainStopPoint == null) return;
+
         switch (currentState)
         {
             case trainStates.Approaching:
-                float distToStop = Vector3.Distance(transform.position, trainStopPosition);
+                float distToStop = Vector3.Distance(transform.position, trainStopPoint.position);
 
                 if (distToStop > 0.01f)
                 {
@@ -52,11 +66,11 @@ public class TrainController : MonoBehaviour
                     float speedChangeRate = currentSpeed > targetSpeed ? deceleration : acceleration;
                     currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, speedChangeRate * Time.deltaTime);
                     
-                    transform.position = Vector3.MoveTowards(transform.position, trainStopPosition, currentSpeed * Time.deltaTime);
+                    transform.position = Vector3.MoveTowards(transform.position, trainStopPoint.position, currentSpeed * Time.deltaTime);
                 }
                 else
                 {
-                    transform.position = trainStopPosition;
+                    transform.position = trainStopPoint.position;
                     currentSpeed = 0f;
                     currentState = trainStates.Stationary;
                     PassengerManager.Instance.TrainArrived(trainService);
@@ -65,16 +79,25 @@ public class TrainController : MonoBehaviour
             
             case trainStates.Stationary:
                 timeStationary += Time.deltaTime;
+                
                 if (timeStationary >= trainData.secondsStationary)
                 {
-                    currentState = trainStates.Departing;
+                    if (IsReadyToDepart())
+                    {
+                        foreach (TrainDoor door in trainDoors)
+                        {
+                            door.CloseDoors();
+                        }
+                        
+                        currentState = trainStates.Departing;
+                    }
                 }
                 break;
             
             case trainStates.Departing:
-                Vector3 departTarget = trainStopPosition - new Vector3(1000, 0, 0);
+                Vector3 departTarget = trainStopPoint.position + (trainStopPoint.forward * 1000f);
 
-                if (transform.position != departTarget)
+                if (Vector3.Distance(transform.position, departTarget) > 0.1f)
                 {
                     currentSpeed = Mathf.MoveTowards(currentSpeed, trainData.speed, acceleration * Time.deltaTime);
                     transform.position = Vector3.MoveTowards(transform.position, departTarget, currentSpeed * Time.deltaTime);
@@ -86,6 +109,31 @@ public class TrainController : MonoBehaviour
                 }
                 break;
         }
+    }
+    
+    public bool IsAtStation()
+    {
+        return currentState == trainStates.Stationary;
+    }
+
+    private bool IsReadyToDepart()
+    {
+        foreach (TrainDoor door in trainDoors)
+        {
+            if (!door.IsAvailable) return false; 
+        }
+        
+        if (timeStationary >= trainData.secondsStationary + 15f)
+        {
+            return true;
+        }
+
+        if (PassengerManager.Instance != null && PassengerManager.Instance.ArePassengersWaitingForTrain(trainService))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public List<Vector3> GetDoorPositions()

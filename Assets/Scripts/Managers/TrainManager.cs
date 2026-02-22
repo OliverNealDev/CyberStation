@@ -9,75 +9,67 @@ public class TrainManager : MonoBehaviour
     public List<TrainService> activeTrainServices = new List<TrainService>();
     public bool unlockAllTrains = false;
     
-    [SerializeField]
-    public List<Platform> activePlatforms = new List<Platform>();
+    public List<PlatformController> activePlatforms = new List<PlatformController>();
 
     void Awake()
     {
         Instance = this;
-        
         allTrains = Resources.LoadAll<Train>("Trains");
-        if (unlockAllTrains)
-        {
-            foreach (var train in allTrains)
-            {
-                TrainService newService = new TrainService(train);
-                activeTrainServices.Add(newService);
-            }
-        }
     }
 
     void Start()
     {
-        var newPlatform = new Platform();
-        newPlatform.trainStopPosition = new Vector3(-8, 0, 68.5f);
-        newPlatform.isOccupied = false;
-        newPlatform.platformNumber = 1;
-        newPlatform.maxTrainLength = 5;
-        activePlatforms.Add(newPlatform);
+        if (unlockAllTrains && activePlatforms.Count > 0)
+        {
+            AddTrainToService(allTrains[0]);
+        }
+    }
+
+    public void RegisterPlatform(PlatformController platform)
+    {
+        if (!activePlatforms.Contains(platform))
+        {
+            activePlatforms.Add(platform);
+        }
     }
 
     void FixedUpdate()
-    {
-        CheckServicesDue();
-    }
-    
-    private void CheckServicesDue()
     {
         foreach (var service in activeTrainServices)
         {
             if (Time.time >= service.nextArrivalTime)
             {
-                bool isAnyPlatformAvailable = false;
-                foreach (Platform platform in activePlatforms)
+                if (!service.assignedPlatform.isOccupied)
                 {
-                    if (!platform.isOccupied)
-                    {
-                        GameObject trainInstance = Instantiate(service.trainData.trainPrefab,
-                            platform.trainStopPosition + new Vector3(1000, 0, 0), Quaternion.identity);
-                        
-                        TrainController controller = trainInstance.GetComponent<TrainController>();
-                        service.physicalTrainInstance = controller;
-                        
-                        platform.isOccupied = true;
-                        
-                        controller.trainData = service.trainData;
-                        controller.trainStopPosition = platform.trainStopPosition;
-                        controller.platformNumber = platform.platformNumber;
-                        controller.trainService = service;
-
-                        service.OnTrainSpawned();
-                        isAnyPlatformAvailable = true;
-                        break;
-                    }
+                    SpawnTrainForService(service);
                 }
-
-                if (!isAnyPlatformAvailable)
+                else
                 {
                     service.OnTrainDelayed();
                 }
             }
         }
+    }
+
+    private void SpawnTrainForService(TrainService service)
+    {
+        PlatformController platform = service.assignedPlatform;
+        
+        Vector3 spawnPosition = platform.trainStopPoint.position - (platform.trainStopPoint.forward * 1000f);
+        
+        GameObject trainInstance = Instantiate(service.trainData.trainPrefab, spawnPosition, platform.trainStopPoint.rotation);
+                        
+        TrainController controller = trainInstance.GetComponent<TrainController>();
+        service.physicalTrainInstance = controller;
+                        
+        platform.isOccupied = true;
+                        
+        controller.trainData = service.trainData;
+        controller.trainStopPoint = platform.trainStopPoint;
+        controller.platformNumber = platform.platformNumber;
+        controller.trainService = service;
+
+        service.OnTrainSpawned();
     }
 
     public TrainService AssignTrainServiceToPassenger()
@@ -105,7 +97,7 @@ public class TrainManager : MonoBehaviour
     
     public void FreePlatform(int platformNumber)
     {
-        foreach (Platform platform in activePlatforms)
+        foreach (var platform in activePlatforms)
         {
             if (platform.platformNumber == platformNumber)
             {
@@ -117,7 +109,7 @@ public class TrainManager : MonoBehaviour
     
     public void AddTrainToService(Train train)
     {
-        foreach (var service in activeTrainServices) // Don't add a new service if one already exists for this train type
+        foreach (var service in activeTrainServices) 
         {
             if (service.trainData == train)
             {
@@ -125,8 +117,46 @@ public class TrainManager : MonoBehaviour
             }
         }
         
-        TrainService newService = new TrainService(train);
-        activeTrainServices.Add(newService);
+        PlatformController bestPlatform = GetBestPlatformForService();
+        if (bestPlatform != null)
+        {
+            TrainService newService = new TrainService(train, bestPlatform);
+            activeTrainServices.Add(newService);
+        }
+    }
+
+    private PlatformController GetBestPlatformForService()
+    {
+        if (activePlatforms.Count == 0) return null;
+
+        PlatformController bestPlatform = null;
+        int lowestServiceCount = int.MaxValue;
+
+        foreach (PlatformController platform in activePlatforms)
+        {
+            int currentServiceCount = 0;
+            
+            foreach (TrainService service in activeTrainServices)
+            {
+                if (service.assignedPlatform == platform)
+                {
+                    currentServiceCount++;
+                }
+            }
+
+            if (currentServiceCount < lowestServiceCount)
+            {
+                lowestServiceCount = currentServiceCount;
+                bestPlatform = platform;
+                
+                if (lowestServiceCount == 0)
+                {
+                    return bestPlatform;
+                }
+            }
+        }
+
+        return bestPlatform;
     }
     
     public void RemoveTrainFromService(Train train)
@@ -139,14 +169,5 @@ public class TrainManager : MonoBehaviour
                 activeTrainServices.RemoveAt(i);
             }
         }
-    }
-
-    [System.Serializable]
-    public class Platform
-    {
-        public Vector3 trainStopPosition; 
-        public bool isOccupied;
-        public int platformNumber;
-        public int maxTrainLength;
     }
 }

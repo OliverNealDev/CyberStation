@@ -43,13 +43,15 @@ public class Janitor : Staff
                 
                 navAgent.SetDestination(targetLitter.transform.position);
                 
-                if (Vector3.Distance(transform.position, targetLitter.transform.position) <= defaultStoppingDistance)
+                Vector3 flatJanitor = new Vector3(transform.position.x, 0, transform.position.z);
+                Vector3 flatLitter = new Vector3(targetLitter.transform.position.x, 0, targetLitter.transform.position.z);
+                
+                if (Vector3.Distance(flatJanitor, flatLitter) <= defaultStoppingDistance + 0.2f)
                 {
-                    
                     JanitorCoordinator.Instance.ResolveClean(targetLitter);
                     currentSubState = janitorSubStates.InteractingWithLitter;
+                    
                     Invoke("ReturnToIdle", targetLitter.timeToClean);
-                    //Dialogue(this, dialogueData.GetRandomLine(DialogueType.StartingClean), Color.yellow, 2);
                 }
                 break;
             
@@ -71,6 +73,9 @@ public class Janitor : Staff
         navAgent.ResetPath();
         
         if (targetLitter != null) Destroy(targetLitter.gameObject);
+        
+        targetLitter = null; 
+        
         currentSubState = janitorSubStates.Idle;
     }
 }
