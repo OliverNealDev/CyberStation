@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class TrainDoor : QueuableObject
+public class TrainDoorController : QueuableObject
 {
     public enum MachineState { Exiting, Entering }
     public MachineState state = MachineState.Exiting;

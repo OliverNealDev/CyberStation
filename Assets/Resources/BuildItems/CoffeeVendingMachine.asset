@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Coffee Machine
   description: Provides coffee to passengers and hydrates them
-  icon: {fileID: 21300000, guid: ea0680eed168f7b4da2f0117e742706a, type: 3}
+  icon: {fileID: 21300000, guid: 3faeca28c3ff27a4d984cc738a290c64, type: 3}
   prefab: {fileID: 1821913311329546544, guid: c05359139ff160c45b5c7dec1e2c7b2b, type: 3}
   cost: 300
   size: {x: 1, y: 1}

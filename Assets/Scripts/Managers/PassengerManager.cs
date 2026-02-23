@@ -481,9 +481,9 @@ public class PassengerManager : MonoBehaviour
     
     public void TrainArrived(TrainService arrivingService)
     {
-        TrainDoor[] doors = arrivingService.physicalTrainInstance.GetComponentsInChildren<TrainDoor>();
+        TrainDoorController[] doors = arrivingService.physicalTrainInstance.GetComponentsInChildren<TrainDoorController>();
         
-        foreach (TrainDoor door in doors)
+        foreach (TrainDoorController door in doors)
         {
             door.StartBoardingProcess(arrivingService);
         }
@@ -511,13 +511,13 @@ public class PassengerManager : MonoBehaviour
     {
         if (service.physicalTrainInstance == null) return;
 
-        TrainDoor[] doors = service.physicalTrainInstance.GetComponentsInChildren<TrainDoor>();
+        TrainDoorController[] doors = service.physicalTrainInstance.GetComponentsInChildren<TrainDoorController>();
         if (doors.Length == 0) return;
 
         float closestDistSqr = Mathf.Infinity;
-        TrainDoor closestDoor = null;
+        TrainDoorController closestDoor = null;
                 
-        foreach(TrainDoor door in doors)
+        foreach(TrainDoorController door in doors)
         {
             float distSqr = (passenger.transform.position - door.transform.position).sqrMagnitude;
             if (distSqr < closestDistSqr)
@@ -527,7 +527,7 @@ public class PassengerManager : MonoBehaviour
             }
         }
                 
-        if (closestDoor != null && closestDoor.state == TrainDoor.MachineState.Entering)
+        if (closestDoor != null && closestDoor.state == TrainDoorController.MachineState.Entering)
         {
             if (passenger.currentTarget != null)
             {

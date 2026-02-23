@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6e93d23e80e5bf49a14c20ba92c567c, type: 3}
   m_Name: SecurityGuard
   m_EditorClassIdentifier: Assembly-CSharp::StaffMember
-  name: Security Guard
+  staffName: Security Guard
   description: Escorts ticket evaders and incurrs fines onto them.
-  icon: {fileID: 21300000, guid: 0ce72da92206bce42aaacd1f71ce67d9, type: 3}
+  icon: {fileID: 21300000, guid: 5a1928b16647f2e40b69b8675b63c81b, type: 3}
   staffPrefab: {fileID: 2991288983431714229, guid: 503c2d2c68034b34399e65161f2b81a3, type: 3}
   hiringCost: 100
   salaryPerMinute: 10

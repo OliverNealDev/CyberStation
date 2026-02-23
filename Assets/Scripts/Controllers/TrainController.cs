@@ -14,7 +14,7 @@ public class TrainController : MonoBehaviour
     private float deceleration;
     
     // We will store all the doors here to check if they are busy
-    private TrainDoor[] trainDoors; 
+    private TrainDoorController[] trainDoors; 
 
     private trainStates currentState = trainStates.Approaching;
     private enum trainStates
@@ -46,7 +46,7 @@ public class TrainController : MonoBehaviour
         }
         
         // Grab all doors AFTER carriages are spawned
-        trainDoors = GetComponentsInChildren<TrainDoor>();
+        trainDoors = GetComponentsInChildren<TrainDoorController>();
     }
     
     void Update()
@@ -84,7 +84,7 @@ public class TrainController : MonoBehaviour
                 {
                     if (IsReadyToDepart())
                     {
-                        foreach (TrainDoor door in trainDoors)
+                        foreach (TrainDoorController door in trainDoors)
                         {
                             door.CloseDoors();
                         }
@@ -118,7 +118,7 @@ public class TrainController : MonoBehaviour
 
     private bool IsReadyToDepart()
     {
-        foreach (TrainDoor door in trainDoors)
+        foreach (TrainDoorController door in trainDoors)
         {
             if (!door.IsAvailable) return false; 
         }

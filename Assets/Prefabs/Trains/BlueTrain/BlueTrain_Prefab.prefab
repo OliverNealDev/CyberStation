@@ -5046,6 +5046,10 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 706
       objectReference: {fileID: 0}
+    - target: {fileID: 6142895749260600182, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6338816846241299915, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
       propertyPath: m_Name
       value: BlueTrain_Carriage_Prefab
@@ -5057,6 +5061,10 @@ PrefabInstance:
     - target: {fileID: 7053890367511919575, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
       propertyPath: m_VersionIndex
       value: 112
+      objectReference: {fileID: 0}
+    - target: {fileID: 8238490764480532758, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8818226950583333579, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
       propertyPath: m_VersionIndex

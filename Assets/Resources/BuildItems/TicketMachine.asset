@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Ticket Machine
   description: Provides tickets to passengers in an automated fasion.
-  icon: {fileID: 21300000, guid: 3091a6efa5b259949a3b435be9e7913c, type: 3}
+  icon: {fileID: 21300000, guid: 3f08c42678d28dd46b6f24c4d4bf5612, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 3ce6f8c79b6aba34ebda92c9bbca7212, type: 3}
   cost: 500
   size: {x: 1, y: 1}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Drink Vending Machine
   description: Provides drinks to passengers in an automated fasion.
-  icon: {fileID: 21300000, guid: d48ad1b62f0b32542991d5f645df211b, type: 3}
+  icon: {fileID: 21300000, guid: d6d58db5c184ce74d9c884f430ce7147, type: 3}
   prefab: {fileID: 1821913311329546544, guid: ac3eb35374ecbbf4ab0ef153f41c49fb, type: 3}
   cost: 150
   size: {x: 1, y: 1}
