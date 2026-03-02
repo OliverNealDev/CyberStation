@@ -179,7 +179,55 @@ public class PassengerManager : MonoBehaviour
                     }
                     break;
             }
+            
+            if (passenger.navAgent.isOnOffMeshLink && passenger.currentSubState != Passenger.passengerSubStates.InteractingWithSomething)
+            {
+                StartCoroutine(TraverseBarrierSmoothly(passenger));
+            }
         }
+    }
+    
+    public List<Passenger> GetUncheckedPlatformPassengers()
+    {
+        List<Passenger> uncheckedPassengers = new List<Passenger>();
+        
+        foreach (Passenger p in activePassengers) 
+        {
+            if (p != null && p.currentMasterState == Passenger.passengerMasterStates.OnPlatform && !p.hasBeenInspected)
+            {
+                uncheckedPassengers.Add(p);
+            }
+        }
+        
+        return uncheckedPassengers;
+    }
+    
+    private System.Collections.IEnumerator TraverseBarrierSmoothly(Passenger passenger)
+    {
+        passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
+
+        UnityEngine.AI.OffMeshLinkData linkData = passenger.navAgent.currentOffMeshLinkData;
+        Vector3 startPos = passenger.transform.position;
+        Vector3 endPos = linkData.endPos + Vector3.up * passenger.navAgent.baseOffset;
+
+        float distance = Vector3.Distance(startPos, endPos);
+        float duration = distance / passenger.navAgent.speed;
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            if (passenger == null) yield break; // Safety check
+
+            passenger.transform.position = Vector3.Lerp(startPos, endPos, timer / duration);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        passenger.transform.position = endPos;
+
+        passenger.navAgent.CompleteOffMeshLink();
+        
+        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
     }
     
     void DecideNextAction(Passenger passenger)
@@ -234,9 +282,25 @@ public class PassengerManager : MonoBehaviour
                     case Passenger.NeedType.Satiation:
                         break;
                     case Passenger.NeedType.Hydration:
-                        FacilityType drinkChoice = (Random.Range(0, 100) < 50) ? FacilityType.DrinkMachine : FacilityType.CoffeeMachine;
-                        GoToFacility(drinkChoice, passenger);
-                        return;
+                        int RandomHydrationChoice = Random.Range(0, 2);
+                        switch (RandomHydrationChoice)
+                        {
+                            case 0:
+                                if (FacilityManager.Instance.HasFacility(FacilityType.DrinkMachine))
+                                {
+                                    GoToFacility(FacilityType.DrinkMachine, passenger);
+                                    return;
+                                }
+                                break;
+                            case 1:
+                                if (FacilityManager.Instance.HasFacility(FacilityType.CoffeeMachine))
+                                {
+                                    GoToFacility(FacilityType.CoffeeMachine, passenger);
+                                    return;
+                                }
+                                break;
+                        }
+                        break; // If no drink machine is available, just skip the need for now
                     case Passenger.NeedType.Hygiene:
                         break;
                 }
@@ -266,10 +330,10 @@ public class PassengerManager : MonoBehaviour
         if (activePassengers.Count == 0) return;
         
         List<Passenger> passengersLittered = new List<Passenger>();
-        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 100f)); 
+        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 250f)); 
         if (passengersToLitter == 0)
         {
-            if (Random.Range(0, 1000) < activePassengers.Count) 
+            if (Random.Range(0, 2500) < activePassengers.Count) 
             {
                 passengersToLitter = 1;
             }
@@ -306,7 +370,11 @@ public class PassengerManager : MonoBehaviour
     
     private void LeaveStation(Passenger passenger)
     {
-        if (!passenger.navAgent) return; 
+        if (passenger.navAgent == null || !passenger.navAgent.isActiveAndEnabled || !passenger.navAgent.isOnNavMesh) 
+        {
+            UnregisterPassenger(passenger);
+            return; 
+        }
         
         UnassignTarget(passenger);
         
@@ -333,7 +401,11 @@ public class PassengerManager : MonoBehaviour
         {
             passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
         }
-        if(passenger.navAgent != null) passenger.navAgent.ResetPath();
+        
+        if (passenger.navAgent != null && passenger.navAgent.isActiveAndEnabled && passenger.navAgent.isOnNavMesh)
+        {
+            passenger.navAgent.ResetPath();
+        }
     }
 
     private void GoToFacility(FacilityType type, Passenger passenger)
@@ -382,22 +454,33 @@ public class PassengerManager : MonoBehaviour
         PlatformController targetPlatform = passenger.assignedTrainService.assignedPlatform;
 
         if (targetPlatform == null) return; 
-
-        passenger.trainWaitPosition = targetPlatform.GetRandomWaitPosition();
+        
+        bool foundValidPosition = false;
+        NavMeshHit hit = new NavMeshHit();
+        int attempts = 0;
+        
+        while (!foundValidPosition && attempts < 10)
+        {
+            passenger.trainWaitPosition = targetPlatform.GetRandomWaitPosition();
+            
+            if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 2f, NavMesh.AllAreas))
+            {
+                foundValidPosition = true;
+            }
+            attempts++;
+        }
                         
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(passenger.trainWaitPosition, out hit, 4, NavMesh.AllAreas))
+        if (foundValidPosition)
         {
             passenger.navAgent.SetDestination(hit.position);
+            passenger.navAgent.stoppingDistance = Random.Range(1f, 3f); 
+            passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Platform;
         }
         else
         {
-            passenger.navAgent.SetDestination(passenger.trainWaitPosition);
+            LeaveStation(passenger);
         }
-        
-        passenger.navAgent.stoppingDistance = Random.Range(1f, 3f); 
-        passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
-        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Platform;
     }
     
     public void ReceiveTicket(Passenger passenger)
@@ -698,7 +781,9 @@ public class PassengerManager : MonoBehaviour
         
         RegisterPassenger(newPassenger);
         
-        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f); 
+        newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
+
+        newPassenger.navAgent.avoidancePriority = Random.Range(50, 100);
         
         DecideNextAction(newPassenger);
     }

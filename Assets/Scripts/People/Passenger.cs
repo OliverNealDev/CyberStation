@@ -9,7 +9,8 @@ public class Passenger : Person
     public bool hasTicket = false;
     public bool isTicketEvader = false;
     public bool hasBypassedBarrier = false;
-    public bool isBeingEscorted = false; 
+    public bool isBeingEscorted = false;
+    public bool hasBeenInspected = false;
     
     public QueuableObject currentTarget;
     public Vector3 trainWaitPosition;

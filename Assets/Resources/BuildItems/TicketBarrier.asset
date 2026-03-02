@@ -16,6 +16,6 @@ MonoBehaviour:
   description: Validates passenger's tickets and prevents passengers entry without
     them
   icon: {fileID: 21300000, guid: 898ff5c7a934ee044af04fd3c025ea03, type: 3}
-  prefab: {fileID: 8727649448683996293, guid: 4442e953ec6c1314089c299505845e7e, type: 3}
+  prefab: {fileID: 8727649448683996293, guid: a14a68af88224ed4684066f563f949c7, type: 3}
   cost: 200
   size: {x: 1, y: 1}

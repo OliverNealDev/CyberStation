@@ -53,4 +53,9 @@ public class FacilityManager : MonoBehaviour
 
         return leastOccupied;
     }
+    
+    public bool HasFacility(FacilityType type)
+    {
+        return facilitiesMap.ContainsKey(type) && facilitiesMap[type].Count > 0;
+    }
 }

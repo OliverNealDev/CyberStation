@@ -113,7 +113,7 @@ public abstract class Person : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime);
         }
     }
     

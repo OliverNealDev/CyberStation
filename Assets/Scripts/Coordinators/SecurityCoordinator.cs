@@ -7,6 +7,7 @@ public class SecurityCoordinator : MonoBehaviour
     
     public List<Passenger> knownEvaders = new List<Passenger>();
     public Dictionary<Passenger, SecurityGuard> currentPursuits = new Dictionary<Passenger, SecurityGuard>();
+    public Dictionary<Passenger, SecurityGuard> currentInspections = new Dictionary<Passenger, SecurityGuard>();
     
     void Awake()
     {
@@ -27,6 +28,13 @@ public class SecurityCoordinator : MonoBehaviour
         if (assignedEvader != null)
         {
             securityGuard.AssignEvader(assignedEvader);
+            return;
+        }
+
+        Passenger assignedInspection = GetAvailableInspectionForGuard(securityGuard);
+        if (assignedInspection != null)
+        {
+            securityGuard.AssignInspection(assignedInspection);
         }
     }
     
@@ -40,6 +48,14 @@ public class SecurityCoordinator : MonoBehaviour
         if (currentPursuits.ContainsKey(passenger)) 
         {
             currentPursuits.Remove(passenger);
+        }
+    }
+
+    public void ResolveInspection(Passenger passenger)
+    {
+        if (currentInspections.ContainsKey(passenger))
+        {
+            currentInspections.Remove(passenger);
         }
     }
     
@@ -58,7 +74,7 @@ public class SecurityCoordinator : MonoBehaviour
                 continue;
             }
             if (currentPursuits.ContainsKey(evader)) continue;
-            if (evader.currentMasterState == Passenger.passengerMasterStates.OnTrain) continue; // Don't pursue if they're already on a train
+            if (evader.currentMasterState == Passenger.passengerMasterStates.OnTrain) continue;
 
             float dist = Vector3.Distance(securityGuard.transform.position, evader.transform.position);
             if (dist < closestDist)
@@ -71,6 +87,36 @@ public class SecurityCoordinator : MonoBehaviour
         if (bestTarget != null)
         {
             currentPursuits.Add(bestTarget, securityGuard);
+        }
+
+        return bestTarget;
+    }
+
+    private Passenger GetAvailableInspectionForGuard(SecurityGuard securityGuard)
+    {
+        Passenger bestTarget = null;
+        float closestDist = float.MaxValue;
+
+        List<Passenger> uncheckedPassengers = PassengerManager.Instance.GetUncheckedPlatformPassengers();
+
+        foreach (Passenger p in uncheckedPassengers)
+        {
+            if (p == null) continue;
+            if (currentInspections.ContainsKey(p) || currentPursuits.ContainsKey(p)) continue;
+            if (p.currentMasterState != Passenger.passengerMasterStates.OnPlatform) continue;
+            if (p.hasBeenInspected) continue;
+
+            float dist = Vector3.Distance(securityGuard.transform.position, p.transform.position);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                bestTarget = p;
+            }
+        }
+
+        if (bestTarget != null)
+        {
+            currentInspections.Add(bestTarget, securityGuard);
         }
 
         return bestTarget;

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -5,18 +6,21 @@ using UnityEngine.AI;
 public class SecurityGuard : Staff
 {
     private Passenger targetEvadingPassenger;
+    private Passenger targetForInspection;
+    
     public float defaultStoppingDistance = 2;
     private Vector3 startPosition;
-
-    public float detectionRadius = 4f; // old
     public float patrolRadius = 30f;
     
     public securitySubStates currentSubState = securitySubStates.Idle;
+    
     public enum securitySubStates
     {
         Idle,
         Patrolling,
         ApproachingTarget,
+        ApproachingForInspection,
+        InspectingTicket,
         InteractingWithTarget,
         EscortingTarget
     }
@@ -33,12 +37,15 @@ public class SecurityGuard : Staff
         switch (currentSubState)
         {
             case securitySubStates.Idle:
-                //ReportNearbyEvaders(detectionRadius);
                 SecurityCoordinator.Instance.RequestAssignment(this);
                 
                 if (targetEvadingPassenger != null)
                 {
                     currentSubState = securitySubStates.ApproachingTarget;
+                }
+                else if (targetForInspection != null)
+                {
+                    currentSubState = securitySubStates.ApproachingForInspection;
                 }
                 else
                 {
@@ -47,12 +54,22 @@ public class SecurityGuard : Staff
                 break;
 
             case securitySubStates.Patrolling:
-                //ReportNearbyEvaders(detectionRadius);
                 SecurityCoordinator.Instance.RequestAssignment(this);
 
                 if (targetEvadingPassenger != null)
                 {
+                    if (targetForInspection != null)
+                    {
+                        SecurityCoordinator.Instance.ResolveInspection(targetForInspection);
+                        targetForInspection = null;
+                    }
                     currentSubState = securitySubStates.ApproachingTarget;
+                    return;
+                }
+
+                if (targetForInspection != null)
+                {
+                    currentSubState = securitySubStates.ApproachingForInspection;
                     return;
                 }
 
@@ -81,9 +98,32 @@ public class SecurityGuard : Staff
                     Invoke("BeginEscort", 4f);
                 }
                 break;
+
+            case securitySubStates.ApproachingForInspection:
+                if (targetForInspection == null || targetForInspection.currentMasterState != Passenger.passengerMasterStates.OnPlatform)
+                {
+                    if (targetForInspection != null) SecurityCoordinator.Instance.ResolveInspection(targetForInspection);
+                    ReturnToIdle();
+                    return;
+                }
+
+                navAgent.SetDestination(targetForInspection.transform.position);
+
+                if (Vector3.Distance(transform.position, targetForInspection.transform.position) <= defaultStoppingDistance)
+                {
+                    currentSubState = securitySubStates.InspectingTicket;
+                    StartCoroutine(InspectionRoutine());
+                }
+                break;
+
+            case securitySubStates.InspectingTicket:
+                break;
             
             case securitySubStates.InteractingWithTarget:
-                navAgent.ResetPath();
+                if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+                {
+                    navAgent.ResetPath();
+                }
                 break;
 
             case securitySubStates.EscortingTarget:
@@ -95,6 +135,71 @@ public class SecurityGuard : Staff
 
                 navAgent.SetDestination(targetEvadingPassenger.transform.position);
                 break;
+        }
+    }
+
+    private IEnumerator InspectionRoutine()
+    {
+        if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+        {
+            navAgent.ResetPath();
+            navAgent.velocity = Vector3.zero;
+        }
+
+        if (targetForInspection != null)
+        {
+            targetForInspection.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
+            
+            if (targetForInspection.navAgent != null && targetForInspection.navAgent.isActiveAndEnabled && targetForInspection.navAgent.isOnNavMesh)
+            {
+                targetForInspection.navAgent.ResetPath();
+                targetForInspection.navAgent.velocity = Vector3.zero;
+            }
+        }
+
+        Dialogue(this, "Ticket inspection, please.", Color.cornflowerBlue, 2f);
+        yield return new WaitForSeconds(1.5f);
+
+        if (targetForInspection == null)
+        {
+            ReturnToIdle();
+            yield break;
+        }
+
+        if (targetForInspection.hasTicket)
+        {
+            Dialogue(targetForInspection, "Here is my ticket.", Color.white, 2f);
+            yield return new WaitForSeconds(1.5f);
+            
+            Dialogue(this, "Thank you. Have a good journey.", Color.cornflowerBlue, 2f);
+            yield return new WaitForSeconds(1f);
+
+            targetForInspection.hasBeenInspected = true;
+            SecurityCoordinator.Instance.ResolveInspection(targetForInspection);
+            
+            targetForInspection.currentSubState = Passenger.passengerSubStates.Idle;
+            targetForInspection = null;
+            ReturnToIdle();
+        }
+        else
+        {
+            Dialogue(targetForInspection, "I don't have a ticket...", new Color(1f, 0.4f, 0.4f), 2f);
+            yield return new WaitForSeconds(1.5f);
+
+            targetForInspection.hasBeenInspected = true;
+            SecurityCoordinator.Instance.ResolveInspection(targetForInspection);
+
+            Passenger caughtEvader = targetForInspection;
+            targetForInspection = null;
+            
+            AssignEvader(caughtEvader);
+            
+            PassengerManager.Instance.OnCaughtBySecurity(targetEvadingPassenger, this);
+            SecurityCoordinator.Instance.ResolvePursuit(targetEvadingPassenger);
+            Dialogue(this, dialogueData.GetRandomLine(DialogueType.CaughtEvader), Color.cornflowerBlue, 2);
+            
+            currentSubState = securitySubStates.InteractingWithTarget;
+            Invoke("BeginEscort", 4f);
         }
     }
 
@@ -132,29 +237,24 @@ public class SecurityGuard : Staff
         currentSubState = securitySubStates.ApproachingTarget;
         navAgent.stoppingDistance = defaultStoppingDistance;
     }
+
+    public void AssignInspection(Passenger passenger)
+    {
+        targetForInspection = passenger;
+        currentSubState = securitySubStates.ApproachingForInspection;
+        navAgent.stoppingDistance = defaultStoppingDistance;
+    }
     
     void ReturnToIdle()
     {
         navAgent.stoppingDistance = defaultStoppingDistance;
-        navAgent.ResetPath();
+        if (navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+        {
+            navAgent.ResetPath();
+        }
         
         targetEvadingPassenger = null;
+        targetForInspection = null;
         currentSubState = securitySubStates.Idle;
     }
-    
-    /*private void ReportNearbyEvaders(float detectionRadius)
-    {
-        Collider[] nearbyColliders = Physics.OverlapSphere(transform.position, detectionRadius);
-        foreach (Collider collider in nearbyColliders)
-        {
-            if (collider.CompareTag("Passenger"))
-            {
-                Passenger passenger = collider.GetComponent<Passenger>();
-                if (passenger != null && passenger.hasBypassedBarrier && !passenger.isBeingEscorted)
-                {
-                    SecurityCoordinator.Instance.ReportEvader(passenger);
-                }
-            }
-        }
-    }*/
 }

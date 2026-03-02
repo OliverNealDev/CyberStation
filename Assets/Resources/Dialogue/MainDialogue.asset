@@ -20,12 +20,13 @@ MonoBehaviour:
   - "\U0001F964 All this walking has made me thirsty... \U0001F964"
   lowHygeine: []
   caughtBySecurity:
-  - You got the wrong person!
+  - You suck!
   - Ugh
   - Fair enough...
   - Sorry!
   - I hate you!
   - Nooo
+  - You're fining me?!
   trainServiceEnded:
   - What do you mean it's no longer in service?!
   - Seriously?!
@@ -38,11 +39,11 @@ MonoBehaviour:
   - "\U0001F3AB I better go book my train \U0001F3AB"
   - "\U0001F3AB I'm going to buy a ticket \U0001F3AB"
   caughtEvader:
-  - Get out!
-  - You need to leave!
-  - I saw you bypass the ticket barrier!
-  - Follow me to the exit immediately.
-  - You're coming with me...
+  - Then get out.
+  - Then you need to leave...
+  - That's not good enough!
+  - I can't allow this.
+  - Buy a ticket next time...
   startingClean:
   - Gross
   - Disgusting

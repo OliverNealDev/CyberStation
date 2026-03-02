@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4359780042288420435}
   - component: {fileID: 7271281077939084549}
   - component: {fileID: 8351159671344782278}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Passenger_Prefab
   m_TagString: Passenger
   m_Icon: {fileID: 0}
@@ -85,13 +85,13 @@ NavMeshAgent:
   m_GameObject: {fileID: 2991288983431714229}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.4
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 180
   m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
+  m_AutoTraverseOffMeshLink: 0
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
@@ -160,7 +160,7 @@ GameObject:
   - component: {fileID: 5295869847720107814}
   - component: {fileID: 4027123489851977961}
   - component: {fileID: 805257773296652737}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Arm_R
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -269,7 +269,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9105950575855855413}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: HandSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -304,7 +304,7 @@ GameObject:
   - component: {fileID: 5250419442129663280}
   - component: {fileID: 6331291703597069052}
   - component: {fileID: 2584703839066398668}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -414,7 +414,7 @@ GameObject:
   m_Component:
   - component: {fileID: 775291668481277673}
   - component: {fileID: 3811145275606280828}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Arms
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -462,7 +462,7 @@ GameObject:
   - component: {fileID: 2447389345128124229}
   - component: {fileID: 5975928561297065186}
   - component: {fileID: 5523097449802026792}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Arm_L
   m_TagString: Untagged
   m_Icon: {fileID: 0}
