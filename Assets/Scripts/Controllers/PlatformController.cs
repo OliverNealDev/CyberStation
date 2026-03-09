@@ -2,10 +2,14 @@ using UnityEngine;
 
 public class PlatformController : MonoBehaviour
 {
+    public string platformName = "Platform 1";
     public int platformNumber;
     public Transform trainStopPoint; 
     public BoxCollider passengerWaitArea; 
     public bool isOccupied = false;
+
+    public Train trainInSlot1;
+    public Train trainInSlot2;
 
     void Start()
     {

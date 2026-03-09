@@ -1,15 +1,23 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class TrainManager : MonoBehaviour
 {
     public static TrainManager Instance;
 
+    public static event Action OnTrainAssignmentsChanged;
+
     private Train[] allTrains;
     public List<TrainService> activeTrainServices = new List<TrainService>();
-    public bool unlockAllTrains = false;
-    
     public List<PlatformController> activePlatforms = new List<PlatformController>();
+    
+    public List<Train> unlockedTrains = new List<Train>();
+    public PlatformController pendingPlatform;
+    public int pendingSlot = -1;
+    
+    public bool unlockAllTrains = false;
 
     void Awake()
     {
@@ -19,9 +27,20 @@ public class TrainManager : MonoBehaviour
 
     void Start()
     {
-        if (unlockAllTrains && activePlatforms.Count > 0)
+        if (unlockAllTrains)
         {
-            AddTrainToService(allTrains[0]);
+            foreach (var train in allTrains)
+            {
+                UnlockTrain(train);
+            }
+        }
+    }
+
+    public void UnlockTrain(Train train)
+    {
+        if (!unlockedTrains.Contains(train))
+        {
+            unlockedTrains.Add(train);
         }
     }
 
@@ -82,6 +101,8 @@ public class TrainManager : MonoBehaviour
             totalSeatsInService += service.TrainPassengerCapacity();
         }
         
+        if (totalSeatsInService <= 0) return activeTrainServices[0];
+
         int randomlyAssignedSeat = Random.Range(0, totalSeatsInService);
         foreach (var service in activeTrainServices)
         {
@@ -106,61 +127,28 @@ public class TrainManager : MonoBehaviour
             }
         }
     }
-    
-    public void AddTrainToService(Train train)
+
+    public void AssignTrainToPlatformSlot(Train train, PlatformController platform, int slotIndex)
     {
-        foreach (var service in activeTrainServices) 
-        {
-            if (service.trainData == train)
-            {
-                return;
-            }
-        }
-        
-        PlatformController bestPlatform = GetBestPlatformForService();
-        if (bestPlatform != null)
-        {
-            TrainService newService = new TrainService(train, bestPlatform);
-            activeTrainServices.Add(newService);
-        }
-    }
+        RemoveTrainFromService(train);
 
-    private PlatformController GetBestPlatformForService()
-    {
-        if (activePlatforms.Count == 0) return null;
+        if (slotIndex == 1) platform.trainInSlot1 = train;
+        else if (slotIndex == 2) platform.trainInSlot2 = train;
 
-        PlatformController bestPlatform = null;
-        int lowestServiceCount = int.MaxValue;
+        TrainService newService = new TrainService(train, platform);
+        activeTrainServices.Add(newService);
 
-        foreach (PlatformController platform in activePlatforms)
-        {
-            int currentServiceCount = 0;
-            
-            foreach (TrainService service in activeTrainServices)
-            {
-                if (service.assignedPlatform == platform)
-                {
-                    currentServiceCount++;
-                }
-            }
-
-            if (currentServiceCount < lowestServiceCount)
-            {
-                lowestServiceCount = currentServiceCount;
-                bestPlatform = platform;
-                
-                if (lowestServiceCount == 0)
-                {
-                    return bestPlatform;
-                }
-            }
-        }
-
-        return bestPlatform;
+        OnTrainAssignmentsChanged?.Invoke();
     }
     
     public void RemoveTrainFromService(Train train)
     {
+        foreach (var platform in activePlatforms)
+        {
+            if (platform.trainInSlot1 == train) platform.trainInSlot1 = null;
+            if (platform.trainInSlot2 == train) platform.trainInSlot2 = null;
+        }
+
         for (int i = activeTrainServices.Count - 1; i >= 0; i--)
         {
             if (activeTrainServices[i].trainData == train)
@@ -169,5 +157,7 @@ public class TrainManager : MonoBehaviour
                 activeTrainServices.RemoveAt(i);
             }
         }
+
+        OnTrainAssignmentsChanged?.Invoke();
     }
 }

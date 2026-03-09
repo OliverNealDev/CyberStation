@@ -11,7 +11,6 @@ public class TrainMenuController : MonoBehaviour
 
     public Train[] trains;
     
-    // Detail View References
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
@@ -31,6 +30,7 @@ public class TrainMenuController : MonoBehaviour
     void OnEnable()
     {
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
+        if (selectedTrain != null) UpdateDetailView(selectedTrain);
     }
     
     void OnDisable()
@@ -47,12 +47,7 @@ public class TrainMenuController : MonoBehaviour
         
         trains = Resources.LoadAll<Train>(targetFolderPath);
         
-        // Debug check to help you verify if the path is correct
-        if (trains.Length == 0)
-        {
-            Debug.LogError($"No Train items found in Resources/{targetFolderPath}. Check folder name and file types!");
-            return;
-        }
+        if (trains.Length == 0) return;
 
         foreach (var item in trains)
         {
@@ -73,20 +68,22 @@ public class TrainMenuController : MonoBehaviour
     
     private void OnTrainItemButtonClicked(Train data)
     {
-        Debug.Log("Clicked on train item: " + data.name);
-
         selectedTrain = data;
         UpdateDetailView(data);
     }
 
     public void OnBuyServiceButtonClicked()
     {
-        if (EconomyManager.Instance.money >= selectedTrain.upfrontCost)
+        if (!TrainManager.Instance.unlockedTrains.Contains(selectedTrain))
         {
-            EconomyManager.Instance.SpendMoney(selectedTrain.upfrontCost);
-            TrainManager.Instance.AddTrainToService(selectedTrain);
-            UpdateDetailView(selectedTrain);
+            if (EconomyManager.Instance.money >= selectedTrain.upfrontCost)
+            {
+                EconomyManager.Instance.SpendMoney(selectedTrain.upfrontCost);
+                TrainManager.Instance.UnlockTrain(selectedTrain);
+            }
         }
+
+        UpdateDetailView(selectedTrain);
     }
 
     public void OnEndServiceButtonClicked()
@@ -106,8 +103,17 @@ public class TrainMenuController : MonoBehaviour
 
     void checkBuyServiceButtonInteractability(Train data)
     {
-        bool canBuy = EconomyManager.Instance.money >= data.upfrontCost && !TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
-        buyServiceButton.interactable = canBuy;
+        bool isUnlocked = TrainManager.Instance.unlockedTrains.Contains(data);
+        bool canAfford = EconomyManager.Instance.money >= data.upfrontCost;
+
+        if (isUnlocked)
+        {
+            buyServiceButton.interactable = false;
+        }
+        else
+        {
+            buyServiceButton.interactable = canAfford;
+        }
     }
     
     void checkEndServiceButtonInteractability(Train data)
@@ -121,8 +127,22 @@ public class TrainMenuController : MonoBehaviour
         if (detailIcon) detailIcon.sprite = data.icon;
         if (detailName) detailName.text = data.name;
         if (detailDescription) detailDescription.text = data.description;
-        if (upfrontServiceCost) upfrontServiceCost.text = $"Buy ${data.upfrontCost}";
         if (costPerMinute) costPerMinute.text = $"${data.costPerMinute}/min";
+
+        TextMeshProUGUI buyText = buyServiceButton.GetComponentInChildren<TextMeshProUGUI>();
+        if (buyText != null)
+        {
+            if (TrainManager.Instance.unlockedTrains.Contains(data))
+            {
+                buyText.text = "Purchased";
+                if (upfrontServiceCost) upfrontServiceCost.text = "Unlocked";
+            }
+            else
+            {
+                buyText.text = "Buy Train";
+                if (upfrontServiceCost) upfrontServiceCost.text = $"Buy ${data.upfrontCost}";
+            }
+        }
 
         checkBuyServiceButtonInteractability(data);
         checkEndServiceButtonInteractability(data);

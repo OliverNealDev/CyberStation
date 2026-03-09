@@ -14,6 +14,8 @@ public class UIController : MonoBehaviour
     public Button buildMenuButton;
     public Button staffMenuButton;
     public Button manageStationButton;
+    public Button expansionMenuButton;
+    public Button platformMenuButton;
 
     [Header("Panel References")]
     public GameObject settingsPanel;
@@ -21,6 +23,11 @@ public class UIController : MonoBehaviour
     public GameObject buildPanel;
     public GameObject staffPanel;
     public GameObject managePanel;
+    public GameObject expansionPanel;
+    public GameObject platformPanel;
+    
+    [Header("Popup References")]
+    public GameObject trainSelectionPopup;
 
     [Header("System References")]
     [SerializeField] private BuildController buildController;
@@ -42,11 +49,14 @@ public class UIController : MonoBehaviour
     void Start()
     {
         CloseAllPanels();
+        CloseTrainSelectionPopup();
 
         if (settingsButton) settingsButton.onClick.AddListener(() => TogglePanel(settingsPanel));
         if (trainMenuButton) trainMenuButton.onClick.AddListener(() => TogglePanel(trainPanel));
         if (staffMenuButton) staffMenuButton.onClick.AddListener(() => TogglePanel(staffPanel));
         if (manageStationButton) manageStationButton.onClick.AddListener(() => TogglePanel(managePanel));
+        if (expansionMenuButton) expansionMenuButton.onClick.AddListener(() => TogglePanel(expansionPanel));
+        if (platformMenuButton) platformMenuButton.onClick.AddListener(() => TogglePanel(platformPanel));
 
         if (cameraSwitchButton) cameraSwitchButton.onClick.AddListener(OnCameraSwitchClicked);
 
@@ -110,7 +120,6 @@ public class UIController : MonoBehaviour
 
     private void OnCameraSwitchClicked()
     {
-        Debug.Log("Switched Camera View");
     }
 
     public void CloseAllPanels()
@@ -120,6 +129,8 @@ public class UIController : MonoBehaviour
         if (buildPanel) buildPanel.SetActive(false);
         if (staffPanel) staffPanel.SetActive(false);
         if (managePanel) managePanel.SetActive(false);
+        if (expansionPanel) expansionPanel.SetActive(false);
+        if (platformPanel) platformPanel.SetActive(false);
 
         currentActivePanel = null;
 
@@ -127,6 +138,16 @@ public class UIController : MonoBehaviour
         {
             buildController.isBuildingMode = false;
         }
+    }
+
+    public void OpenTrainSelectionPopup()
+    {
+        if (trainSelectionPopup) trainSelectionPopup.SetActive(true);
+    }
+
+    public void CloseTrainSelectionPopup()
+    {
+        if (trainSelectionPopup) trainSelectionPopup.SetActive(false);
     }
 
     private void OnDestroy()
@@ -137,6 +158,8 @@ public class UIController : MonoBehaviour
         if (buildMenuButton) buildMenuButton.onClick.RemoveAllListeners();
         if (staffMenuButton) staffMenuButton.onClick.RemoveAllListeners();
         if (manageStationButton) manageStationButton.onClick.RemoveAllListeners();
+        if (expansionMenuButton) expansionMenuButton.onClick.RemoveAllListeners();
+        if (platformMenuButton) platformMenuButton.onClick.RemoveAllListeners();
     }
     
     public void OnMoneyChanged(int amount)
@@ -170,7 +193,6 @@ public class UIController : MonoBehaviour
     {
         if (number < 10000) return number.ToString();
 
-        // Limited to Qi due to 64-bit constraints
         string[] suffixes = { "", "k", "M", "B", "T", "Qa", "Qi" };
         int suffixIndex = 0;
         double abbreviatedNumber = number;
@@ -181,7 +203,6 @@ public class UIController : MonoBehaviour
             suffixIndex++;
         }
 
-        // Format string depends on the value
         string format;
         if (abbreviatedNumber >= 100)
             format = "0";

@@ -15,8 +15,8 @@ MonoBehaviour:
   name: Blue Train
   description: Blue train like sapphire or blue ice
   icon: {fileID: 21300000, guid: 1b11a34149ee7c14dabbab133bb3b0b8, type: 3}
-  trainPrefab: {fileID: 1096767433483698802, guid: 97ac649560f1ad04eb1cd0c89e8be635, type: 3}
-  carriagePrefab: {fileID: 6338816846241299915, guid: bc624d5490fd8e44f946be8ae650cca3, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 40c089a3b8cecc947a8c95cac13c1c6c, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: 194a77adea39b9640a3d6c98354f71df, type: 3}
   speed: 120
   carriageCount: 4
   carriageLength: 34
