@@ -1,10 +1,7 @@
 using System.Collections.Generic;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class PassengerManager : MonoBehaviour
 {
@@ -18,12 +15,6 @@ public class PassengerManager : MonoBehaviour
 
     private float tickLength = 0.1f; 
     private float tickTimer;
-
-    public bool autoSpawnPassengers = false;
-    public int minPassengers = 4;
-
-    public bool spawnPerSecond = false;
-    public int passengersPerSecond = 1;
     
     public List<GameObject> passengerBodyModels = new List<GameObject>();
     public List<GameObject> passengerHairModels = new List<GameObject>();
@@ -37,20 +28,7 @@ public class PassengerManager : MonoBehaviour
     void Start()
     {
         passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
-        
         InvokeRepeating("DropLitter", 1, 1);
-        InvokeRepeating("SpawnPassengers", 1, 1);
-    }
-    
-    void SpawnPassengers()
-    {
-        if (spawnPerSecond)
-        {
-            for (int i = 0; i < passengersPerSecond; i++)
-            {
-                SpawnPassenger();
-            }
-        }
     }
     
     void Update()
@@ -64,22 +42,15 @@ public class PassengerManager : MonoBehaviour
         
         if (Keyboard.current.pKey.wasPressedThisFrame) 
         {
-            SpawnPassenger();
-        }
-        
-        if (Keyboard.current.kKey.wasPressedThisFrame)
-        {
-            autoSpawnPassengers = !autoSpawnPassengers; 
+            if (TrainManager.Instance.activeTrainServices.Count > 0)
+            {
+                SpawnPassengerForService(TrainManager.Instance.AssignTrainServiceToPassenger());
+            }
         }
     }
     
     void LogicUpdate()
     {
-        if (activePassengers.Count < minPassengers && autoSpawnPassengers)
-        {
-            SpawnPassenger();
-        }
-        
         for (int i = activePassengers.Count - 1; i >= 0; i--)
         {
             Passenger passenger = activePassengers[i];
@@ -87,8 +58,6 @@ public class PassengerManager : MonoBehaviour
             if (passenger.navAgent == null || !passenger.navAgent.isActiveAndEnabled) continue;
 
             passenger.CalculateNeeds(tickLength);
-
-            NavMeshAgent agent = passenger.navAgent;
             
             switch (passenger.currentSubState)
             {
@@ -97,7 +66,6 @@ public class PassengerManager : MonoBehaviour
                     
                     if (passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform)
                     {
-                        // Assuming the tracks are to the 'forward' direction of the platform
                         if (passenger.assignedTrainService != null && passenger.assignedTrainService.assignedPlatform != null)
                         {
                             Vector3 lookPos = passenger.transform.position + passenger.assignedTrainService.assignedPlatform.transform.forward;
@@ -159,7 +127,6 @@ public class PassengerManager : MonoBehaviour
                                 {
                                     passenger.currentTarget.ProcessInteraction(passenger);
                                     
-                                    // Safety check in case BoardTrain() destroyed the passenger
                                     if (passenger != null && passenger.gameObject != null)
                                     {
                                         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
@@ -216,7 +183,7 @@ public class PassengerManager : MonoBehaviour
 
         while (timer < duration)
         {
-            if (passenger == null) yield break; // Safety check
+            if (passenger == null) yield break;
 
             passenger.transform.position = Vector3.Lerp(startPos, endPos, timer / duration);
             timer += Time.deltaTime;
@@ -224,9 +191,7 @@ public class PassengerManager : MonoBehaviour
         }
 
         passenger.transform.position = endPos;
-
         passenger.navAgent.CompleteOffMeshLink();
-        
         passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
     }
     
@@ -300,7 +265,7 @@ public class PassengerManager : MonoBehaviour
                                 }
                                 break;
                         }
-                        break; // If no drink machine is available, just skip the need for now
+                        break;
                     case Passenger.NeedType.Hygiene:
                         break;
                 }
@@ -326,8 +291,7 @@ public class PassengerManager : MonoBehaviour
 
     public void DropLitter()
     {
-        if (litterPrefabs.Count == 0) return;
-        if (activePassengers.Count == 0) return;
+        if (litterPrefabs.Count == 0 || activePassengers.Count == 0) return;
         
         List<Passenger> passengersLittered = new List<Passenger>();
         int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 250f)); 
@@ -434,7 +398,6 @@ public class PassengerManager : MonoBehaviour
     private void UpdateQueuePosition(Passenger passenger)
     {
         if (passenger.currentTarget == null) return;
-        
         if (!passenger.navAgent.isActiveAndEnabled) return;
         
         int queueIndex = passenger.currentTarget.PeopleOnWay.IndexOf(passenger);
@@ -571,7 +534,6 @@ public class PassengerManager : MonoBehaviour
             door.StartBoardingProcess(arrivingService);
         }
         
-        // In case the train arrives completely empty and doors instantly flip to Entering
         NotifyDoorsReady(arrivingService);
     }
 
@@ -767,22 +729,19 @@ public class PassengerManager : MonoBehaviour
         passenger.Expression(passenger, passenger.expressionData.policeOfficer, 3600f);
     }
 
-    void SpawnPassenger()
+    public void SpawnPassengerForService(TrainService service)
     {
-        if (TrainManager.Instance.activeTrainServices.Count == 0) return;
-        
         Passenger newPassenger = Instantiate(passengerPrefab, passengerSpawnPoint + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity).GetComponent<Passenger>();
         newPassenger.transform.parent = transform;
 
         SpawnPassengerModels(newPassenger);
 
-        newPassenger.assignedTrainService = TrainManager.Instance.AssignTrainServiceToPassenger(); 
+        newPassenger.assignedTrainService = service;
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);
         
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
-
         newPassenger.navAgent.avoidancePriority = Random.Range(50, 100);
         
         DecideNextAction(newPassenger);

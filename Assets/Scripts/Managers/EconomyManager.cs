@@ -45,6 +45,6 @@ public class EconomyManager : MonoBehaviour
         if (!passenger.hasTicket || passenger.isTicketEvader) return; // No refund for evaders or those without tickets
 
         int refundAmount = passenger.assignedTrainService.trainData.costPerRide;
-        AddMoney(refundAmount);
+        SpendMoney(refundAmount);
     }
 }

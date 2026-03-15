@@ -29,66 +29,23 @@ public class TrainManager : MonoBehaviour
     {
         if (unlockAllTrains)
         {
-            foreach (var train in allTrains)
-            {
-                UnlockTrain(train);
-            }
+            foreach (var train in allTrains) UnlockTrain(train);
         }
     }
 
     public void UnlockTrain(Train train)
     {
-        if (!unlockedTrains.Contains(train))
-        {
-            unlockedTrains.Add(train);
-        }
+        if (!unlockedTrains.Contains(train)) unlockedTrains.Add(train);
     }
 
     public void RegisterPlatform(PlatformController platform)
     {
-        if (!activePlatforms.Contains(platform))
-        {
-            activePlatforms.Add(platform);
-        }
+        if (!activePlatforms.Contains(platform)) activePlatforms.Add(platform);
     }
 
-    void FixedUpdate()
+    public TrainService GetServiceByTrain(Train train)
     {
-        foreach (var service in activeTrainServices)
-        {
-            if (Time.time >= service.nextArrivalTime)
-            {
-                if (!service.assignedPlatform.isOccupied)
-                {
-                    SpawnTrainForService(service);
-                }
-                else
-                {
-                    service.OnTrainDelayed();
-                }
-            }
-        }
-    }
-
-    private void SpawnTrainForService(TrainService service)
-    {
-        PlatformController platform = service.assignedPlatform;
-        
-        Vector3 spawnPosition = platform.trainStopPoint.position - (platform.trainStopPoint.forward * 1000f);
-        
-        GameObject trainInstance = Instantiate(service.trainData.trainPrefab, spawnPosition, platform.trainStopPoint.rotation);
-                        
-        TrainController controller = trainInstance.GetComponent<TrainController>();
-        service.physicalTrainInstance = controller;
-                        
-        platform.isOccupied = true;
-                        
-        controller.trainData = service.trainData;
-        controller.trainStopPoint = platform.trainStopPoint;
-        controller.platformNumber = platform.platformNumber;
-        controller.trainService = service;
-
-        service.OnTrainSpawned();
+        return activeTrainServices.Find(s => s.trainData == train);
     }
 
     public TrainService AssignTrainServiceToPassenger()
@@ -96,10 +53,7 @@ public class TrainManager : MonoBehaviour
         if (activeTrainServices.Count == 0) return null;
 
         int totalSeatsInService = 0;
-        foreach (var service in activeTrainServices)
-        {
-            totalSeatsInService += service.TrainPassengerCapacity();
-        }
+        foreach (var service in activeTrainServices) totalSeatsInService += service.TrainPassengerCapacity();
         
         if (totalSeatsInService <= 0) return activeTrainServices[0];
 
@@ -107,10 +61,7 @@ public class TrainManager : MonoBehaviour
         foreach (var service in activeTrainServices)
         {
             int serviceCapacity = service.TrainPassengerCapacity();
-            if (randomlyAssignedSeat < serviceCapacity)
-            {
-                return service;
-            }
+            if (randomlyAssignedSeat < serviceCapacity) return service;
             randomlyAssignedSeat -= serviceCapacity;
         }
         return activeTrainServices[0];
@@ -137,6 +88,8 @@ public class TrainManager : MonoBehaviour
 
         TrainService newService = new TrainService(train, platform);
         activeTrainServices.Add(newService);
+
+        platform.OnTrainAssigned(slotIndex);
 
         OnTrainAssignmentsChanged?.Invoke();
     }

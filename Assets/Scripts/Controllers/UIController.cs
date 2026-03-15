@@ -13,7 +13,7 @@ public class UIController : MonoBehaviour
     public Button trainMenuButton;
     public Button buildMenuButton;
     public Button staffMenuButton;
-    public Button manageStationButton;
+    public Button ratingsMenuButton;
     public Button expansionMenuButton;
     public Button platformMenuButton;
 
@@ -22,7 +22,7 @@ public class UIController : MonoBehaviour
     public GameObject trainPanel;
     public GameObject buildPanel;
     public GameObject staffPanel;
-    public GameObject managePanel;
+    public GameObject ratingsPanel;
     public GameObject expansionPanel;
     public GameObject platformPanel;
     
@@ -54,7 +54,7 @@ public class UIController : MonoBehaviour
         if (settingsButton) settingsButton.onClick.AddListener(() => TogglePanel(settingsPanel));
         if (trainMenuButton) trainMenuButton.onClick.AddListener(() => TogglePanel(trainPanel));
         if (staffMenuButton) staffMenuButton.onClick.AddListener(() => TogglePanel(staffPanel));
-        if (manageStationButton) manageStationButton.onClick.AddListener(() => TogglePanel(managePanel));
+        if (ratingsMenuButton) ratingsMenuButton.onClick.AddListener(() => TogglePanel(ratingsPanel));
         if (expansionMenuButton) expansionMenuButton.onClick.AddListener(() => TogglePanel(expansionPanel));
         if (platformMenuButton) platformMenuButton.onClick.AddListener(() => TogglePanel(platformPanel));
 
@@ -128,7 +128,7 @@ public class UIController : MonoBehaviour
         if (trainPanel) trainPanel.SetActive(false);
         if (buildPanel) buildPanel.SetActive(false);
         if (staffPanel) staffPanel.SetActive(false);
-        if (managePanel) managePanel.SetActive(false);
+        if (ratingsPanel) ratingsPanel.SetActive(false);
         if (expansionPanel) expansionPanel.SetActive(false);
         if (platformPanel) platformPanel.SetActive(false);
 
@@ -157,7 +157,7 @@ public class UIController : MonoBehaviour
         if (trainMenuButton) trainMenuButton.onClick.RemoveAllListeners();
         if (buildMenuButton) buildMenuButton.onClick.RemoveAllListeners();
         if (staffMenuButton) staffMenuButton.onClick.RemoveAllListeners();
-        if (manageStationButton) manageStationButton.onClick.RemoveAllListeners();
+        if (ratingsMenuButton) ratingsMenuButton.onClick.RemoveAllListeners();
         if (expansionMenuButton) expansionMenuButton.onClick.RemoveAllListeners();
         if (platformMenuButton) platformMenuButton.onClick.RemoveAllListeners();
     }

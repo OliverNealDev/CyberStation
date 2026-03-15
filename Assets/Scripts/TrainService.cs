@@ -4,7 +4,6 @@ using UnityEngine;
 public class TrainService
 {
     public Train trainData;
-    public float nextArrivalTime;
     public TrainController physicalTrainInstance;
     public PlatformController assignedPlatform; 
     
@@ -12,17 +11,6 @@ public class TrainService
     {
         trainData = data;
         assignedPlatform = platform;
-        nextArrivalTime = Time.time;
-    }
-    
-    public void OnTrainSpawned() 
-    {
-        nextArrivalTime = Time.time + trainData.secondsBetweenArrivals; 
-    }
-    
-    public void OnTrainDelayed() 
-    {
-        nextArrivalTime = Time.time + 1.0f; 
     }
     
     public int TrainPassengerCapacity()
@@ -32,7 +20,10 @@ public class TrainService
     
     public void EndTotalService()
     {
-        PassengerManager.Instance.TrainServiceEnded(this);
+        if (PassengerManager.Instance != null)
+        {
+            PassengerManager.Instance.TrainServiceEnded(this);
+        }
         
         if (physicalTrainInstance != null)
         {

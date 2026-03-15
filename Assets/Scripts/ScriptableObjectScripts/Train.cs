@@ -1,10 +1,9 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "Train", menuName = "Scriptable Objects/Train")]
 public class Train : ScriptableObject
 {
-    public string name = "New Train";
+    public string trainName = "New Train";
     [TextArea]
     public string description = "Description of the train.";
     public Sprite icon;
@@ -18,7 +17,6 @@ public class Train : ScriptableObject
     public int capacityPerCarriage = 50;
     public int costPerRide = 5;
     
-    public float secondsBetweenArrivals = 30;
     public float secondsStationary = 10;
 
     [Header("Economy")]

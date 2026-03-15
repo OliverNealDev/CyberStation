@@ -25,6 +25,6 @@ MonoBehaviour:
   capacityPerCarriage: 36
   costPerRide: 5
   secondsBetweenArrivals: 120
-  secondsStationary: 12
+  secondsStationary: 30
   upfrontCost: 3000
   costPerMinute: 80
