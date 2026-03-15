@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
+  m_Name: Sleeker
+  m_EditorClassIdentifier: Assembly-CSharp::Train
+  name: Sleeker
+  description: A standard modern bullet train that specialises in fast, smooth and
+    far travel. Generally affordable to most people.
+  icon: {fileID: 21300000, guid: 694f5034ce0a7cd4f8fcbe6e898b02d8, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 40c089a3b8cecc947a8c95cac13c1c6c, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: 194a77adea39b9640a3d6c98354f71df, type: 3}
+  speed: 120
+  carriageCount: 4
+  carriageLength: 34
+  capacityPerCarriage: 32
+  costPerRide: 10
+  secondsBetweenArrivals: 120
+  secondsStationary: 12
+  upfrontCost: 5000
+  costPerMinute: 200
