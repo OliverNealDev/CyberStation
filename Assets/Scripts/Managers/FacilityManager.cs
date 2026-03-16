@@ -1,9 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class NeedFacilityMapping
+{
+    public Passenger.NeedType needType;
+    public List<FacilityType> validFacilities;
+}
+
 public class FacilityManager : MonoBehaviour
 {
     public static FacilityManager Instance;
+
+    [Header("AI Configuration")]
+    [Tooltip("Define which facilities satisfy which needs here!")]
+    public List<NeedFacilityMapping> needMappings = new List<NeedFacilityMapping>();
 
     private Dictionary<FacilityType, List<StationFacility>> facilitiesMap = new Dictionary<FacilityType, List<StationFacility>>();
 
@@ -57,5 +68,41 @@ public class FacilityManager : MonoBehaviour
     public bool HasFacility(FacilityType type)
     {
         return facilitiesMap.ContainsKey(type) && facilitiesMap[type].Count > 0;
+    }
+
+    public int GetTotalFacilityCount()
+    {
+        int count = 0;
+        foreach (var list in facilitiesMap.Values)
+        {
+            count += list.Count;
+        }
+        return count;
+    }
+
+    public int GetTotalQueuedPassengers()
+    {
+        int count = 0;
+        foreach (var list in facilitiesMap.Values)
+        {
+            foreach (var facility in list)
+            {
+                count += facility.PeopleOnWay.Count;
+            }
+        }
+        return count;
+    }
+
+    // --- NEW MAPPING HELPER ---
+    public List<FacilityType> GetFacilitiesForNeed(Passenger.NeedType need)
+    {
+        foreach (var mapping in needMappings)
+        {
+            if (mapping.needType == need)
+            {
+                return mapping.validFacilities;
+            }
+        }
+        return new List<FacilityType>(); 
     }
 }

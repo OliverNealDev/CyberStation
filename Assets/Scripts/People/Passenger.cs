@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Passenger : Person
@@ -12,6 +11,8 @@ public class Passenger : Person
     public bool isBeingEscorted = false;
     public bool hasBeenInspected = false;
     
+    public bool hasFailedNeed = false;
+    
     public QueuableObject currentTarget;
     public Vector3 trainWaitPosition;
     public float timeOfLastPlatformWander;
@@ -22,47 +23,21 @@ public class Passenger : Person
     public float hygiene = 100f;
     
     public passengerMasterStates currentMasterState = passengerMasterStates.InStation;
-    public enum passengerMasterStates
-    {
-        InStation,
-        OnPlatform,
-        OnTrain
-    }
+    public enum passengerMasterStates { InStation, OnPlatform, OnTrain }
     
     public passengerSubStates currentSubState = passengerSubStates.Idle;
-    public enum passengerSubStates
-    {
-        Idle,
-        MovingToTarget,
-        InteractingWithSomething
-    }
+    public enum passengerSubStates { Idle, MovingToTarget, InteractingWithSomething }
     
     public passengerSpecialTargets currentSpecialTarget = passengerSpecialTargets.None;
-    public enum passengerSpecialTargets
-    {
-        None,
-        Platform,
-        TrainDoor,
-        Exit
-    }
+    public enum passengerSpecialTargets { None, Platform, TrainDoor, Exit }
     
-    public enum NeedType
-    {
-        None,
-        Comfort,
-        Satiation,
-        Hydration,
-        Hygiene
-    }
+    public enum NeedType { None, Comfort, Satiation, Hydration, Hygiene }
 
-    protected override void OnTick(float tickLength)
-    {
-    }
+    protected override void OnTick(float tickLength) { }
 
     protected override void Awake()
     {
         base.Awake();
-        
         comfort = Random.Range(50f, 100f);
         satiation = Random.Range(50f, 100f);
         hydration = Random.Range(50f, 100f);
@@ -80,7 +55,7 @@ public class Passenger : Person
     public NeedType GetMostUrgentNeed()
     {
         NeedType mostUrgent = NeedType.None;
-        float lowestValue = 100f;
+        float lowestValue = 40f; // Only search for a facility if a need drops below 40%
 
         if (comfort < lowestValue) { lowestValue = comfort; mostUrgent = NeedType.Comfort; }
         if (satiation < lowestValue) { lowestValue = satiation; mostUrgent = NeedType.Satiation; }

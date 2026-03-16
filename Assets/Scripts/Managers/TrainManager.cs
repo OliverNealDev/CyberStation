@@ -33,6 +33,11 @@ public class TrainManager : MonoBehaviour
         }
     }
 
+    public int GetTotalTrainCount()
+    {
+        return allTrains != null ? allTrains.Length : 0;
+    }
+
     public void UnlockTrain(Train train)
     {
         if (!unlockedTrains.Contains(train)) unlockedTrains.Add(train);

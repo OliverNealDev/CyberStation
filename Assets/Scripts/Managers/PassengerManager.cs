@@ -223,53 +223,48 @@ public class PassengerManager : MonoBehaviour
             return;
         }
         
+        if (passenger.currentMasterState == Passenger.passengerMasterStates.InStation)
+        {
+            if (!passenger.hasTicket && !passenger.isTicketEvader)
+            {
+                GoToFacility(FacilityType.TicketMachine, passenger);
+                return;
+            }
+            if (!passenger.hasTicket && passenger.isTicketEvader)
+            {
+                MoveToPlatformPosition(passenger);
+                return;
+            }
+        }
+        
         Passenger.NeedType nextNeed = passenger.GetMostUrgentNeed();
         
+        if (nextNeed != Passenger.NeedType.None)
+        {
+            List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(nextNeed);
+            
+            if (validFacilities.Count > 0)
+            {
+                if (TrySatisfyNeedWithRandomSwitching(validFacilities, passenger))
+                {
+                    passenger.currentMasterState = Passenger.passengerMasterStates.InStation;
+                    
+                    return; 
+                }
+                else
+                {
+                    passenger.hasFailedNeed = true;
+                }
+            }
+            else
+            {
+                passenger.hasFailedNeed = true;
+            }
+        }
+
         switch (passenger.currentMasterState)
         {
             case Passenger.passengerMasterStates.InStation:
-                if (!passenger.hasTicket && passenger.isTicketEvader)
-                {
-                    MoveToPlatformPosition(passenger);
-                    return;
-                }
-                
-                if (!passenger.hasTicket && !passenger.isTicketEvader)
-                {
-                    GoToFacility(FacilityType.TicketMachine, passenger);
-                    return;
-                }
-
-                switch (nextNeed)
-                {
-                    case Passenger.NeedType.Comfort:
-                        break;
-                    case Passenger.NeedType.Satiation:
-                        break;
-                    case Passenger.NeedType.Hydration:
-                        int RandomHydrationChoice = Random.Range(0, 2);
-                        switch (RandomHydrationChoice)
-                        {
-                            case 0:
-                                if (FacilityManager.Instance.HasFacility(FacilityType.DrinkMachine))
-                                {
-                                    GoToFacility(FacilityType.DrinkMachine, passenger);
-                                    return;
-                                }
-                                break;
-                            case 1:
-                                if (FacilityManager.Instance.HasFacility(FacilityType.CoffeeMachine))
-                                {
-                                    GoToFacility(FacilityType.CoffeeMachine, passenger);
-                                    return;
-                                }
-                                break;
-                        }
-                        break;
-                    case Passenger.NeedType.Hygiene:
-                        break;
-                }
-                
                 MoveToPlatformPosition(passenger);
                 break;
             
@@ -281,12 +276,37 @@ public class PassengerManager : MonoBehaviour
                     return;
                 }
 
-                if (Time.time - passenger.timeOfLastPlatformWander > 20f)
+                if (Time.time - passenger.timeOfLastPlatformWander > 30f)
                 {
                     MoveToPlatformPosition(passenger);
                 }
                 break;
         }
+    }
+    
+    private bool TrySatisfyNeedWithRandomSwitching(List<FacilityType> validTypes, Passenger passenger)
+    {
+        List<FacilityType> typesToTry = new List<FacilityType>(validTypes);
+        
+        while (typesToTry.Count > 0)
+        {
+            int randomIndex = Random.Range(0, typesToTry.Count);
+            FacilityType chosenType = typesToTry[randomIndex];
+            
+            typesToTry.RemoveAt(randomIndex);
+            
+            if (FacilityManager.Instance.HasFacility(chosenType))
+            {
+                return GoToFacility(chosenType, passenger);
+            }
+            
+            if (typesToTry.Count > 0 && Random.value > 0.5f) 
+            {
+                return false;
+            }
+        }
+        
+        return false;
     }
 
     public void DropLitter()
@@ -371,8 +391,8 @@ public class PassengerManager : MonoBehaviour
             passenger.navAgent.ResetPath();
         }
     }
-
-    private void GoToFacility(FacilityType type, Passenger passenger)
+    
+    private bool GoToFacility(FacilityType type, Passenger passenger)
     {
         StationFacility bestMachine = FacilityManager.Instance.GetLeastOccupiedFacility(type);
         
@@ -392,7 +412,11 @@ public class PassengerManager : MonoBehaviour
             {
                 passenger.navAgent.SetDestination(frontOfMachine);
             }
+
+            return true;
         }
+
+        return false;
     }
     
     private void UpdateQueuePosition(Passenger passenger)
@@ -476,20 +500,13 @@ public class PassengerManager : MonoBehaviour
 
             switch (needType)
             {
-                case Passenger.NeedType.Comfort:
-                    passenger.comfort = 100f;
-                    break;
-                case Passenger.NeedType.Satiation:
-                    passenger.satiation = 100f;
-                    break;
-                case Passenger.NeedType.Hydration:
-                    passenger.hydration = 100f;
-                    break;
-                case Passenger.NeedType.Hygiene:
-                    passenger.hygiene = 100f;
-                    break;
+                case Passenger.NeedType.Comfort: passenger.comfort = 100f; break;
+                case Passenger.NeedType.Satiation: passenger.satiation = 100f; break;
+                case Passenger.NeedType.Hydration: passenger.hydration = 100f; break;
+                case Passenger.NeedType.Hygiene: passenger.hygiene = 100f; break;
             }
             
+            passenger.hasFailedNeed = false; // Need successfully met!
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
         }
     }

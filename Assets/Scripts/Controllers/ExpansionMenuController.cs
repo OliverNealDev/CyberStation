@@ -1,27 +1,19 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ExpansionMenuController : MonoBehaviour
 {
-    public string targetFolderPath = "Expansions";
-    public GameObject ExpansionItemButtonPrefab;
+    public GameObject expansionItemButtonPrefab;
     public Transform contentContainer;
-
-    public Expansion[] expansions;
     
-    // Detail View References
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
     public TextMeshProUGUI upfrontServiceCost;
-
     public Button buyExpansionButton;
     
     private Expansion selectedExpansion;
-    
-    private List<Expansion> builtExpansions = new List<Expansion>();
     
     void Start()
     {
@@ -31,11 +23,14 @@ public class ExpansionMenuController : MonoBehaviour
     void OnEnable()
     {
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
+        ExpansionManager.OnExpansionBuilt += CheckButtonInteractabilities;
+        if (selectedExpansion != null) UpdateDetailView(selectedExpansion);
     }
     
     void OnDisable()
     {
         UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
+        ExpansionManager.OnExpansionBuilt -= CheckButtonInteractabilities;
     }
 
     public void LoadItems()
@@ -45,16 +40,9 @@ public class ExpansionMenuController : MonoBehaviour
             Destroy(child.gameObject);
         }
         
-        expansions = Resources.LoadAll<Expansion>(targetFolderPath);
-        
-        // Debug check to help you verify if the path is correct
-        if (expansions.Length == 0)
-        {
-            Debug.LogError($"No Expansion items found in Resources/{targetFolderPath}. Check folder name and file types!");
-            return;
-        }
+        if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null) return;
 
-        foreach (var item in expansions)
+        foreach (var item in ExpansionManager.Instance.allExpansions)
         {
             CreateButton(item);
         }
@@ -62,7 +50,7 @@ public class ExpansionMenuController : MonoBehaviour
 
     private void CreateButton(Expansion data)
     {
-        GameObject newButton = Instantiate(ExpansionItemButtonPrefab, contentContainer);
+        GameObject newButton = Instantiate(expansionItemButtonPrefab, contentContainer);
         
         Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
         if (iconImage) iconImage.sprite = data.icon;
@@ -73,23 +61,16 @@ public class ExpansionMenuController : MonoBehaviour
     
     private void OnExpansionItemButtonClicked(Expansion data)
     {
-        Debug.Log("Clicked on train item: " + data.name);
-
         selectedExpansion = data;
         UpdateDetailView(data);
     }
 
     public void OnBuyExpansionButtonClicked()
     {
-        if (!builtExpansions.Contains(selectedExpansion) && 
-            EconomyManager.Instance.money >= selectedExpansion.upfrontCost  && 
-            selectedExpansion.expansionPrefab != null)
+        if (selectedExpansion != null)
         {
-            EconomyManager.Instance.SpendMoney(selectedExpansion.upfrontCost);
+            ExpansionManager.Instance.TryBuyExpansion(selectedExpansion);
             UpdateDetailView(selectedExpansion);
-            ExpansionManager.Instance.BuildExpansion(selectedExpansion.expansionPrefab);
-            builtExpansions.Add(selectedExpansion);
-            CheckButtonInteractabilities();
         }
     }
     
@@ -103,8 +84,16 @@ public class ExpansionMenuController : MonoBehaviour
 
     void checkBuyExpansionButtonInteractability(Expansion data)
     {
-        bool canBuy = EconomyManager.Instance.money >= data.upfrontCost && !builtExpansions.Contains(selectedExpansion);
-        buyExpansionButton.interactable = canBuy;
+        bool isBuilt = ExpansionManager.Instance.IsExpansionBuilt(data);
+        bool canAfford = EconomyManager.Instance.money >= data.upfrontCost;
+
+        buyExpansionButton.interactable = !isBuilt && canAfford;
+
+        TextMeshProUGUI buyText = buyExpansionButton.GetComponentInChildren<TextMeshProUGUI>();
+        if (buyText != null)
+        {
+            buyText.text = isBuilt ? "Purchased" : "Buy Expansion";
+        }
     }
     
     private void UpdateDetailView(Expansion data)
@@ -112,7 +101,7 @@ public class ExpansionMenuController : MonoBehaviour
         if (detailIcon) detailIcon.sprite = data.icon;
         if (detailName) detailName.text = data.name;
         if (detailDescription) detailDescription.text = data.description;
-        if (upfrontServiceCost) upfrontServiceCost.text = $"Buy ${data.upfrontCost}";
+        if (upfrontServiceCost) upfrontServiceCost.text = ExpansionManager.Instance.IsExpansionBuilt(data) ? "Owned" : $"Buy ${data.upfrontCost}";
 
         checkBuyExpansionButtonInteractability(data);
     }

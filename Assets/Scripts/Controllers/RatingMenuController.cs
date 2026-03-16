@@ -1,11 +1,10 @@
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class RatingMenuController : MonoBehaviour
 {
     public Sprite starFilled;
+    public Sprite starHalf;
     public Sprite starEmpty;
     
     private float tickRate = 20f; 
@@ -23,6 +22,8 @@ public class RatingMenuController : MonoBehaviour
     void Start()
     {
         tickInterval = 1f / tickRate;
+        
+        LoadRatings();
     }
 
     void Update()
@@ -49,9 +50,11 @@ public class RatingMenuController : MonoBehaviour
         SetStars(stationSizeRatingStarsContainer, RatingManager.Instance.stationSizeRating);
     }
     
-    void SetStars(Transform starsContainer, int rating)
+    void SetStars(Transform starsContainer, float rating)
     {
-        int fullStars = rating;
+        float roundedRating = Mathf.Round(rating * 2f) / 2f;
+        int fullStars = Mathf.FloorToInt(roundedRating);
+        bool hasHalfStar = (roundedRating - fullStars) >= 0.5f;
 
         for (int i = 0; i < starsContainer.childCount; i++)
         {
@@ -60,6 +63,10 @@ public class RatingMenuController : MonoBehaviour
             if (i < fullStars)
             {
                 starImage.sprite = starFilled;
+            }
+            else if (i == fullStars && hasHalfStar)
+            {
+                starImage.sprite = starHalf;
             }
             else
             {

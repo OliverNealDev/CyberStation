@@ -27134,7 +27134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c659562bc5a3674399de4fba720dd96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  money: 20000
+  money: 5000
 --- !u!1 &778923728
 GameObject:
   m_ObjectHideFlags: 0
@@ -33583,10 +33583,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28c77e06af3d1024e9adfb8e592b3203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  targetFolderPath: Expansions
-  ExpansionItemButtonPrefab: {fileID: 7900709587236796253, guid: c12acd22bddad154989a70c04305e4f0, type: 3}
+  expansionItemButtonPrefab: {fileID: 7900709587236796253, guid: c12acd22bddad154989a70c04305e4f0, type: 3}
   contentContainer: {fileID: 2144494985}
-  expansions: []
   detailIcon: {fileID: 569321769}
   detailName: {fileID: 1250953865}
   detailDescription: {fileID: 1083295898}
@@ -44700,6 +44698,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae59dd6ff32bb5445915d9d740bceeb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FacilityManager
+  needMappings:
+  - needType: 3
+    validFacilities: 0100000002000000
+  - needType: 1
+    validFacilities: 
+  - needType: 2
+    validFacilities: 
+  - needType: 4
+    validFacilities: 
 --- !u!1 &1439384368
 GameObject:
   m_ObjectHideFlags: 0
@@ -57450,7 +57457,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1d78fef5b87b5541994b7d8a3eeb6b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  LevelParent: {fileID: 2069825539}
+  levelParent: {fileID: 2069825539}
+  allExpansions: []
+  builtExpansions: []
 --- !u!1 &1739965650
 GameObject:
   m_ObjectHideFlags: 0
@@ -58087,6 +58096,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   starFilled: {fileID: 21300000, guid: f6f18f61b03e7a543b547419265a015c, type: 3}
+  starHalf: {fileID: 21300000, guid: f58df569cd7b4ef4aa649cf4b7422782, type: 3}
   starEmpty: {fileID: 21300000, guid: d2f8ad649ead4bf4d863335f61c1a78d, type: 3}
   stationRatingStarsContainer: {fileID: 145956186}
   cleanlinessRatingStarsContainer: {fileID: 1354853545}
@@ -75062,7 +75072,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0af3505dec8646a458a8d3f3782adade, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  stationRating: 5
 --- !u!1 &2137381246
 GameObject:
   m_ObjectHideFlags: 0

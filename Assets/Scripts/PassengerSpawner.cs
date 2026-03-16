@@ -2,9 +2,6 @@ using UnityEngine;
 
 public class PassengerSpawner : MonoBehaviour
 {
-    [Range(1, 5)]
-    public int stationRating = 3;
-
     private float tickRate = 20f; 
     private float tickInterval;
     private float tickTimer = 0f;
@@ -29,7 +26,7 @@ public class PassengerSpawner : MonoBehaviour
     {
         if (TrainManager.Instance == null || PassengerManager.Instance == null) return;
 
-        float efficiency = Mathf.Lerp(0.2f, 1.0f, (stationRating - 1) / 4f);
+        float efficiency = Mathf.Lerp(0.2f, 1.0f, (RatingManager.Instance.stationRating - 1) / 4f);
 
         foreach (var service in TrainManager.Instance.activeTrainServices)
         {

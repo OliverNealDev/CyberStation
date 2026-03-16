@@ -17,4 +17,4 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 9d3e9c72cf72c834da9977f46eaef76c, type: 3}
   staffPrefab: {fileID: 2991288983431714229, guid: 3e558a62844dd8f4abd32d2629b742c3, type: 3}
   hiringCost: 50
-  salaryPerMinute: 5
+  salaryPerMinute: 10
