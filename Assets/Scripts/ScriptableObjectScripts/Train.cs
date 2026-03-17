@@ -18,6 +18,8 @@ public class Train : ScriptableObject
     public int costPerRide = 5;
     
     public float secondsStationary = 10;
+    
+    public Color trainColor = Color.white;
 
     [Header("Economy")]
     public int upfrontCost = 100;

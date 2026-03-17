@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
   m_Name: Sleeker
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  name: Sleeker
+  trainName: Orange Train
   description: A standard modern bullet train that specialises in fast, smooth and
     far travel. Generally affordable to most people.
   icon: {fileID: 21300000, guid: 694f5034ce0a7cd4f8fcbe6e898b02d8, type: 3}
-  trainPrefab: {fileID: 1096767433483698802, guid: 40c089a3b8cecc947a8c95cac13c1c6c, type: 3}
-  carriagePrefab: {fileID: 6338816846241299915, guid: 194a77adea39b9640a3d6c98354f71df, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: f0ee8af53aba7ee47aef6096187be108, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: cdc940b9d789bfa469cb847021ade82e, type: 3}
   speed: 120
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 32
   costPerRide: 10
-  secondsBetweenArrivals: 120
   secondsStationary: 30
+  trainColor: {r: 1, g: 0.40392157, b: 0, a: 1}
   upfrontCost: 5000
   costPerMinute: 200

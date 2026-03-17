@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
   m_Name: Nonpareil
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  name: Nonpareil
+  trainName: New Train
   description: The Nonpareil is a one-of-a-kind premium first-class train specialising
     in luxury and comfort. A favourite for the very wealthy demographic.
   icon: {fileID: 21300000, guid: 49c34829667242640805b3269f24a675, type: 3}
@@ -23,7 +23,7 @@ MonoBehaviour:
   carriageLength: 34
   capacityPerCarriage: 16
   costPerRide: 35
-  secondsBetweenArrivals: 120
   secondsStationary: 30
+  trainColor: {r: 1, g: 0.84313726, b: 0, a: 1}
   upfrontCost: 12000
   costPerMinute: 800

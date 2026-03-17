@@ -13,11 +13,11 @@ public class TrainDoorController : QueuableObject
     public void StartBoardingProcess(TrainService arrivingService)
     {
         state = MachineState.Exiting;
-        int exitingCount = Random.Range(0, Mathf.FloorToInt(arrivingService.trainData.capacityPerCarriage / 8f) + 1); // 2 doors per carriage, so max half capacity can exit from one door
-        StartCoroutine(SpawnExitingPassengers(exitingCount));
+        int exitingCount = Random.Range(0, Mathf.FloorToInt(arrivingService.trainData.capacityPerCarriage / 8f) + 1); 
+        StartCoroutine(SpawnExitingPassengers(exitingCount, arrivingService));
     }
 
-    private IEnumerator SpawnExitingPassengers(int count)
+    private IEnumerator SpawnExitingPassengers(int count, TrainService arrivingService)
     {
         for(int i = 0; i < count; i++)
         {
@@ -30,7 +30,7 @@ public class TrainDoorController : QueuableObject
                 targetPosition.y = 0.07061052f;
                 
                 Quaternion outwardRotation = Quaternion.LookRotation(transform.forward);
-                Passenger exitingPassenger = PassengerManager.Instance.SpawnExitingPassenger(startPosition, outwardRotation);
+                Passenger exitingPassenger = PassengerManager.Instance.SpawnExitingPassenger(startPosition, outwardRotation, arrivingService);
                 
                 if (exitingPassenger != null)
                 {
@@ -44,7 +44,6 @@ public class TrainDoorController : QueuableObject
         
         state = MachineState.Entering;
         
-        // NEW: Tell the manager to wake up anyone waiting for THIS specific train
         if (PassengerManager.Instance != null)
         {
             TrainController controller = GetComponentInParent<TrainController>();

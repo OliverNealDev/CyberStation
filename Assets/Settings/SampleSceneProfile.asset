@@ -46,7 +46,7 @@ MonoBehaviour:
     m_Value: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 5
+    m_Value: 1
   scatter:
     m_OverrideState: 1
     m_Value: 0.55
@@ -89,8 +89,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.LensDistortion
   active: 0
   intensity:
-    m_OverrideState: 0
-    m_Value: 0.16
+    m_OverrideState: 1
+    m_Value: 0.685
   xMultiplier:
     m_OverrideState: 0
     m_Value: 1

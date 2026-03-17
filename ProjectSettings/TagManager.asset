@@ -11,6 +11,7 @@ TagManager:
   - Passenger
   - Litter
   - UnlitterableSurface
+  - BuildableFlooring
   layers:
   - Default
   - TransparentFX

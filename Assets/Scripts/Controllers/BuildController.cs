@@ -9,30 +9,50 @@ public class BuildController : MonoBehaviour
 {
     public static BuildController Instance;
     
-    public bool isBuildingMode = false;
+    [Header("Flooring Materials")]
+    public Material gridMaterial;
+    public Material plainMaterial;
+
+    [SerializeField] private bool _isBuildingMode = false;
+    public bool isBuildingMode
+    {
+        get { return _isBuildingMode; }
+        set
+        {
+            if (_isBuildingMode != value)
+            {
+                _isBuildingMode = value;
+                UpdateFlooringMaterials(_isBuildingMode);
+                
+                if (!_isBuildingMode)
+                {
+                    RemovePreviewObject();
+                }
+            }
+        }
+    }
+
     public GameObject selectedPreviewObject;
     
     private GameObject previewObjectInstance;
-    private ObjectBuildable objectBuildable; // The ObjectBuildable component of the currently selected preview object, used for accessing cost and other data
+    private ObjectBuildable objectBuildable; 
 
-    private int objectRotation = 0; // Rotation state (0, 90, 180, 270 degrees)
-    
-    // Tile-centered objects
-    //[SerializeField] private GameObject ticketMachinePrefab;
-    //[SerializeField] private GameObject ticketBarrierPrefab;
-    
-    // Inter-Tile objects
-    //[SerializeField] private GameObject wallPrefab;
-    //[SerializeField] private GameObject railingPrefab;
+    private int objectRotation = 0; 
 
     private void Awake()
     {
         Instance = this;
     }
-    
+
+    private void Start()
+    {
+        // Ensure the initial state has the correct materials applied
+        UpdateFlooringMaterials(_isBuildingMode);
+    }
+
     void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) // Ensures pointer is not over UI
+        if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) 
         {
             if (previewObjectInstance != null)
             {
@@ -45,7 +65,7 @@ public class BuildController : MonoBehaviour
                     EconomyManager.Instance.SpendMoney(objectBuildable.cost);
                     
                     GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
-                    placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); // Tells object to enable its functionality
+                    placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); 
                     GridManager.Instance.OccupyTile(gridPos.x, gridPos.y, gridPos.z);
                 }
                 else
@@ -75,10 +95,10 @@ public class BuildController : MonoBehaviour
                 previewObjectInstance = Instantiate(selectedPreviewObject);
             }
 
-            if (previewObjectInstance) // If the preview object exists, update its position to the mouse position (tile-aligned)
+            if (previewObjectInstance) 
             {
                 Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-                if (Physics.Raycast(ray, out RaycastHit hitInfo) && !EventSystem.current.IsPointerOverGameObject()) // Ensures pointer is not over UI
+                if (Physics.Raycast(ray, out RaycastHit hitInfo) && !EventSystem.current.IsPointerOverGameObject()) 
                 {
                     Vector3 buildPosition = hitInfo.point;
                     Vector3Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
@@ -97,6 +117,21 @@ public class BuildController : MonoBehaviour
             if (previewObjectInstance != null)
             {
                 Destroy(previewObjectInstance);
+            }
+        }
+    }
+
+    private void UpdateFlooringMaterials(bool buildModeActive)
+    {
+        GameObject[] floorTiles = GameObject.FindGameObjectsWithTag("BuildableFlooring");
+        Material targetMaterial = buildModeActive ? gridMaterial : plainMaterial;
+
+        foreach (GameObject tile in floorTiles)
+        {
+            Renderer tileRenderer = tile.GetComponent<Renderer>();
+            if (tileRenderer != null)
+            {
+                tileRenderer.material = targetMaterial;
             }
         }
     }

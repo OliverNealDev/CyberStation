@@ -9,25 +9,31 @@ public class PassengerManager : MonoBehaviour
     
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
-    private Vector3 passengerSpawnPoint;
+    private List<Vector3> passengerSpawnPoints = new List<Vector3>();
     
     public List<GameObject> litterPrefabs = new List<GameObject>();
 
     private float tickLength = 0.1f; 
     private float tickTimer;
     
-    public List<GameObject> passengerBodyModels = new List<GameObject>();
-    public List<GameObject> passengerHairModels = new List<GameObject>();
-    public List<GameObject> passengerHeadModels = new List<GameObject>();
-    
     void Awake()
     {
         Instance = this;
     }
+
+    void OnEnable()
+    {
+        ExpansionManager.OnExpansionBuilt += UpdatePassengerEntrances;
+    }
+
+    void OnDisable()
+    {
+        ExpansionManager.OnExpansionBuilt -= UpdatePassengerEntrances;
+    }
     
     void Start()
     {
-        passengerSpawnPoint = GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position;
+        UpdatePassengerEntrances();
         InvokeRepeating("DropLitter", 1, 1);
     }
     
@@ -57,8 +63,6 @@ public class PassengerManager : MonoBehaviour
             
             if (passenger.navAgent == null || !passenger.navAgent.isActiveAndEnabled) continue;
 
-            passenger.CalculateNeeds(tickLength);
-            
             switch (passenger.currentSubState)
             {
                 case Passenger.passengerSubStates.Idle:
@@ -82,7 +86,6 @@ public class PassengerManager : MonoBehaviour
                             switch (passenger.currentSpecialTarget)
                             {
                                 case Passenger.passengerSpecialTargets.Platform:
-                                    passenger.timeOfLastPlatformWander = Time.time;
                                     passenger.currentMasterState = Passenger.passengerMasterStates.OnPlatform;
                                     passenger.currentSubState = Passenger.passengerSubStates.Idle;
                                     
@@ -194,6 +197,28 @@ public class PassengerManager : MonoBehaviour
         passenger.navAgent.CompleteOffMeshLink();
         passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
     }
+
+    public void UpdatePassengerEntrances()
+    {
+        passengerSpawnPoints.Clear();
+        GameObject[] spawnObjects = GameObject.FindGameObjectsWithTag("PassengerSpawnPoint");
+        
+        foreach (GameObject obj in spawnObjects)
+        {
+            passengerSpawnPoints.Add(obj.transform.position);
+        }
+        
+        if (passengerSpawnPoints.Count == 0)
+        {
+            passengerSpawnPoints.Add(Vector3.zero);
+        }
+    }
+    
+    private Vector3 GetRandomSpawnPoint()
+    {
+        if (passengerSpawnPoints.Count == 0) return Vector3.zero;
+        return passengerSpawnPoints[Random.Range(0, passengerSpawnPoints.Count)];
+    }
     
     void DecideNextAction(Passenger passenger)
     {
@@ -210,19 +235,13 @@ public class PassengerManager : MonoBehaviour
             passenger.navAgent.ResetPath();
         }
 
-        if (passenger.assignedTrainService == null)
-        {
-            LeaveStation(passenger);
-            return;
-        }
-
-        if (!TrainManager.Instance.activeTrainServices.Contains(passenger.assignedTrainService))
+        if (passenger.assignedTrainService == null || !TrainManager.Instance.activeTrainServices.Contains(passenger.assignedTrainService))
         {
             passenger.assignedTrainService = null;
             LeaveStation(passenger);
             return;
         }
-        
+
         if (passenger.currentMasterState == Passenger.passengerMasterStates.InStation)
         {
             if (!passenger.hasTicket && !passenger.isTicketEvader)
@@ -230,57 +249,42 @@ public class PassengerManager : MonoBehaviour
                 GoToFacility(FacilityType.TicketMachine, passenger);
                 return;
             }
+            
             if (!passenger.hasTicket && passenger.isTicketEvader)
             {
                 MoveToPlatformPosition(passenger);
                 return;
             }
-        }
-        
-        Passenger.NeedType nextNeed = passenger.GetMostUrgentNeed();
-        
-        if (nextNeed != Passenger.NeedType.None)
-        {
-            List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(nextNeed);
-            
-            if (validFacilities.Count > 0)
+
+            while (true)
             {
-                if (TrySatisfyNeedWithRandomSwitching(validFacilities, passenger))
+                Passenger.NeedType nextNeed = passenger.GetNextNeed();
+                
+                if (nextNeed == Passenger.NeedType.None)
                 {
-                    passenger.currentMasterState = Passenger.passengerMasterStates.InStation;
-                    
+                    break;
+                }
+
+                List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(nextNeed);
+                
+                if (validFacilities.Count > 0 && TrySatisfyNeedWithRandomSwitching(validFacilities, passenger))
+                {
                     return; 
                 }
-                else
-                {
-                    passenger.hasFailedNeed = true;
-                }
-            }
-            else
-            {
+                
                 passenger.hasFailedNeed = true;
+                passenger.ClearNeed(nextNeed);
             }
+
+            MoveToPlatformPosition(passenger);
         }
-
-        switch (passenger.currentMasterState)
+        else if (passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform)
         {
-            case Passenger.passengerMasterStates.InStation:
-                MoveToPlatformPosition(passenger);
-                break;
-            
-            case Passenger.passengerMasterStates.OnPlatform:
-                if (passenger.assignedTrainService.physicalTrainInstance != null && 
-                    passenger.assignedTrainService.physicalTrainInstance.IsAtStation())
-                {
-                    SendPassengerToTrainDoor(passenger, passenger.assignedTrainService);
-                    return;
-                }
-
-                if (Time.time - passenger.timeOfLastPlatformWander > 30f)
-                {
-                    MoveToPlatformPosition(passenger);
-                }
-                break;
+            if (passenger.assignedTrainService.physicalTrainInstance != null && 
+                passenger.assignedTrainService.physicalTrainInstance.IsAtStation())
+            {
+                SendPassengerToTrainDoor(passenger, passenger.assignedTrainService);
+            }
         }
     }
     
@@ -362,8 +366,9 @@ public class PassengerManager : MonoBehaviour
         
         UnassignTarget(passenger);
         
-        Vector3 randomizedSpawn = passengerSpawnPoint + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
-        Vector3 exitPosition = NavMesh.SamplePosition(randomizedSpawn, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : passengerSpawnPoint;
+        Vector3 targetExit = GetRandomSpawnPoint();
+        Vector3 randomizedSpawn = targetExit + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
+        Vector3 exitPosition = NavMesh.SamplePosition(randomizedSpawn, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : targetExit;
         
         passenger.navAgent.SetDestination(exitPosition);
         passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
@@ -485,6 +490,9 @@ public class PassengerManager : MonoBehaviour
             {
                 EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
             }
+            
+            ApplyPassengerVisuals(passenger);
+            StartCoroutine(AnimatePassengerPop(passenger, false));
         }
     }
     
@@ -498,16 +506,9 @@ public class PassengerManager : MonoBehaviour
                 passenger.currentTarget = null;
             }
 
-            switch (needType)
-            {
-                case Passenger.NeedType.Comfort: passenger.comfort = 100f; break;
-                case Passenger.NeedType.Satiation: passenger.satiation = 100f; break;
-                case Passenger.NeedType.Hydration: passenger.hydration = 100f; break;
-                case Passenger.NeedType.Hygiene: passenger.hygiene = 100f; break;
-            }
-            
-            passenger.hasFailedNeed = false; // Need successfully met!
+            passenger.ClearNeed(needType);
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
+            StartCoroutine(AnimatePassengerPop(passenger, false));
         }
     }
 
@@ -638,9 +639,15 @@ public class PassengerManager : MonoBehaviour
         }
     }
 
-    public Passenger SpawnExitingPassenger(Vector3 spawnPos, Quaternion spawnRot)
+    public Passenger SpawnExitingPassenger(Vector3 spawnPos, Quaternion spawnRot, TrainService service)
     {
-        Passenger newPassenger = Instantiate(passengerPrefab, spawnPos, spawnRot).GetComponent<Passenger>();
+        Vector3 finalSpawnPos = spawnPos;
+        if (NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        {
+            finalSpawnPos = hit.position;
+        }
+
+        Passenger newPassenger = Instantiate(passengerPrefab, finalSpawnPos, spawnRot).GetComponent<Passenger>();
         
         if (newPassenger.navAgent != null)
         {
@@ -649,10 +656,16 @@ public class PassengerManager : MonoBehaviour
 
         newPassenger.transform.parent = transform;
 
-        SpawnPassengerModels(newPassenger);
+        newPassenger.assignedTrainService = service;
+        ApplyPassengerVisuals(newPassenger);
+        
+        newPassenger.assignedTrainService = null; 
+
         RegisterPassenger(newPassenger);
 
         newPassenger.hasTicket = true; 
+        
+        StartCoroutine(AnimatePassengerPop(newPassenger, false));
         
         return newPassenger;
     }
@@ -748,10 +761,16 @@ public class PassengerManager : MonoBehaviour
 
     public void SpawnPassengerForService(TrainService service)
     {
-        Passenger newPassenger = Instantiate(passengerPrefab, passengerSpawnPoint + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity).GetComponent<Passenger>();
-        newPassenger.transform.parent = transform;
+        Vector3 rawSpawnPoint = GetRandomSpawnPoint() + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0);
+        Vector3 finalSpawnPoint = rawSpawnPoint;
 
-        SpawnPassengerModels(newPassenger);
+        if (NavMesh.SamplePosition(rawSpawnPoint, out NavMeshHit hit, 4f, NavMesh.AllAreas))
+        {
+            finalSpawnPoint = hit.position;
+        }
+
+        Passenger newPassenger = Instantiate(passengerPrefab, finalSpawnPoint, Quaternion.identity).GetComponent<Passenger>();
+        newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = service;
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
@@ -761,28 +780,36 @@ public class PassengerManager : MonoBehaviour
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
         newPassenger.navAgent.avoidancePriority = Random.Range(50, 100);
         
-        DecideNextAction(newPassenger);
-    }
-    
-    void SpawnPassengerModels(Passenger passenger)
-    {
-        GameObject bodyModel = passengerBodyModels[Random.Range(0, passengerBodyModels.Count)];
-        GameObject hairModel = passengerHairModels[Random.Range(0, passengerHairModels.Count)];
-        GameObject headModel = passengerHeadModels[Random.Range(0, passengerHeadModels.Count)];
-
-        GameObject bodyInstance = Instantiate(bodyModel, passenger.transform);
-        GameObject hairInstance = Instantiate(hairModel, passenger.transform);
-        GameObject headInstance = Instantiate(headModel, passenger.transform);
-        
-        Material skinMaterial = GlobalPersonVisuals.Instance.GetRandomSkinMaterial();
-        Material hairMaterial = GlobalPersonVisuals.Instance.GetRandomHairMaterial();
-
-        foreach (Transform child in hairInstance.transform)
+        if (newPassenger.navAgent != null)
         {
-            child.GetComponent<MeshRenderer>().material = hairMaterial;
+            newPassenger.navAgent.enabled = false;
         }
-        
-        headInstance.transform.GetChild(0).GetComponent<MeshRenderer>().material = skinMaterial;
+
+        StartCoroutine(AnimatePassengerPop(newPassenger, true, () => 
+        {
+            if (newPassenger != null && newPassenger.gameObject != null)
+            {
+                if (newPassenger.navAgent != null)
+                {
+                    newPassenger.navAgent.enabled = true;
+                }
+                DecideNextAction(newPassenger);
+            }
+        }));
+    }
+
+    public void ApplyPassengerVisuals(Passenger passenger)
+    {
+        Color passengerColor = Color.gray;
+        if (passenger.assignedTrainService != null && passenger.assignedTrainService.trainData != null)
+        {
+            passengerColor = passenger.assignedTrainService.trainData.trainColor;
+        }
+
+        foreach (MeshRenderer renderer in passenger.GetComponentsInChildren<MeshRenderer>())
+        {
+            renderer.material.color = passengerColor;
+        }
     }
     
     public void RegisterPassenger(Passenger passenger)
@@ -799,6 +826,93 @@ public class PassengerManager : MonoBehaviour
         {
             activePassengers.Remove(passenger);
             Destroy(passenger.gameObject);
+        }
+    }
+
+    private System.Collections.IEnumerator AnimatePassengerPop(Passenger passenger, bool isSpawning, System.Action onMaterialized = null)
+    {
+        if (passenger == null) yield break;
+
+        if (isSpawning)
+        {
+            float spawnDuration = 1.0f;
+            float spawnElapsed = 0f;
+            
+            List<Transform> bodyParts = new List<Transform>();
+            List<Vector3> originalScales = new List<Vector3>();
+
+            foreach (Transform child in passenger.transform)
+            {
+                bodyParts.Add(child);
+                originalScales.Add(child.localScale);
+                child.localScale = Vector3.zero; 
+            }
+
+            passenger.transform.localScale = Vector3.one;
+
+            while (spawnElapsed < spawnDuration)
+            {
+                if (passenger == null) yield break;
+                
+                for (int i = 0; i < bodyParts.Count; i++)
+                {
+                    float delay = i * 0.2f; 
+                    float partT = Mathf.Clamp01((spawnElapsed - delay) / (spawnDuration - 0.4f)); 
+                    
+                    partT = 1f - Mathf.Pow(1f - partT, 3f);
+                    
+                    bodyParts[i].localScale = Vector3.Lerp(Vector3.zero, originalScales[i], partT);
+                }
+
+                spawnElapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (passenger != null)
+            {
+                for (int i = 0; i < bodyParts.Count; i++)
+                {
+                    bodyParts[i].localScale = originalScales[i];
+                }
+            }
+        }
+
+        onMaterialized?.Invoke();
+
+        float popUpDuration = 0.15f;
+        float popDownDuration = 0.2f;
+        Vector3 baseScale = Vector3.one;
+        Vector3 peakScale = baseScale * 1.35f;
+
+        float elapsed = 0f;
+        while (elapsed < popUpDuration)
+        {
+            if (passenger == null) yield break;
+            
+            float t = elapsed / popUpDuration;
+            t = Mathf.Sin(t * Mathf.PI * 0.5f);
+            
+            passenger.transform.localScale = Vector3.Lerp(baseScale, peakScale, t);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        elapsed = 0f;
+        while (elapsed < popDownDuration)
+        {
+            if (passenger == null) yield break;
+            
+            float t = elapsed / popDownDuration;
+            t = t * t * (3f - 2f * t);
+            
+            passenger.transform.localScale = Vector3.Lerp(peakScale, baseScale, t);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (passenger != null)
+        {
+            passenger.transform.localScale = baseScale;
         }
     }
 }

@@ -15,12 +15,11 @@ public class Passenger : Person
     
     public QueuableObject currentTarget;
     public Vector3 trainWaitPosition;
-    public float timeOfLastPlatformWander;
     
-    public float comfort = 100f;
-    public float satiation = 100f;
-    public float hydration = 100f;
-    public float hygiene = 100f;
+    public bool needsComfort;
+    public bool needsSatiation;
+    public bool needsHydration;
+    public bool needsHygiene;
     
     public passengerMasterStates currentMasterState = passengerMasterStates.InStation;
     public enum passengerMasterStates { InStation, OnPlatform, OnTrain }
@@ -38,30 +37,28 @@ public class Passenger : Person
     protected override void Awake()
     {
         base.Awake();
-        comfort = Random.Range(50f, 100f);
-        satiation = Random.Range(50f, 100f);
-        hydration = Random.Range(50f, 100f);
-        hygiene = Random.Range(50f, 100f);
+        
+        needsComfort = Random.value > 0.5f;
+        needsSatiation = Random.value > 0.5f;
+        needsHydration = Random.value > 0.5f;
+        needsHygiene = Random.value > 0.5f;
     }
     
-    public void CalculateNeeds(float delta)
+    public NeedType GetNextNeed()
     {
-        comfort = Mathf.Max(0f, comfort - delta * needReductionRate);
-        satiation = Mathf.Max(0f, satiation - delta * needReductionRate);
-        hydration = Mathf.Max(0f, hydration - delta * needReductionRate);
-        hygiene = Mathf.Max(0f, hygiene - delta * needReductionRate);
+        if (needsComfort) return NeedType.Comfort;
+        if (needsSatiation) return NeedType.Satiation;
+        if (needsHydration) return NeedType.Hydration;
+        if (needsHygiene) return NeedType.Hygiene;
+        
+        return NeedType.None;
     }
-    
-    public NeedType GetMostUrgentNeed()
+
+    public void ClearNeed(NeedType need)
     {
-        NeedType mostUrgent = NeedType.None;
-        float lowestValue = 40f; // Only search for a facility if a need drops below 40%
-
-        if (comfort < lowestValue) { lowestValue = comfort; mostUrgent = NeedType.Comfort; }
-        if (satiation < lowestValue) { lowestValue = satiation; mostUrgent = NeedType.Satiation; }
-        if (hydration < lowestValue) { lowestValue = hydration; mostUrgent = NeedType.Hydration; }
-        if (hygiene < lowestValue) { lowestValue = hygiene; mostUrgent = NeedType.Hygiene; }
-
-        return mostUrgent;
+        if (need == NeedType.Comfort) needsComfort = false;
+        if (need == NeedType.Satiation) needsSatiation = false;
+        if (need == NeedType.Hydration) needsHydration = false;
+        if (need == NeedType.Hygiene) needsHygiene = false;
     }
 }
