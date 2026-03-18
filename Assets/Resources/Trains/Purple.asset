@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
+  m_Name: Purple
+  m_EditorClassIdentifier: Assembly-CSharp::Train
+  trainName: Damson
+  description: A fleeting warmth engulfed in sorrow.
+  icon: {fileID: 21300000, guid: 0acf459aace31dd4da652bde7a2165a2, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: a90147f236edd854391b8d75b93b21b4, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: 1a0b4e3fd9561ce42a05c0dae124f801, type: 3}
+  speed: 120
+  carriageCount: 4
+  carriageLength: 34
+  capacityPerCarriage: 36
+  costPerRide: 5
+  secondsStationary: 30
+  trainColor: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
+  isWarm: 0
+  upfrontCost: 3300
+  costPerMinute: 220

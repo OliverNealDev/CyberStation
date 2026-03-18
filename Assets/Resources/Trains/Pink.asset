@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
-  m_Name: Nonpareil
+  m_Name: Pink
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  trainName: New Train
-  description: The Nonpareil is a one-of-a-kind premium first-class train specialising
-    in luxury and comfort. A favourite for the very wealthy demographic.
+  trainName: Fuchsia
+  description: Adjacence to bliss and horror.
   icon: {fileID: 21300000, guid: 49c34829667242640805b3269f24a675, type: 3}
-  trainPrefab: {fileID: 1096767433483698802, guid: 5e5f4de0abdabac46bbec9ee0b67ead5, type: 3}
-  carriagePrefab: {fileID: 6338816846241299915, guid: ec5ec9130c62cd24bbd26ec2bc97b683, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 5d084b5b346907445ac968edf438a737, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: ba6a72c68374fd74e998701a0313fab0, type: 3}
   speed: 120
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 16
   costPerRide: 35
   secondsStationary: 30
-  trainColor: {r: 1, g: 0.84313726, b: 0, a: 1}
-  upfrontCost: 12000
-  costPerMinute: 800
+  trainColor: {r: 1, g: 0.11372549, b: 0.5568628, a: 1}
+  isWarm: 1
+  upfrontCost: 9000
+  costPerMinute: 600

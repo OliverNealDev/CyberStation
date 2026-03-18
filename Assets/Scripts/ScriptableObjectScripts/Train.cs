@@ -21,6 +21,8 @@ public class Train : ScriptableObject
     
     public Color trainColor = Color.white;
 
+    public bool isWarm = false;
+
     [Header("Economy")]
     public int upfrontCost = 100;
     public int costPerMinute = 10;

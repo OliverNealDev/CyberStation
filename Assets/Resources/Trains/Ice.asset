@@ -10,21 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
-  m_Name: Dreg
+  m_Name: Ice
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  trainName: Purple Train
-  description: Dregs are known for their rough comfort and lack of onboard services,
-    but make up generously with their highly-affordable ticket prices. A popular
-    choice for the frugal.
+  trainName: Azure
+  description: 'A beautifully timeless and nonpareil ruin. '
   icon: {fileID: 21300000, guid: 0acf459aace31dd4da652bde7a2165a2, type: 3}
-  trainPrefab: {fileID: 1096767433483698802, guid: a90147f236edd854391b8d75b93b21b4, type: 3}
-  carriagePrefab: {fileID: 6338816846241299915, guid: 1a0b4e3fd9561ce42a05c0dae124f801, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: 16096bf8812db2b408e1fd1f6f05600e, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: 3ea3338ba431d6d43a879d98bdc16a4c, type: 3}
   speed: 120
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 36
   costPerRide: 5
   secondsStationary: 30
-  trainColor: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
-  upfrontCost: 3000
+  trainColor: {r: 0, g: 1, b: 1, a: 1}
+  isWarm: 0
+  upfrontCost: 1200
   costPerMinute: 80

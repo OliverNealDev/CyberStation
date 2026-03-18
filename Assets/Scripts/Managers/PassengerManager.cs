@@ -845,12 +845,19 @@ public class PassengerManager : MonoBehaviour
 
     public void SpawnPassengerForService(TrainService service)
     {
-        Vector3 finalSpawnPoint = GetRandomSpawnPoint();
+        Vector3 spawnPoint = GetRandomSpawnPoint();
+        Vector3 finalSpawnPoint = spawnPoint;
+        
+        if (NavMesh.SamplePosition(spawnPoint, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        {
+            finalSpawnPoint = hit.position;
+        }
 
         Passenger newPassenger = Instantiate(passengerPrefab, finalSpawnPoint, Quaternion.identity).GetComponent<Passenger>();
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = service;
+        newPassenger.SetThermalNeeds(service.trainData.isWarm);
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);

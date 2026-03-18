@@ -16,10 +16,9 @@ public class Passenger : Person
     public QueuableObject currentTarget;
     public Vector3 trainWaitPosition;
     
-    public bool needsComfort;
-    public bool needsSatiation;
-    public bool needsHydration;
-    public bool needsHygiene;
+    public bool needsWarmth;
+    public bool needsCold;
+    public bool needsStabilisation;
     
     public passengerMasterStates currentMasterState = passengerMasterStates.InStation;
     public enum passengerMasterStates { InStation, OnPlatform, OnTrain }
@@ -30,7 +29,7 @@ public class Passenger : Person
     public passengerSpecialTargets currentSpecialTarget = passengerSpecialTargets.None;
     public enum passengerSpecialTargets { None, Platform, TrainDoor, Exit }
     
-    public enum NeedType { None, Comfort, Satiation, Hydration, Hygiene }
+    public enum NeedType { None, Warmth, Cold, Stabilisation }
 
     protected override void OnTick(float tickLength) { }
 
@@ -38,27 +37,36 @@ public class Passenger : Person
     {
         base.Awake();
         
-        needsComfort = Random.value > 0.5f;
-        needsSatiation = Random.value > 0.5f;
-        needsHydration = Random.value > 0.5f;
-        needsHygiene = Random.value > 0.5f;
+        needsStabilisation = Random.value > 0.5f;
+    }
+
+    public void SetThermalNeeds(bool isWarmTrain)
+    {
+        if (isWarmTrain)
+        {
+            needsWarmth = Random.value > 0.5f;
+            needsCold = false;
+        }
+        else
+        {
+            needsCold = Random.value > 0.5f;
+            needsWarmth = false;
+        }
     }
     
     public NeedType GetNextNeed()
     {
-        if (needsComfort) return NeedType.Comfort;
-        if (needsSatiation) return NeedType.Satiation;
-        if (needsHydration) return NeedType.Hydration;
-        if (needsHygiene) return NeedType.Hygiene;
+        if (needsWarmth) return NeedType.Warmth;
+        if (needsCold) return NeedType.Cold;
+        if (needsStabilisation) return NeedType.Stabilisation;
         
         return NeedType.None;
     }
 
     public void ClearNeed(NeedType need)
     {
-        if (need == NeedType.Comfort) needsComfort = false;
-        if (need == NeedType.Satiation) needsSatiation = false;
-        if (need == NeedType.Hydration) needsHydration = false;
-        if (need == NeedType.Hygiene) needsHygiene = false;
+        if (need == NeedType.Warmth) needsWarmth = false;
+        if (need == NeedType.Cold) needsCold = false;
+        if (need == NeedType.Stabilisation) needsStabilisation = false;
     }
 }

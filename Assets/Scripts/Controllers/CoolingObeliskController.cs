@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class DrinkVendingMachineController : StationFacility
+public class CoolingObeliskController : StationFacility
 {
-    public int drinkPrice = 1;
+    public int usePrice = 2;
     
     void Start()
     {
@@ -11,8 +11,8 @@ public class DrinkVendingMachineController : StationFacility
 
     protected override void DeliverService(Passenger passenger)
     {
-        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Warmth, passenger);
-        int price = drinkPrice;
+        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Cold, passenger);
+        int price = usePrice;
         EconomyManager.Instance.AddMoney(price);
         if (WorldSpacePromptCoordinator.Instance != null)
         {

@@ -3,11 +3,10 @@ using UnityEngine;
 public enum FacilityType
 {
     TicketMachine,
-    CoffeeMachine,
-    DrinkMachine,
-    SnackMachine,
-    Bathroom,
-    Bench
+    RadiantObelisk,
+    CoolingObelisk,
+    ApathyDispenser,
+    CohesionAnchor
 }
 
 public abstract class StationFacility : QueuableObject 
