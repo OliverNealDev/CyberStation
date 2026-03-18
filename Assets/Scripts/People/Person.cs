@@ -26,13 +26,11 @@ public abstract class Person : MonoBehaviour
     protected virtual void Awake()
     {
         navAgent = GetComponent<NavMeshAgent>();
-        navAgent.speed = Random.Range(3f, 4f);
-    }
-
-    void Start()
-    {
-        float randomScale = Random.Range(0.9f, 1.1f);
-        transform.localScale = new Vector3(randomScale, randomScale, randomScale);
+        
+        if (navAgent != null)
+        {
+            navAgent.speed = Random.Range(3f, 4f);
+        }
     }
 
     protected abstract void OnTick(float tickLength);

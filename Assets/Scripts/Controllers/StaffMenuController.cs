@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class StaffMenuController : MonoBehaviour
@@ -11,7 +10,6 @@ public class StaffMenuController : MonoBehaviour
 
     public StaffMember[] staff;
     
-    // Detail View References
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
@@ -47,10 +45,8 @@ public class StaffMenuController : MonoBehaviour
         
         staff = Resources.LoadAll<StaffMember>(targetFolderPath);
         
-        // Debug check to help you verify if the path is correct
         if (staff.Length == 0)
         {
-            Debug.LogError($"No Staff found in Resources/{targetFolderPath}. Check folder name and file types!");
             return;
         }
 
@@ -79,8 +75,6 @@ public class StaffMenuController : MonoBehaviour
     
     private void OnStaffButtonClicked(StaffMember data)
     {
-        Debug.Log("Clicked on staff member: " + data.staffName);
-
         selectedStaff = data;
         UpdateDetailView(data);
     }
@@ -102,18 +96,36 @@ public class StaffMenuController : MonoBehaviour
         if (EconomyManager.Instance.money >= selectedStaff.hiringCost)
         {
             EconomyManager.Instance.SpendMoney(selectedStaff.hiringCost);
-            Staff newStaffMember = Instantiate(selectedStaff.staffPrefab, GameObject.FindGameObjectWithTag("PassengerSpawnPoint").transform.position + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0), Quaternion.identity).GetComponent<Staff>();
+            
+            Vector3 spawnPosition = Vector3.zero;
+            if (PassengerManager.Instance != null)
+            {
+                spawnPosition = PassengerManager.Instance.GetRandomSpawnPoint();
+            }
+
+            Staff newStaffMember = Instantiate(selectedStaff.staffPrefab, spawnPosition, Quaternion.identity).GetComponent<Staff>();
             newStaffMember.salaryPerMinute = selectedStaff.salaryPerMinute;
             newStaffMember.staffType = selectedStaff;
+            
+            if (newStaffMember.navAgent != null) newStaffMember.navAgent.enabled = false;
+
+            MaterializeAnimator animator = newStaffMember.GetComponent<MaterializeAnimator>();
+            if (animator != null)
+            {
+                animator.Materialize(() => {
+                    if (newStaffMember != null && newStaffMember.navAgent != null) newStaffMember.navAgent.enabled = true;
+                });
+            }
+            else
+            {
+                if (newStaffMember.navAgent != null) newStaffMember.navAgent.enabled = true;
+            }
+
             StaffManager.Instance.HireStaff(newStaffMember);
             
             checkFireButtonInteractability(selectedStaff);
             
             LoadItems();
-        }
-        else
-        {
-            Debug.Log("Not enough money to hire " + selectedStaff.staffName);
         }
     }
 

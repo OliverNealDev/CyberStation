@@ -9,7 +9,12 @@ public class PassengerManager : MonoBehaviour
     
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
+    
+    [Range(0f, 1f)] public float spontaneousDematerializationRate = 0.0004f;
+    
     private List<Vector3> passengerSpawnPoints = new List<Vector3>();
+    
+    public List<MaterializerController> materializers = new List<MaterializerController>();
     
     public List<GameObject> litterPrefabs = new List<GameObject>();
 
@@ -35,6 +40,22 @@ public class PassengerManager : MonoBehaviour
     {
         UpdatePassengerEntrances();
         InvokeRepeating("DropLitter", 1, 1);
+    }
+    
+    public void RegisterMaterializer(MaterializerController mat)
+    {
+        if (!materializers.Contains(mat))
+        {
+            materializers.Add(mat);
+        }
+    }
+
+    public void DeregisterMaterializer(MaterializerController mat)
+    {
+        if (materializers.Contains(mat))
+        {
+            materializers.Remove(mat);
+        }
     }
     
     void Update()
@@ -99,10 +120,23 @@ public class PassengerManager : MonoBehaviour
                                     UnregisterPassenger(passenger);
                                     break;
                                 case Passenger.passengerSpecialTargets.Exit:
-                                    UnregisterPassenger(passenger);
+                                    passenger.navAgent.enabled = false;
+                                    passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+                                    
+                                    MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
+                                    if (animator != null)
+                                    {
+                                        animator.Dematerialize(() => 
+                                        {
+                                            UnregisterPassenger(passenger);
+                                        });
+                                    }
+                                    else
+                                    {
+                                        UnregisterPassenger(passenger);
+                                    }
                                     break;
                             }
-                            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
                         }
                         else if (passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.Exit)
                         {
@@ -214,8 +248,14 @@ public class PassengerManager : MonoBehaviour
         }
     }
     
-    private Vector3 GetRandomSpawnPoint()
+    public Vector3 GetRandomSpawnPoint()
     {
+        if (materializers.Count > 0)
+        {
+            MaterializerController mat = materializers[Random.Range(0, materializers.Count)];
+            return mat.GetRandomPointOnPad();
+        }
+
         if (passengerSpawnPoints.Count == 0) return Vector3.zero;
         return passengerSpawnPoints[Random.Range(0, passengerSpawnPoints.Count)];
     }
@@ -317,42 +357,79 @@ public class PassengerManager : MonoBehaviour
     {
         if (litterPrefabs.Count == 0 || activePassengers.Count == 0) return;
         
-        List<Passenger> passengersLittered = new List<Passenger>();
-        int passengersToLitter = Mathf.FloorToInt(Random.Range(0, activePassengers.Count / 250f)); 
-        if (passengersToLitter == 0)
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
         {
-            if (Random.Range(0, 2500) < activePassengers.Count) 
+            if (Random.value <= spontaneousDematerializationRate)
             {
-                passengersToLitter = 1;
-            }
-            else
-            {
-                return;
+                Passenger randomPassenger = activePassengers[i];
+                
+                Vector3 rayStart = randomPassenger.transform.position + (Vector3.up * 0.5f);
+                if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 2f))
+                {
+                    if (hit.collider.CompareTag("UnlitterableSurface"))
+                    {
+                        continue; 
+                    }
+                }
+
+                activePassengers.RemoveAt(i);
+                UnassignTarget(randomPassenger);
+                if (randomPassenger.navAgent != null) randomPassenger.navAgent.enabled = false;
+                
+                StartCoroutine(ReplacePassengerWithLitter(randomPassenger));
             }
         }
+    }
+
+    private System.Collections.IEnumerator ReplacePassengerWithLitter(Passenger passenger)
+    {
+        float duration = 1.0f;
+        float elapsed = 0f;
+
+        Vector3 puddlePos = passenger.transform.position;
+        Color puddleColor = Color.white;
         
-        for (int i = 0; i < passengersToLitter; i++) 
-        { 
-            Passenger randomPassenger = activePassengers[Random.Range(0, activePassengers.Count)];
-            if (passengersLittered.Contains(randomPassenger)) continue; 
+        MeshRenderer renderer = passenger.GetComponentInChildren<MeshRenderer>();
+        if (renderer != null) puddleColor = renderer.material.color;
 
-            Vector3 rayStart = randomPassenger.transform.position + (Vector3.up * 0.5f);
-            
-            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 2f))
-            {
-                if (hit.collider.CompareTag("UnlitterableSurface"))
-                {
-                    continue; 
-                }
-            }
+        GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
+        Vector3 targetLitterScale = litterPrefab.transform.localScale;
 
-            GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
-            
-            if (NavMesh.SamplePosition(randomPassenger.transform.position, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
+        GameObject litterObj = Instantiate(litterPrefab, puddlePos, Quaternion.Euler(0, Random.Range(0, 360), 0));
+        litterObj.transform.localScale = Vector3.zero;
+
+        MeshRenderer litterRenderer = litterObj.GetComponentInChildren<MeshRenderer>();
+        if (litterRenderer != null) litterRenderer.material.color = puddleColor;
+
+        Vector3 startPassengerScale = passenger.transform.localScale;
+
+        while (elapsed < duration)
+        {
+            if (passenger == null || litterObj == null) yield break;
+
+            float t = elapsed / duration;
+            float smoothT = t * t * (3f - 2f * t);
+
+            passenger.transform.localScale = Vector3.Lerp(startPassengerScale, Vector3.zero, smoothT);
+            litterObj.transform.localScale = Vector3.Lerp(Vector3.zero, targetLitterScale, smoothT);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (litterObj != null)
+        {
+            litterObj.transform.localScale = targetLitterScale;
+            Litter litterComp = litterObj.GetComponent<Litter>();
+            if (litterComp != null && JanitorCoordinator.Instance != null)
             {
-                Instantiate(litterPrefab, navHit.position, Quaternion.identity);
-                passengersLittered.Add(randomPassenger);
+                JanitorCoordinator.Instance.ReportLitter(litterComp);
             }
+        }
+
+        if (passenger != null)
+        {
+            Destroy(passenger.gameObject);
         }
     }
     
@@ -366,13 +443,11 @@ public class PassengerManager : MonoBehaviour
         
         UnassignTarget(passenger);
         
-        Vector3 targetExit = GetRandomSpawnPoint();
-        Vector3 randomizedSpawn = targetExit + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
-        Vector3 exitPosition = NavMesh.SamplePosition(randomizedSpawn, out NavMeshHit validPosition, 4, NavMesh.AllAreas) ? validPosition.position : targetExit;
+        Vector3 exitPosition = GetRandomSpawnPoint();
         
         passenger.navAgent.SetDestination(exitPosition);
         passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
-        passenger.navAgent.stoppingDistance = 2f;
+        passenger.navAgent.stoppingDistance = 0.5f;
 
         passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.Exit;
         passenger.currentMasterState = Passenger.passengerMasterStates.InStation;
@@ -492,7 +567,9 @@ public class PassengerManager : MonoBehaviour
             }
             
             ApplyPassengerVisuals(passenger);
-            StartCoroutine(AnimatePassengerPop(passenger, false));
+            
+            MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
+            if (animator != null) animator.Pop();
         }
     }
     
@@ -508,7 +585,9 @@ public class PassengerManager : MonoBehaviour
 
             passenger.ClearNeed(needType);
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
-            StartCoroutine(AnimatePassengerPop(passenger, false));
+            
+            MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
+            if (animator != null) animator.Pop();
         }
     }
 
@@ -665,7 +744,8 @@ public class PassengerManager : MonoBehaviour
 
         newPassenger.hasTicket = true; 
         
-        StartCoroutine(AnimatePassengerPop(newPassenger, false));
+        MaterializeAnimator animator = newPassenger.GetComponent<MaterializeAnimator>();
+        if (animator != null) animator.Pop();
         
         return newPassenger;
     }
@@ -710,64 +790,50 @@ public class PassengerManager : MonoBehaviour
                 }
 
                 LeaveStation(passenger);
-                
-                if (Random.Range(0f, 1f) < 0.25f) 
-                {
-                    if (passenger.dialogueData != null)
-                    {
-                        string line = passenger.dialogueData.GetRandomLine(DialogueType.TrainServiceEnded);
-                        passenger.Dialogue(passenger, line, Color.softRed, Random.Range(3f, 8f));
-                    }
-                }
-                
                 passenger.assignedTrainService = null;
             }
         }
     }
-    
-    public void OnCaughtBySecurity(Passenger passenger, SecurityGuard securityGuard)
+
+    public void OnCaughtByDrone(Passenger passenger)
     {
         UnassignTarget(passenger);
         
         passenger.hasBypassedBarrier = false; 
-        passenger.isBeingEscorted = true;
-        
         passenger.currentSubState = Passenger.passengerSubStates.InteractingWithSomething;
-        
-        StartCoroutine(Person.ExecuteAfterDelay(4, () => LeaveStation(passenger)));
-        StartCoroutine(Person.ExecuteAfterDelay(4, () => PayEvasionFine(passenger, securityGuard)));
-        
-        StartCoroutine(Person.ExecuteAfterDelay(2, () => ReplyToBeingCaught(passenger)));
-    }
-    
-    void PayEvasionFine(Passenger passenger, SecurityGuard securityGuard)
-    {
-        EconomyManager.Instance.AddMoney(50);
-        WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-            "+$50", 
-            securityGuard.transform.position + Vector3.up * 7f, 
-            Color.darkGreen);
-    }
 
-    void ReplyToBeingCaught(Passenger passenger)
-    {
-        passenger.Dialogue(passenger, passenger.dialogueData.GetRandomLine(DialogueType.CaughtBySecurity), Color.white, 2);
-    }
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.AddMoney(50);
+        }
 
-    void CaughtEmoji(Passenger passenger)
-    {
-        passenger.Expression(passenger, passenger.expressionData.policeOfficer, 3600f);
+        if (WorldSpacePromptCoordinator.Instance != null)
+        {
+            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                "+$50", 
+                passenger.transform.position + Vector3.up * 3f, 
+                Color.darkGreen);
+        }
+
+        passenger.navAgent.enabled = false;
+        
+        MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
+        if (animator != null)
+        {
+            animator.Dematerialize(() => 
+            {
+                UnregisterPassenger(passenger);
+            });
+        }
+        else
+        {
+            UnregisterPassenger(passenger);
+        }
     }
 
     public void SpawnPassengerForService(TrainService service)
     {
-        Vector3 rawSpawnPoint = GetRandomSpawnPoint() + new Vector3(Random.Range(-1.5f, 1.5f), 0, 0);
-        Vector3 finalSpawnPoint = rawSpawnPoint;
-
-        if (NavMesh.SamplePosition(rawSpawnPoint, out NavMeshHit hit, 4f, NavMesh.AllAreas))
-        {
-            finalSpawnPoint = hit.position;
-        }
+        Vector3 finalSpawnPoint = GetRandomSpawnPoint();
 
         Passenger newPassenger = Instantiate(passengerPrefab, finalSpawnPoint, Quaternion.identity).GetComponent<Passenger>();
         newPassenger.transform.parent = transform;
@@ -785,17 +851,26 @@ public class PassengerManager : MonoBehaviour
             newPassenger.navAgent.enabled = false;
         }
 
-        StartCoroutine(AnimatePassengerPop(newPassenger, true, () => 
+        MaterializeAnimator animator = newPassenger.GetComponent<MaterializeAnimator>();
+        if (animator != null)
         {
-            if (newPassenger != null && newPassenger.gameObject != null)
+            animator.Materialize(() => 
             {
-                if (newPassenger.navAgent != null)
+                if (newPassenger != null && newPassenger.gameObject != null)
                 {
-                    newPassenger.navAgent.enabled = true;
+                    if (newPassenger.navAgent != null)
+                    {
+                        newPassenger.navAgent.enabled = true;
+                    }
+                    DecideNextAction(newPassenger);
                 }
-                DecideNextAction(newPassenger);
-            }
-        }));
+            });
+        }
+        else
+        {
+            if (newPassenger.navAgent != null) newPassenger.navAgent.enabled = true;
+            DecideNextAction(newPassenger);
+        }
     }
 
     public void ApplyPassengerVisuals(Passenger passenger)
@@ -826,93 +901,6 @@ public class PassengerManager : MonoBehaviour
         {
             activePassengers.Remove(passenger);
             Destroy(passenger.gameObject);
-        }
-    }
-
-    private System.Collections.IEnumerator AnimatePassengerPop(Passenger passenger, bool isSpawning, System.Action onMaterialized = null)
-    {
-        if (passenger == null) yield break;
-
-        if (isSpawning)
-        {
-            float spawnDuration = 1.0f;
-            float spawnElapsed = 0f;
-            
-            List<Transform> bodyParts = new List<Transform>();
-            List<Vector3> originalScales = new List<Vector3>();
-
-            foreach (Transform child in passenger.transform)
-            {
-                bodyParts.Add(child);
-                originalScales.Add(child.localScale);
-                child.localScale = Vector3.zero; 
-            }
-
-            passenger.transform.localScale = Vector3.one;
-
-            while (spawnElapsed < spawnDuration)
-            {
-                if (passenger == null) yield break;
-                
-                for (int i = 0; i < bodyParts.Count; i++)
-                {
-                    float delay = i * 0.2f; 
-                    float partT = Mathf.Clamp01((spawnElapsed - delay) / (spawnDuration - 0.4f)); 
-                    
-                    partT = 1f - Mathf.Pow(1f - partT, 3f);
-                    
-                    bodyParts[i].localScale = Vector3.Lerp(Vector3.zero, originalScales[i], partT);
-                }
-
-                spawnElapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            if (passenger != null)
-            {
-                for (int i = 0; i < bodyParts.Count; i++)
-                {
-                    bodyParts[i].localScale = originalScales[i];
-                }
-            }
-        }
-
-        onMaterialized?.Invoke();
-
-        float popUpDuration = 0.15f;
-        float popDownDuration = 0.2f;
-        Vector3 baseScale = Vector3.one;
-        Vector3 peakScale = baseScale * 1.35f;
-
-        float elapsed = 0f;
-        while (elapsed < popUpDuration)
-        {
-            if (passenger == null) yield break;
-            
-            float t = elapsed / popUpDuration;
-            t = Mathf.Sin(t * Mathf.PI * 0.5f);
-            
-            passenger.transform.localScale = Vector3.Lerp(baseScale, peakScale, t);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        elapsed = 0f;
-        while (elapsed < popDownDuration)
-        {
-            if (passenger == null) yield break;
-            
-            float t = elapsed / popDownDuration;
-            t = t * t * (3f - 2f * t);
-            
-            passenger.transform.localScale = Vector3.Lerp(peakScale, baseScale, t);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (passenger != null)
-        {
-            passenger.transform.localScale = baseScale;
         }
     }
 }

@@ -6,8 +6,8 @@ public class SecurityCoordinator : MonoBehaviour
     public static SecurityCoordinator Instance;
     
     public List<Passenger> knownEvaders = new List<Passenger>();
-    public Dictionary<Passenger, SecurityGuard> currentPursuits = new Dictionary<Passenger, SecurityGuard>();
-    public Dictionary<Passenger, SecurityGuard> currentInspections = new Dictionary<Passenger, SecurityGuard>();
+    public Dictionary<Passenger, SecurityDrone> currentPursuits = new Dictionary<Passenger, SecurityDrone>();
+    public Dictionary<Passenger, SecurityDrone> currentInspections = new Dictionary<Passenger, SecurityDrone>();
     
     void Awake()
     {
@@ -22,19 +22,19 @@ public class SecurityCoordinator : MonoBehaviour
         }
     }
 
-    public void RequestAssignment(SecurityGuard securityGuard)
+    public void RequestAssignment(SecurityDrone securityDrone)
     {
-        Passenger assignedEvader = GetAvailableEvaderForGuard(securityGuard);
+        Passenger assignedEvader = GetAvailableEvaderForGuard(securityDrone);
         if (assignedEvader != null)
         {
-            securityGuard.AssignEvader(assignedEvader);
+            securityDrone.AssignEvader(assignedEvader);
             return;
         }
 
-        Passenger assignedInspection = GetAvailableInspectionForGuard(securityGuard);
+        Passenger assignedInspection = GetAvailableInspectionForGuard(securityDrone);
         if (assignedInspection != null)
         {
-            securityGuard.AssignInspection(assignedInspection);
+            securityDrone.AssignInspection(assignedInspection);
         }
     }
     
@@ -59,7 +59,7 @@ public class SecurityCoordinator : MonoBehaviour
         }
     }
     
-    private Passenger GetAvailableEvaderForGuard(SecurityGuard securityGuard)
+    private Passenger GetAvailableEvaderForGuard(SecurityDrone securityDrone)
     {
         Passenger bestTarget = null;
         float closestDist = float.MaxValue;
@@ -76,7 +76,7 @@ public class SecurityCoordinator : MonoBehaviour
             if (currentPursuits.ContainsKey(evader)) continue;
             if (evader.currentMasterState == Passenger.passengerMasterStates.OnTrain) continue;
 
-            float dist = Vector3.Distance(securityGuard.transform.position, evader.transform.position);
+            float dist = Vector3.Distance(securityDrone.transform.position, evader.transform.position);
             if (dist < closestDist)
             {
                 closestDist = dist;
@@ -86,13 +86,13 @@ public class SecurityCoordinator : MonoBehaviour
 
         if (bestTarget != null)
         {
-            currentPursuits.Add(bestTarget, securityGuard);
+            currentPursuits.Add(bestTarget, securityDrone);
         }
 
         return bestTarget;
     }
 
-    private Passenger GetAvailableInspectionForGuard(SecurityGuard securityGuard)
+    private Passenger GetAvailableInspectionForGuard(SecurityDrone securityDrone)
     {
         Passenger bestTarget = null;
         float closestDist = float.MaxValue;
@@ -106,7 +106,7 @@ public class SecurityCoordinator : MonoBehaviour
             if (p.currentMasterState != Passenger.passengerMasterStates.OnPlatform) continue;
             if (p.hasBeenInspected) continue;
 
-            float dist = Vector3.Distance(securityGuard.transform.position, p.transform.position);
+            float dist = Vector3.Distance(securityDrone.transform.position, p.transform.position);
             if (dist < closestDist)
             {
                 closestDist = dist;
@@ -116,7 +116,7 @@ public class SecurityCoordinator : MonoBehaviour
 
         if (bestTarget != null)
         {
-            currentInspections.Add(bestTarget, securityGuard);
+            currentInspections.Add(bestTarget, securityDrone);
         }
 
         return bestTarget;
