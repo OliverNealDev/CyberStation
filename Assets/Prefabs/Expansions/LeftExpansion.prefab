@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 6070618758826430364}
   - component: {fileID: 8376517267540331153}
   - component: {fileID: 6297261222906193960}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: BuildableArea
   m_TagString: BuildableFlooring
   m_Icon: {fileID: 0}

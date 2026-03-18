@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 7613933253147931461}
   - component: {fileID: 7091495862641126179}
   - component: {fileID: 1408646143796637083}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: BuildableArea (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1144,7 +1144,7 @@ GameObject:
   - component: {fileID: 47811883910829869}
   - component: {fileID: 1561126080758474732}
   - component: {fileID: 8914392816224246829}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: PlatformPlane
   m_TagString: BuildableFlooring
   m_Icon: {fileID: 0}
@@ -1500,7 +1500,7 @@ GameObject:
   - component: {fileID: 1247871470694609136}
   - component: {fileID: 5557142101861217462}
   - component: {fileID: 7541123707037927130}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: BuildableArea (11)
   m_TagString: BuildableFlooring
   m_Icon: {fileID: 0}
@@ -7191,7 +7191,7 @@ GameObject:
   - component: {fileID: 55074074453602658}
   - component: {fileID: 8383503662228516403}
   - component: {fileID: 6756438088538448543}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: BuildableArea (13)
   m_TagString: BuildableFlooring
   m_Icon: {fileID: 0}
@@ -14131,7 +14131,7 @@ GameObject:
   - component: {fileID: 3004257043675294489}
   - component: {fileID: 476869922631557180}
   - component: {fileID: 2668845239059161281}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: BuildableArea (12)
   m_TagString: BuildableFlooring
   m_Icon: {fileID: 0}
@@ -14487,7 +14487,7 @@ GameObject:
   - component: {fileID: 7265961767925207883}
   - component: {fileID: 2251736609303150755}
   - component: {fileID: 6796533862936242435}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: BuildableArea (8)
   m_TagString: BuildableFlooring
   m_Icon: {fileID: 0}
@@ -18547,6 +18547,18 @@ PrefabInstance:
     - target: {fileID: 431390949014300579, guid: a037d13e1c37c574d8e36b13ce435061, type: 3}
       propertyPath: m_Name
       value: Tracks
+      objectReference: {fileID: 0}
+    - target: {fileID: 431390949014300579, guid: a037d13e1c37c574d8e36b13ce435061, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 2169756213196710647, guid: a037d13e1c37c574d8e36b13ce435061, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 2617454187893814272, guid: a037d13e1c37c574d8e36b13ce435061, type: 3}
+      propertyPath: m_Layer
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 3925508323069092526, guid: a037d13e1c37c574d8e36b13ce435061, type: 3}
       propertyPath: m_LocalPosition.y

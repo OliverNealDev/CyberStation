@@ -5,6 +5,11 @@ public class Janitor : Staff
     private Litter targetLitter;
     private float defaultStoppingDistance;
     private Vector3 startPosition;
+
+    public MeshRenderer mainLightRenderer;
+    public Material defaultMainMat;
+    public Material movingMainMat;
+    public Material cleaningMainMat;
     
     public janitorSubStates currentSubState = janitorSubStates.Idle;
     public enum janitorSubStates
@@ -19,6 +24,11 @@ public class Janitor : Staff
         base.Awake();
         if(navAgent != null) defaultStoppingDistance = navAgent.stoppingDistance;
         startPosition = transform.position;
+
+        if (mainLightRenderer != null && defaultMainMat != null)
+        {
+            mainLightRenderer.material = defaultMainMat;
+        }
     }
 
     public override void PerformDuties()
@@ -31,6 +41,10 @@ public class Janitor : Staff
                 if (targetLitter != null)
                 {
                     currentSubState = janitorSubStates.ApproachingLitter;
+                    if (mainLightRenderer != null && movingMainMat != null)
+                    {
+                        mainLightRenderer.material = movingMainMat;
+                    }
                 }
                 break;
             
@@ -51,6 +65,11 @@ public class Janitor : Staff
                 {
                     JanitorCoordinator.Instance.ResolveClean(targetLitter);
                     currentSubState = janitorSubStates.InteractingWithLitter;
+
+                    if (mainLightRenderer != null && cleaningMainMat != null)
+                    {
+                        mainLightRenderer.material = cleaningMainMat;
+                    }
                     
                     StartCoroutine(ShrinkAndCleanPuddle(targetLitter));
                 }
@@ -86,6 +105,11 @@ public class Janitor : Staff
     {
         targetLitter = litter;
         currentSubState = janitorSubStates.ApproachingLitter;
+
+        if (mainLightRenderer != null && movingMainMat != null)
+        {
+            mainLightRenderer.material = movingMainMat;
+        }
     }
     
     void ReturnToIdle()
@@ -98,5 +122,10 @@ public class Janitor : Staff
         targetLitter = null; 
         
         currentSubState = janitorSubStates.Idle;
+
+        if (mainLightRenderer != null && defaultMainMat != null)
+        {
+            mainLightRenderer.material = defaultMainMat;
+        }
     }
 }

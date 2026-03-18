@@ -389,8 +389,11 @@ public class PassengerManager : MonoBehaviour
         Vector3 puddlePos = passenger.transform.position;
         Color puddleColor = Color.white;
         
-        MeshRenderer renderer = passenger.GetComponentInChildren<MeshRenderer>();
-        if (renderer != null) puddleColor = renderer.material.color;
+        if (passenger.transform.childCount > 0)
+        {
+            MeshRenderer renderer = passenger.transform.GetChild(0).GetComponent<MeshRenderer>();
+            if (renderer != null) puddleColor = renderer.material.color;
+        }
 
         GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
         Vector3 targetLitterScale = litterPrefab.transform.localScale;
@@ -398,19 +401,28 @@ public class PassengerManager : MonoBehaviour
         GameObject litterObj = Instantiate(litterPrefab, puddlePos, Quaternion.Euler(0, Random.Range(0, 360), 0));
         litterObj.transform.localScale = Vector3.zero;
 
-        MeshRenderer litterRenderer = litterObj.GetComponentInChildren<MeshRenderer>();
-        if (litterRenderer != null) litterRenderer.material.color = puddleColor;
+        foreach (Transform child in litterObj.transform)
+        {
+            MeshRenderer childRenderer = child.GetComponent<MeshRenderer>();
+            if (childRenderer != null)
+            {
+                childRenderer.material.color = puddleColor;
+            }
+        }
 
-        Vector3 startPassengerScale = passenger.transform.localScale;
+        MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
+        if (animator != null)
+        {
+            animator.Dematerialize(null);
+        }
 
         while (elapsed < duration)
         {
-            if (passenger == null || litterObj == null) yield break;
+            if (litterObj == null) yield break;
 
             float t = elapsed / duration;
             float smoothT = t * t * (3f - 2f * t);
 
-            passenger.transform.localScale = Vector3.Lerp(startPassengerScale, Vector3.zero, smoothT);
             litterObj.transform.localScale = Vector3.Lerp(Vector3.zero, targetLitterScale, smoothT);
 
             elapsed += Time.deltaTime;
@@ -881,9 +893,14 @@ public class PassengerManager : MonoBehaviour
             passengerColor = passenger.assignedTrainService.trainData.trainColor;
         }
 
-        foreach (MeshRenderer renderer in passenger.GetComponentsInChildren<MeshRenderer>())
+        int childCount = Mathf.Min(2, passenger.transform.childCount);
+        for (int i = 0; i < childCount; i++)
         {
-            renderer.material.color = passengerColor;
+            MeshRenderer renderer = passenger.transform.GetChild(i).GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.material.color = passengerColor;
+            }
         }
     }
     
