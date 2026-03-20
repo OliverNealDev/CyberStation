@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class NutrientExtruderController : StationFacility
+public class NutrientDispenserController : StationFacility
 {
     public int usePrice = 1;
     

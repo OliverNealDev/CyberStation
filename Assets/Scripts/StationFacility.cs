@@ -5,7 +5,7 @@ public enum FacilityType
     TicketMachine,
     NutrientExtruder,
     CaloricInjectionPort,
-    HydrationShower,
+    HydratingObelisk,
     RestPad,
     MolecularScrubber
 }

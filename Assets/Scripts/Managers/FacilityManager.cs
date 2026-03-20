@@ -93,7 +93,7 @@ public class FacilityManager : MonoBehaviour
                 validFacilities.Add(FacilityType.CaloricInjectionPort);
                 break;
             case Passenger.NeedType.Thirst:
-                validFacilities.Add(FacilityType.HydrationShower);
+                validFacilities.Add(FacilityType.HydratingObelisk);
                 break;
             case Passenger.NeedType.Energy:
                 validFacilities.Add(FacilityType.RestPad);

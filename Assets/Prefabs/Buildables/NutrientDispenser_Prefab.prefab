@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 9216194286789144486}
   - component: {fileID: 2421443078952967879}
   m_Layer: 2
-  m_Name: NutrientExtruder_Prefab
+  m_Name: NutrientDispenser_Prefab
   m_TagString: TicketMachine
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

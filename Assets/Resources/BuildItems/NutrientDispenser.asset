@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 054f86a4a0a418449892b21e1fb915d1, type: 3}
-  m_Name: NutrientExtruder
+  m_Name: NutrientDispenser
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
-  objectName: Nutrient Extruder
+  objectName: Nutrient Dispenser
   description: Materialises an edible cube perfectly packed with nutrients. Flavours
     not included.
   icon: {fileID: 21300000, guid: d6d58db5c184ce74d9c884f430ce7147, type: 3}
