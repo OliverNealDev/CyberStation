@@ -306,13 +306,26 @@ public class PassengerManager : MonoBehaviour
                 }
 
                 List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(nextNeed);
+                bool foundFacility = false;
+
+                foreach (FacilityType type in validFacilities)
+                {
+                    if (FacilityManager.Instance.HasFacility(type))
+                    {
+                        if (GoToFacility(type, passenger))
+                        {
+                            foundFacility = true;
+                            break;
+                        }
+                    }
+                }
                 
-                if (validFacilities.Count > 0 && TrySatisfyNeedWithRandomSwitching(validFacilities, passenger))
+                if (foundFacility)
                 {
                     return; 
                 }
                 
-                passenger.hasFailedNeed = true;
+                passenger.hasFailedNeed = false;
                 passenger.ClearNeed(nextNeed);
             }
 
@@ -326,31 +339,6 @@ public class PassengerManager : MonoBehaviour
                 SendPassengerToTrainDoor(passenger, passenger.assignedTrainService);
             }
         }
-    }
-    
-    private bool TrySatisfyNeedWithRandomSwitching(List<FacilityType> validTypes, Passenger passenger)
-    {
-        List<FacilityType> typesToTry = new List<FacilityType>(validTypes);
-        
-        while (typesToTry.Count > 0)
-        {
-            int randomIndex = Random.Range(0, typesToTry.Count);
-            FacilityType chosenType = typesToTry[randomIndex];
-            
-            typesToTry.RemoveAt(randomIndex);
-            
-            if (FacilityManager.Instance.HasFacility(chosenType))
-            {
-                return GoToFacility(chosenType, passenger);
-            }
-            
-            if (typesToTry.Count > 0 && Random.value > 0.5f) 
-            {
-                return false;
-            }
-        }
-        
-        return false;
     }
 
     public void DropLitter()
@@ -857,7 +845,7 @@ public class PassengerManager : MonoBehaviour
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = service;
-        newPassenger.SetThermalNeeds(service.trainData.isWarm);
+        newPassenger.RollNeeds();
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);

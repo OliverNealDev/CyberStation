@@ -11,7 +11,7 @@ public class DrinkVendingMachineController : StationFacility
 
     protected override void DeliverService(Passenger passenger)
     {
-        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Warmth, passenger);
+        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Energy, passenger);
         int price = drinkPrice;
         EconomyManager.Instance.AddMoney(price);
         if (WorldSpacePromptCoordinator.Instance != null)

@@ -1,20 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class NeedFacilityMapping
-{
-    public Passenger.NeedType needType;
-    public List<FacilityType> validFacilities;
-}
-
 public class FacilityManager : MonoBehaviour
 {
     public static FacilityManager Instance;
-
-    [Header("AI Configuration")]
-    [Tooltip("Define which facilities satisfy which needs here!")]
-    public List<NeedFacilityMapping> needMappings = new List<NeedFacilityMapping>();
 
     private Dictionary<FacilityType, List<StationFacility>> facilitiesMap = new Dictionary<FacilityType, List<StationFacility>>();
 
@@ -93,16 +82,27 @@ public class FacilityManager : MonoBehaviour
         return count;
     }
 
-    // --- NEW MAPPING HELPER ---
     public List<FacilityType> GetFacilitiesForNeed(Passenger.NeedType need)
     {
-        foreach (var mapping in needMappings)
+        List<FacilityType> validFacilities = new List<FacilityType>();
+
+        switch (need)
         {
-            if (mapping.needType == need)
-            {
-                return mapping.validFacilities;
-            }
+            case Passenger.NeedType.Hunger:
+                validFacilities.Add(FacilityType.NutrientExtruder);
+                validFacilities.Add(FacilityType.CaloricInjectionPort);
+                break;
+            case Passenger.NeedType.Thirst:
+                validFacilities.Add(FacilityType.HydrationShower);
+                break;
+            case Passenger.NeedType.Energy:
+                validFacilities.Add(FacilityType.RestPad);
+                break;
+            case Passenger.NeedType.Hygiene:
+                validFacilities.Add(FacilityType.MolecularScrubber);
+                break;
         }
-        return new List<FacilityType>(); 
+
+        return validFacilities;
     }
 }
