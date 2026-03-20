@@ -1,14 +1,11 @@
-using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 using UnityEngine.EventSystems;
 
 public class BuildController : MonoBehaviour
 {
     public static BuildController Instance;
-    
+
     [Header("Flooring Materials")]
     public Material gridMaterial;
     public Material plainMaterial;
@@ -46,7 +43,6 @@ public class BuildController : MonoBehaviour
 
     private void Start()
     {
-        // Ensure the initial state has the correct materials applied
         UpdateFlooringMaterials(_isBuildingMode);
     }
 
@@ -54,23 +50,24 @@ public class BuildController : MonoBehaviour
     {
         if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) 
         {
-            if (previewObjectInstance != null)
+            // Only allow building if the preview is currently visible
+            if (previewObjectInstance != null && previewObjectInstance.activeSelf)
             {
-                Vector3Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
+                Vector2Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
                 
-                if (
-                    GridManager.Instance.IsTileFree(gridPos.x, gridPos.y, gridPos.z) &&
+                if (GridManager.Instance.IsTileFree(gridPos.x, gridPos.y) &&
                     EconomyManager.Instance.money >= objectBuildable.cost)
                 {
                     EconomyManager.Instance.SpendMoney(objectBuildable.cost);
                     
                     GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
                     placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); 
-                    GridManager.Instance.OccupyTile(gridPos.x, gridPos.y, gridPos.z);
+                    
+                    GridManager.Instance.OccupyTile(gridPos.x, gridPos.y);
                 }
                 else
                 {
-                    Debug.Log("Cannot build here, tile is occupied." + " Position: " + gridPos);
+                    Debug.Log("Cannot build here, tile is occupied. Position: " + gridPos);
                 }
             }
         }
@@ -93,22 +90,37 @@ public class BuildController : MonoBehaviour
             if (previewObjectInstance == null && selectedPreviewObject != null)
             {
                 previewObjectInstance = Instantiate(selectedPreviewObject);
+                previewObjectInstance.SetActive(false); // Start hidden
             }
 
             if (previewObjectInstance) 
             {
                 Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+                
+                // Standard raycast: hits everything, allowing walls to block the ray
                 if (Physics.Raycast(ray, out RaycastHit hitInfo) && !EventSystem.current.IsPointerOverGameObject()) 
                 {
-                    Vector3 buildPosition = hitInfo.point;
-                    Vector3Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
-                    previewObjectInstance.transform.position = GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, gridPos.z);
-                    
-                    previewObjectInstance.transform.rotation = Quaternion.Euler(0, objectRotation, 0);
+                    // Check if the FIRST thing we hit is the floor
+                    if (hitInfo.collider.CompareTag("BuildableFlooring"))
+                    {
+                        if (!previewObjectInstance.activeSelf) previewObjectInstance.SetActive(true);
+
+                        Vector3 buildPosition = hitInfo.point;
+                        Vector2Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
+                        
+                        previewObjectInstance.transform.position = GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, buildPosition.y);
+                        previewObjectInstance.transform.rotation = Quaternion.Euler(0, objectRotation, 0);
+                    }
+                    else
+                    {
+                        // We hit a wall, a prop, or something else. Hide the preview!
+                        if (previewObjectInstance.activeSelf) previewObjectInstance.SetActive(false);
+                    }
                 }
                 else
                 {
-                    Destroy(previewObjectInstance);
+                    // Raycast hit nothing
+                    if (previewObjectInstance.activeSelf) previewObjectInstance.SetActive(false);
                 }
             }
         }
@@ -153,20 +165,5 @@ public class BuildController : MonoBehaviour
 
         selectedPreviewObject = objectBuildable.prefab;
         this.objectBuildable = objectBuildable;
-    }
-    
-    private Vector3 GetPreviewObjectPosition()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (Physics.Raycast(ray, out RaycastHit hitInfo))
-        {
-            Vector3 buildPosition = hitInfo.point;
-            Vector3Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
-            return GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, gridPos.z);
-        }
-        else
-        {
-            return new Vector3(0, -1000, 0);
-        }
     }
 }

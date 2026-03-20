@@ -8,6 +8,13 @@ public class NutrientDispenserController : StationFacility
     [Header("Timing")]
     public float extrudeDuration = 3.0f;
     public float arcDuration = 0.75f;
+    public float lightTransitionDuration = 0.25f;
+
+    [Header("Waypoints & Targeting")]
+    public Transform cubeRestPoint;      // Where the cube hides inside the machine
+    public Transform cubeExtrudePoint;   // Where the cube pushes out to
+    public float passengerHeadYOffset = 3.172f; // Height offset for the passenger's head
+    public float arcHeight = 2.5f;
     
     [Header("Visuals")]
     public Transform nutrientCube;
@@ -15,7 +22,6 @@ public class NutrientDispenserController : StationFacility
     public float idleLightIntensity = 1f;
     public float activeLightIntensity = 3f;
     
-    private Vector3 initialCubeLocalPos;
     private MeshRenderer cubeRenderer;
 
     protected override void Start()
@@ -24,12 +30,17 @@ public class NutrientDispenserController : StationFacility
         
         if (nutrientCube != null)
         {
-            initialCubeLocalPos = nutrientCube.localPosition; 
             cubeRenderer = nutrientCube.GetComponent<MeshRenderer>();
             
             if (cubeRenderer != null)
             {
                 cubeRenderer.enabled = false;
+            }
+            
+            // Snap to the rest point immediately on start
+            if (cubeRestPoint != null)
+            {
+                nutrientCube.position = cubeRestPoint.position;
             }
         }
         
@@ -65,23 +76,20 @@ public class NutrientDispenserController : StationFacility
             cubeRenderer.enabled = true;
         }
 
-        if (nutrientCube != null)
+        if (nutrientCube != null && cubeRestPoint != null && cubeExtrudePoint != null)
         {
-            Vector3 startLocalPos = new Vector3(initialCubeLocalPos.x, 2.086f, initialCubeLocalPos.z);
-            Vector3 extrudedLocalPos = new Vector3(initialCubeLocalPos.x, 2.338f, initialCubeLocalPos.z);
-            
-            nutrientCube.localPosition = startLocalPos;
+            nutrientCube.position = cubeRestPoint.position;
 
             float elapsed = 0f;
-            float lightTransitionDuration = 0.25f;
 
+            // Phase 1: Extrude
             while (elapsed < extrudeDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = elapsed / extrudeDuration;
                 float smoothT = t * t * (3f - 2f * t); 
                 
-                nutrientCube.localPosition = Vector3.Lerp(startLocalPos, extrudedLocalPos, smoothT);
+                nutrientCube.position = Vector3.Lerp(cubeRestPoint.position, cubeExtrudePoint.position, smoothT);
 
                 if (extruderLight != null)
                 {
@@ -93,17 +101,18 @@ public class NutrientDispenserController : StationFacility
                 yield return null;
             }
             
-            nutrientCube.localPosition = extrudedLocalPos;
+            nutrientCube.position = cubeExtrudePoint.position;
 
+            // Phase 2: Arc to the Passenger
             elapsed = 0f;
             Vector3 startWorldPos = nutrientCube.position;
-            float arcHeight = 2.5f; 
 
             while (elapsed < arcDuration)
             {
                 if (passenger == null) break; 
                 
-                Vector3 headPosition = passenger.transform.position + (Vector3.up * 3.172f); 
+                // Dynamically track the passenger's current position
+                Vector3 headPosition = passenger.transform.position + (Vector3.up * passengerHeadYOffset);
 
                 elapsed += Time.deltaTime;
                 float t = elapsed / arcDuration;
@@ -148,7 +157,7 @@ public class NutrientDispenserController : StationFacility
         if (nutrientCube != null)
         {
             if (cubeRenderer != null) cubeRenderer.enabled = false;
-            nutrientCube.localPosition = new Vector3(initialCubeLocalPos.x, 2.086f, initialCubeLocalPos.z); 
+            if (cubeRestPoint != null) nutrientCube.position = cubeRestPoint.position; 
         }
         
         if (extruderLight != null)

@@ -1,66 +1,56 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class GridManager : MonoBehaviour
 {
     public static GridManager Instance;
     
-    private GridCell[,,] grid; // 3-Dimensional array to hold grid cells
+    private GridCell[,] grid; // 2-Dimensional array to hold grid cells
     public int width = 128;
-    public int height = 128;
-    public int floors = 1;
+    public int height = 128; // This maps to your World Z-axis
     public float cellSize = 2f;
     
     void Awake()
     {
         Instance = this;
-        grid = new GridCell[width, floors, height];
+        grid = new GridCell[width, height];
     }
 
-    void Update()
-    {
-        
-    }
-    
-    public Vector3Int GetGridPosition(Vector3 worldPosition) // Converts world position to grid coordinates
+    // Converts world position to 2D grid coordinates (X, Z)
+    public Vector2Int GetGridPosition(Vector3 worldPosition) 
     {
         int x = Mathf.FloorToInt(worldPosition.x / cellSize);
-        int y = Mathf.FloorToInt(worldPosition.y / cellSize);
         int z = Mathf.FloorToInt(worldPosition.z / cellSize);
-        return new Vector3Int(x, y, z);
+        return new Vector2Int(x, z);
     }
     
-    public Vector3 GetWorldPositionCenter(int x, int y, int z) // Converts grid coordinates to world position (center of cell)
+    // Converts grid coordinates to world position, preserving a specific Y height
+    public Vector3 GetWorldPositionCenter(int x, int z, float worldY = 0f) 
     {
-        return new Vector3(x * cellSize, y * cellSize, z * cellSize) + new Vector3(cellSize * 0.5f, cellSize * 0.5f, cellSize * 0.5f);
+        return new Vector3(x * cellSize + (cellSize * 0.5f), worldY, z * cellSize + (cellSize * 0.5f));
     }
 
-    public bool IsTileFree(int x, int y, int z)
+    public bool IsTileFree(int x, int z)
     {
-        if (x >= 0 && y >= 0 && x < width && y < floors && z >= 0 && z < height)
+        if (x >= 0 && x < width && z >= 0 && z < height)
         {
-            return !grid[x, y, z].isOccupied; 
+            return !grid[x, z].isOccupied; 
         }
-        else
-        {
-            return false;
-        }
+        return false; // Out of bounds
     }
 
-    public void OccupyTile(int x, int y, int z) // Marks a tile as occupied
+    public void OccupyTile(int x, int z) 
     {
-        if (x >= 0 && y >= 0 && x < width && y < floors && z >= 0 && z < height)
+        if (x >= 0 && x < width && z >= 0 && z < height)
         {
-            grid[x, y, z].isOccupied = true;
+            grid[x, z].isOccupied = true;
         }
     }
     
-    public void VacateTile(int x, int y, int z) // Marks a tile as free
+    public void VacateTile(int x, int z) 
     {
-        if (x >= 0 && y >= 0 && x < width && y < height && z >= 0 && z < floors)
+        if (x >= 0 && x < width && z >= 0 && z < height)
         {
-            grid[x, y, z].isOccupied = false;
-            //grid[x, y, z].occupyingObject = null;
+            grid[x, z].isOccupied = false;
         }
     }
     

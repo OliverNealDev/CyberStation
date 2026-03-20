@@ -5,12 +5,16 @@ public class HydratingObeliskController : StationFacility
 {
     public int usePrice = 1;
 
+    [Header("Waypoints & Targeting")]
+    public Transform nozzlePoint;          // Where the droplet spawns
+    public float passengerHeadYOffset = 3.172f; // Height offset for the passenger's head
+    public float arcHeight = 1.5f;
+
     [Header("Setup")]
     public Transform tubeTransform;
-    public Transform nozzlePoint;
     public GameObject dropletPrefab;
     public Light facilityLight;
-    
+
     [Header("Visuals")]
     public float idleLightIntensity = 1f;
     public float activeLightIntensity = 3f;
@@ -19,7 +23,6 @@ public class HydratingObeliskController : StationFacility
     public int dropletCount = 3;
     public float timeBetweenShots = 0.15f;
     public float flightDuration = 0.4f;
-    public float arcHeight = 1.5f;
 
     [Header("Squash & Stretch")]
     public float animDuration = 0.12f;
@@ -104,9 +107,11 @@ public class HydratingObeliskController : StationFacility
 
         while (elapsed < flightDuration)
         {
+            // Safety check: ensure neither the passenger nor droplet have been destroyed
             if (passenger == null || droplet == null) break;
 
-            Vector3 headPos = passenger.transform.position + (Vector3.up * 3.172f);
+            // Dynamically track the passenger's current position plus the head offset
+            Vector3 headPos = passenger.transform.position + (Vector3.up * passengerHeadYOffset);
 
             elapsed += Time.deltaTime;
             float t = elapsed / flightDuration;

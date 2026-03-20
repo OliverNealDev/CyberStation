@@ -2653,7 +2653,7 @@ GameObject:
   - component: {fileID: 183190830}
   - component: {fileID: 183190829}
   - component: {fileID: 183190828}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: BuildableArea (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4617,6 +4617,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a90e35937224124bb102c01e33ad8ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
   gridMaterial: {fileID: 2100000, guid: 0f8931946eadf0f499e947a1bd46078f, type: 2}
   plainMaterial: {fileID: 2100000, guid: b89f76cb600b73e4ea64ecd7771b37d6, type: 2}
   _isBuildingMode: 0
@@ -5031,7 +5034,7 @@ GameObject:
   - component: {fileID: 393656629}
   - component: {fileID: 393656628}
   - component: {fileID: 393656627}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: BuildableArea (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6524,7 +6527,7 @@ GameObject:
   - component: {fileID: 446845482}
   - component: {fileID: 446845481}
   - component: {fileID: 446845480}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: PlatformPlane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22786,13 +22789,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae59dd6ff32bb5445915d9d740bceeb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FacilityManager
-  needMappings:
-  - needType: 3
-    validFacilities: 
-  - needType: 1
-    validFacilities: 01000000
-  - needType: 2
-    validFacilities: 02000000
 --- !u!1 &1439384368
 GameObject:
   m_ObjectHideFlags: 0
@@ -23244,9 +23240,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c139f15c05241545907102ff4ae3ab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  width: 50
-  height: 50
-  floors: 1
+  width: 200
+  height: 200
   cellSize: 2
 --- !u!4 &1461149610
 Transform:
@@ -29458,7 +29453,7 @@ GameObject:
   - component: {fileID: 1653223114}
   - component: {fileID: 1653223113}
   - component: {fileID: 1653223112}
-  m_Layer: 11
+  m_Layer: 0
   m_Name: BuildableArea (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
