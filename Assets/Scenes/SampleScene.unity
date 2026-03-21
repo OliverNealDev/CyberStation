@@ -4617,9 +4617,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a90e35937224124bb102c01e33ad8ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  groundLayerMask:
-    serializedVersion: 2
-    m_Bits: 2048
   gridMaterial: {fileID: 2100000, guid: 0f8931946eadf0f499e947a1bd46078f, type: 2}
   plainMaterial: {fileID: 2100000, guid: b89f76cb600b73e4ea64ecd7771b37d6, type: 2}
   _isBuildingMode: 0

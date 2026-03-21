@@ -6,6 +6,7 @@ public enum FacilityType
     NutrientExtruder,
     CaloricInjectionPort,
     HydratingObelisk,
+    CleansingShower,
     RestPad,
     MolecularScrubber
 }

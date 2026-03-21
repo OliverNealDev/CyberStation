@@ -6,21 +6,23 @@ public class NutrientDispenserController : StationFacility
     public int usePrice = 1;
     
     [Header("Timing")]
-    public float extrudeDuration = 3.0f;
-    public float arcDuration = 0.75f;
+    public float extrudeDuration = 3.5f; // Slowed down from 3.0f
+    public float arcDuration = 1.0f;     // Slowed down from 0.75f
     public float lightTransitionDuration = 0.25f;
 
     [Header("Waypoints & Targeting")]
-    public Transform cubeRestPoint;      // Where the cube hides inside the machine
-    public Transform cubeExtrudePoint;   // Where the cube pushes out to
-    public float passengerHeadYOffset = 3.172f; // Height offset for the passenger's head
+    public Transform cubeRestPoint;      
+    public Transform cubeExtrudePoint;   
+    public float passengerHeadYOffset = 3.172f; 
     public float arcHeight = 2.5f;
     
     [Header("Visuals")]
     public Transform nutrientCube;
     public Light extruderLight;
+    public SpriteRenderer facilityIcon;
     public float idleLightIntensity = 1f;
     public float activeLightIntensity = 3f;
+    public Color idleIconColor = Color.lightGray;
     
     private MeshRenderer cubeRenderer;
 
@@ -37,7 +39,6 @@ public class NutrientDispenserController : StationFacility
                 cubeRenderer.enabled = false;
             }
             
-            // Snap to the rest point immediately on start
             if (cubeRestPoint != null)
             {
                 nutrientCube.position = cubeRestPoint.position;
@@ -48,6 +49,11 @@ public class NutrientDispenserController : StationFacility
         {
             extruderLight.color = Color.white;
             extruderLight.intensity = idleLightIntensity;
+        }
+
+        if (facilityIcon != null)
+        {
+            facilityIcon.color = idleIconColor;
         }
     }
 
@@ -76,13 +82,17 @@ public class NutrientDispenserController : StationFacility
             cubeRenderer.enabled = true;
         }
 
+        if (facilityIcon != null)
+        {
+            facilityIcon.color = passengerColor;
+        }
+
         if (nutrientCube != null && cubeRestPoint != null && cubeExtrudePoint != null)
         {
             nutrientCube.position = cubeRestPoint.position;
 
             float elapsed = 0f;
 
-            // Phase 1: Extrude
             while (elapsed < extrudeDuration)
             {
                 elapsed += Time.deltaTime;
@@ -103,7 +113,6 @@ public class NutrientDispenserController : StationFacility
             
             nutrientCube.position = cubeExtrudePoint.position;
 
-            // Phase 2: Arc to the Passenger
             elapsed = 0f;
             Vector3 startWorldPos = nutrientCube.position;
 
@@ -111,7 +120,6 @@ public class NutrientDispenserController : StationFacility
             {
                 if (passenger == null) break; 
                 
-                // Dynamically track the passenger's current position
                 Vector3 headPosition = passenger.transform.position + (Vector3.up * passengerHeadYOffset);
 
                 elapsed += Time.deltaTime;
@@ -164,6 +172,11 @@ public class NutrientDispenserController : StationFacility
         {
             extruderLight.color = Color.white;
             extruderLight.intensity = idleLightIntensity;
+        }
+
+        if (facilityIcon != null)
+        {
+            facilityIcon.color = idleIconColor;
         }
     }
 }

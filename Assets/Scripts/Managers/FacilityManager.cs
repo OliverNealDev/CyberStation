@@ -100,6 +100,7 @@ public class FacilityManager : MonoBehaviour
                 break;
             case Passenger.NeedType.Hygiene:
                 validFacilities.Add(FacilityType.MolecularScrubber);
+                validFacilities.Add(FacilityType.CleansingShower);
                 break;
         }
 

@@ -12,8 +12,11 @@ public abstract class QueuableObject : MonoBehaviour
     [Header("Queue Settings")]
     public QueueStyle queueStyle = QueueStyle.FrontOnly;
     
-    public virtual float BaseDistance => 1.5f; 
-    public virtual float QueueSpacing => 1.5f; 
+    [Header("Spacing")]
+    [Tooltip("How far away the first person stands from the machine's center.")]
+    public float baseDistance = 1.5f; 
+    [Tooltip("How much space is between each person in the line.")]
+    public float queueSpacing = 1.5f; 
 
     public List<Person> PeopleOnWay = new List<Person>();
 
@@ -34,7 +37,7 @@ public abstract class QueuableObject : MonoBehaviour
 
         if (queueStyle == QueueStyle.FrontOnly)
         {
-            float distance = BaseDistance + (index * QueueSpacing);
+            float distance = baseDistance + (index * queueSpacing);
             return transform.position + (transform.forward * distance);
         }
         else
@@ -60,7 +63,7 @@ public abstract class QueuableObject : MonoBehaviour
                 case 3: direction = -transform.right; break;   
             }
 
-            float distance = BaseDistance + (depth * QueueSpacing);
+            float distance = baseDistance + (depth * queueSpacing);
             return transform.position + (direction * distance);
         }
     }
