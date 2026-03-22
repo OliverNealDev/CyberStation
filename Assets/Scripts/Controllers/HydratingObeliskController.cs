@@ -5,29 +5,25 @@ public class HydratingObeliskController : StationFacility
 {
     public int usePrice = 1;
 
-    [Header("Waypoints & Targeting")]
+    [Header("Visuals")]
+    public SpriteRenderer facilityIcon;
+    public Color idleIconColor = Color.lightGray;
+    public Color activeFacilityColor = Color.cyan;
+
+    [Header("Setup & Waypoints")]
+    public Transform tubeTransform;
+    public GameObject dropletPrefab;
     public Transform nozzlePoint;          
     public float passengerHeadYOffset = 3.172f; 
     public float arcHeight = 1.5f;
 
-    [Header("Setup")]
-    public Transform tubeTransform;
-    public GameObject dropletPrefab;
-    public Light facilityLight;
-    public SpriteRenderer facilityIcon;
-
-    [Header("Visuals")]
-    public float idleLightIntensity = 1f;
-    public float activeLightIntensity = 3f;
-    public Color idleIconColor = Color.lightGray;
-
-    [Header("Firing Settings")]
+    [Header("Timing & Firing")]
     public int dropletCount = 3;
-    public float timeBetweenShots = 0.35f; // Slowed down from 0.15f
-    public float flightDuration = 0.6f;    // Slowed down from 0.4f
-
+    public float timeBetweenShots = 0.35f; 
+    public float flightDuration = 0.6f;    
+    public float animDuration = 0.18f;     
+    
     [Header("Squash & Stretch")]
-    public float animDuration = 0.18f;     // Slowed down slightly to match
     public Vector3 squashScaleMultiplier = new Vector3(1.3f, 0.7f, 1.3f);
     public Vector3 stretchScaleMultiplier = new Vector3(0.7f, 1.3f, 0.7f);
 
@@ -41,12 +37,6 @@ public class HydratingObeliskController : StationFacility
         if (tubeTransform != null)
         {
             initialTubeScale = tubeTransform.localScale;
-        }
-
-        if (facilityLight != null)
-        {
-            facilityLight.color = Color.white;
-            facilityLight.intensity = idleLightIntensity;
         }
 
         if (facilityIcon != null)
@@ -67,22 +57,9 @@ public class HydratingObeliskController : StationFacility
 
     private IEnumerator HydrationRoutine(Passenger passenger)
     {
-        Color passengerColor = Color.white;
-
-        if (passenger.assignedTrainService != null && passenger.assignedTrainService.trainData != null)
-        {
-            passengerColor = passenger.assignedTrainService.trainData.trainColor;
-        }
-
-        if (facilityLight != null)
-        {
-            facilityLight.color = passengerColor;
-            facilityLight.intensity = activeLightIntensity;
-        }
-
         if (facilityIcon != null)
         {
-            facilityIcon.color = passengerColor;
+            facilityIcon.color = activeFacilityColor;
         }
 
         for (int i = 0; i < dropletCount; i++)
@@ -99,7 +76,7 @@ public class HydratingObeliskController : StationFacility
             {
                 GameObject droplet = Instantiate(dropletPrefab, nozzlePoint.position, Quaternion.identity);
                 MeshRenderer rend = droplet.GetComponent<MeshRenderer>();
-                if (rend != null) rend.material.color = passengerColor;
+                if (rend != null) rend.material.color = activeFacilityColor;
 
                 StartCoroutine(DropletFlightRoutine(droplet, passenger));
             }
@@ -188,12 +165,6 @@ public class HydratingObeliskController : StationFacility
         {
             WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
                 "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green);
-        }
-
-        if (facilityLight != null)
-        {
-            facilityLight.color = Color.white;
-            facilityLight.intensity = idleLightIntensity;
         }
 
         if (facilityIcon != null)

@@ -156,7 +156,6 @@ public class PassengerManager : MonoBehaviour
                     {
                         UpdateQueuePosition(passenger);
                         
-                        // Dynamically update their destination to their exact spot in the queue
                         if (passenger.currentTarget != null)
                         {
                             Vector3 myQueueSpot = passenger.currentTarget.GetQueuePositionFor(passenger);
@@ -186,7 +185,6 @@ public class PassengerManager : MonoBehaviour
                     break;
                 
                 case Passenger.passengerSubStates.InteractingWithSomething:
-                    // Keep updating queue position so people move up when the machine is active!
                     UpdateQueuePosition(passenger);
                     
                     if (passenger.currentTarget != null)
@@ -389,9 +387,13 @@ public class PassengerManager : MonoBehaviour
         Vector3 puddlePos = passenger.transform.position;
         Color puddleColor = Color.white;
         
-        if (passenger.transform.childCount > 0)
+        if (passenger.visorRenderer != null)
         {
-            MeshRenderer renderer = passenger.transform.GetChild(0).GetComponent<MeshRenderer>();
+            puddleColor = passenger.visorRenderer.material.color;
+        }
+        else if (passenger.transform.childCount > 1)
+        {
+            MeshRenderer renderer = passenger.transform.GetChild(1).GetComponent<MeshRenderer>();
             if (renderer != null) puddleColor = renderer.material.color;
         }
 
@@ -404,7 +406,7 @@ public class PassengerManager : MonoBehaviour
         foreach (Transform child in litterObj.transform)
         {
             MeshRenderer childRenderer = child.GetComponent<MeshRenderer>();
-            if (childRenderer != null)
+            if (childRenderer != null && childRenderer.tag != "BaseLitterColour")
             {
                 childRenderer.material.color = puddleColor;
             }
@@ -494,7 +496,6 @@ public class PassengerManager : MonoBehaviour
             passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
             passenger.currentTarget.AssignPerson(passenger);
                             
-            // Remove the hardcoded destination and let QueuableObject handle it!
             Vector3 targetPosition = bestMachine.GetQueuePositionFor(passenger);
                             
             if(NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 4, NavMesh.AllAreas))
@@ -517,8 +518,6 @@ public class PassengerManager : MonoBehaviour
         if (passenger.currentTarget == null) return;
         if (!passenger.navAgent.isActiveAndEnabled) return;
         
-        // We now rely entirely on the exact coordinate from QueuableObject, 
-        // so we don't need to spoof stopping distance anymore!
         passenger.navAgent.stoppingDistance = 0.1f; 
     }
     
@@ -894,10 +893,13 @@ public class PassengerManager : MonoBehaviour
             passengerColor = passenger.assignedTrainService.trainData.trainColor;
         }
 
-        int childCount = Mathf.Min(2, passenger.transform.childCount);
-        for (int i = 0; i < childCount; i++)
+        if (passenger.visorRenderer != null)
         {
-            MeshRenderer renderer = passenger.transform.GetChild(i).GetComponent<MeshRenderer>();
+            passenger.visorRenderer.material.color = passengerColor;
+        }
+        else if (passenger.transform.childCount > 1)
+        {
+            MeshRenderer renderer = passenger.transform.GetChild(1).GetComponent<MeshRenderer>();
             if (renderer != null)
             {
                 renderer.material.color = passengerColor;

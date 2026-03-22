@@ -5,24 +5,21 @@ public class NutrientDispenserController : StationFacility
 {
     public int usePrice = 1;
     
-    [Header("Timing")]
-    public float extrudeDuration = 3.5f; // Slowed down from 3.0f
-    public float arcDuration = 1.0f;     // Slowed down from 0.75f
-    public float lightTransitionDuration = 0.25f;
+    [Header("Visuals")]
+    public Transform nutrientCube;
+    public SpriteRenderer facilityIcon;
+    public Color idleIconColor = Color.lightGray;
+    public Color activeFacilityColor = new Color(1f, 0.64f, 0f); 
 
-    [Header("Waypoints & Targeting")]
+    [Header("Setup & Waypoints")]
     public Transform cubeRestPoint;      
     public Transform cubeExtrudePoint;   
     public float passengerHeadYOffset = 3.172f; 
     public float arcHeight = 2.5f;
-    
-    [Header("Visuals")]
-    public Transform nutrientCube;
-    public Light extruderLight;
-    public SpriteRenderer facilityIcon;
-    public float idleLightIntensity = 1f;
-    public float activeLightIntensity = 3f;
-    public Color idleIconColor = Color.lightGray;
+
+    [Header("Timing")]
+    public float extrudeDuration = 3.5f; 
+    public float arcDuration = 1.0f;     
     
     private MeshRenderer cubeRenderer;
 
@@ -45,12 +42,6 @@ public class NutrientDispenserController : StationFacility
             }
         }
         
-        if (extruderLight != null)
-        {
-            extruderLight.color = Color.white;
-            extruderLight.intensity = idleLightIntensity;
-        }
-
         if (facilityIcon != null)
         {
             facilityIcon.color = idleIconColor;
@@ -69,22 +60,15 @@ public class NutrientDispenserController : StationFacility
 
     private IEnumerator ExtrudeRoutine(Passenger passenger)
     {
-        Color passengerColor = Color.white;
-        
-        if (passenger.assignedTrainService != null && passenger.assignedTrainService.trainData != null)
-        {
-            passengerColor = passenger.assignedTrainService.trainData.trainColor;
-        }
-
         if (cubeRenderer != null)
         {
-            cubeRenderer.material.color = passengerColor;
+            cubeRenderer.material.color = activeFacilityColor;
             cubeRenderer.enabled = true;
         }
 
         if (facilityIcon != null)
         {
-            facilityIcon.color = passengerColor;
+            facilityIcon.color = activeFacilityColor;
         }
 
         if (nutrientCube != null && cubeRestPoint != null && cubeExtrudePoint != null)
@@ -100,14 +84,6 @@ public class NutrientDispenserController : StationFacility
                 float smoothT = t * t * (3f - 2f * t); 
                 
                 nutrientCube.position = Vector3.Lerp(cubeRestPoint.position, cubeExtrudePoint.position, smoothT);
-
-                if (extruderLight != null)
-                {
-                    float lightT = Mathf.Clamp01(elapsed / lightTransitionDuration);
-                    extruderLight.color = Color.Lerp(Color.white, passengerColor, lightT);
-                    extruderLight.intensity = Mathf.Lerp(idleLightIntensity, activeLightIntensity, lightT);
-                }
-
                 yield return null;
             }
             
@@ -130,13 +106,6 @@ public class NutrientDispenserController : StationFacility
                 float heightOffset = Mathf.Sin(smoothT * Mathf.PI) * arcHeight;
                 
                 nutrientCube.position = linearPos + (Vector3.up * heightOffset);
-                
-                if (extruderLight != null)
-                {
-                    extruderLight.color = Color.Lerp(passengerColor, Color.white, smoothT);
-                    extruderLight.intensity = Mathf.Lerp(activeLightIntensity, idleLightIntensity, smoothT);
-                }
-                
                 yield return null;
             }
             
@@ -166,12 +135,6 @@ public class NutrientDispenserController : StationFacility
         {
             if (cubeRenderer != null) cubeRenderer.enabled = false;
             if (cubeRestPoint != null) nutrientCube.position = cubeRestPoint.position; 
-        }
-        
-        if (extruderLight != null)
-        {
-            extruderLight.color = Color.white;
-            extruderLight.intensity = idleLightIntensity;
         }
 
         if (facilityIcon != null)

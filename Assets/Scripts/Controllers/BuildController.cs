@@ -6,7 +6,6 @@ public class BuildController : MonoBehaviour
 {
     public static BuildController Instance;
 
-    [Header("Flooring Materials")]
     public Material gridMaterial;
     public Material plainMaterial;
 
@@ -50,12 +49,13 @@ public class BuildController : MonoBehaviour
     {
         if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) 
         {
-            // Only allow building if the preview is currently visible
             if (previewObjectInstance != null && previewObjectInstance.activeSelf)
             {
                 Vector2Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
+                Vector2Int size = GetRotatedSize();
                 
-                if (GridManager.Instance.IsTileFree(gridPos.x, gridPos.y) &&
+                if (GridManager.Instance.IsAreaFree(gridPos.x, gridPos.y, size.x, size.y) &&
+                    IsFootprintOnFloor(gridPos, size, previewObjectInstance.transform.position.y) &&
                     EconomyManager.Instance.money >= objectBuildable.cost)
                 {
                     EconomyManager.Instance.SpendMoney(objectBuildable.cost);
@@ -63,11 +63,7 @@ public class BuildController : MonoBehaviour
                     GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
                     placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); 
                     
-                    GridManager.Instance.OccupyTile(gridPos.x, gridPos.y);
-                }
-                else
-                {
-                    Debug.Log("Cannot build here, tile is occupied. Position: " + gridPos);
+                    GridManager.Instance.OccupyArea(gridPos.x, gridPos.y, size.x, size.y);
                 }
             }
         }
@@ -90,17 +86,15 @@ public class BuildController : MonoBehaviour
             if (previewObjectInstance == null && selectedPreviewObject != null)
             {
                 previewObjectInstance = Instantiate(selectedPreviewObject);
-                previewObjectInstance.SetActive(false); // Start hidden
+                previewObjectInstance.SetActive(false); 
             }
 
             if (previewObjectInstance) 
             {
                 Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
                 
-                // Standard raycast: hits everything, allowing walls to block the ray
                 if (Physics.Raycast(ray, out RaycastHit hitInfo) && !EventSystem.current.IsPointerOverGameObject()) 
                 {
-                    // Check if the FIRST thing we hit is the floor
                     if (hitInfo.collider.CompareTag("BuildableFlooring"))
                     {
                         if (!previewObjectInstance.activeSelf) previewObjectInstance.SetActive(true);
@@ -113,13 +107,11 @@ public class BuildController : MonoBehaviour
                     }
                     else
                     {
-                        // We hit a wall, a prop, or something else. Hide the preview!
                         if (previewObjectInstance.activeSelf) previewObjectInstance.SetActive(false);
                     }
                 }
                 else
                 {
-                    // Raycast hit nothing
                     if (previewObjectInstance.activeSelf) previewObjectInstance.SetActive(false);
                 }
             }
@@ -131,6 +123,43 @@ public class BuildController : MonoBehaviour
                 Destroy(previewObjectInstance);
             }
         }
+    }
+
+    private bool IsFootprintOnFloor(Vector2Int startGridPos, Vector2Int size, float currentY)
+    {
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int z = 0; z < size.y; z++)
+            {
+                Vector3 tileCenter = GridManager.Instance.GetWorldPositionCenter(startGridPos.x + x, startGridPos.y + z, currentY);
+                
+                Ray ray = new Ray(tileCenter + Vector3.up * 5f, Vector3.down);
+                
+                if (Physics.Raycast(ray, out RaycastHit hit, 10f))
+                {
+                    if (!hit.collider.CompareTag("BuildableFlooring"))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false; 
+                }
+            }
+        }
+        return true;
+    }
+
+    private Vector2Int GetRotatedSize()
+    {
+        if (objectBuildable == null) return Vector2Int.one;
+        
+        if (objectRotation == 90 || objectRotation == 270)
+        {
+            return new Vector2Int(objectBuildable.size.y, objectBuildable.size.x);
+        }
+        return objectBuildable.size;
     }
 
     private void UpdateFlooringMaterials(bool buildModeActive)

@@ -16,11 +16,11 @@ public class SecurityDrone : Staff
     public float scanBeamDuration = 0.5f;
     public float dematerializeBeamDuration = 0.6f;
 
-    public MeshRenderer mainLightRenderer;
-    public Material defaultMainMat;
-    public Material scanMainMat;
-    public Material approveMainMat;
-    public Material dematMainMat;
+    public MeshRenderer indicatorRenderer;
+    public Material idleLightMat;
+    public Material actionLightMat;
+    public Material successLightMat;
+    public Material punishLightMat;
 
     public MeshRenderer[] outerLightRenderers;
     public Material outerGreenMat;
@@ -50,9 +50,9 @@ public class SecurityDrone : Staff
         if (scanBeam != null) scanBeam.SetActive(false);
         if (dematerializeBeam != null) dematerializeBeam.SetActive(false);
 
-        if (mainLightRenderer != null && defaultMainMat != null)
+        if (indicatorRenderer != null && idleLightMat != null)
         {
-            mainLightRenderer.material = defaultMainMat;
+            indicatorRenderer.material = idleLightMat;
         }
 
         if (outerLightRenderers != null)
@@ -158,9 +158,9 @@ public class SecurityDrone : Staff
         
         Passenger p = currentTarget; 
         
-        if (mainLightRenderer != null && scanMainMat != null)
+        if (indicatorRenderer != null && actionLightMat != null)
         {
-            mainLightRenderer.material = scanMainMat;
+            indicatorRenderer.material = actionLightMat;
         }
 
         if (scanBeam != null) scanBeam.SetActive(true);
@@ -174,9 +174,9 @@ public class SecurityDrone : Staff
             
             if (!p.hasTicket && p.isTicketEvader)
             {
-                if (mainLightRenderer != null && dematMainMat != null)
+                if (indicatorRenderer != null && punishLightMat != null)
                 {
-                    mainLightRenderer.material = dematMainMat;
+                    indicatorRenderer.material = punishLightMat;
                 }
 
                 if (dematerializeBeam != null) dematerializeBeam.SetActive(true);
@@ -191,18 +191,18 @@ public class SecurityDrone : Staff
             }
             else
             {
-                if (mainLightRenderer != null && approveMainMat != null)
+                if (indicatorRenderer != null && successLightMat != null)
                 {
-                    mainLightRenderer.material = approveMainMat;
+                    indicatorRenderer.material = successLightMat;
                 }
                 
                 yield return new WaitForSeconds(0.5f);
             }
         }
 
-        if (mainLightRenderer != null && defaultMainMat != null)
+        if (indicatorRenderer != null && idleLightMat != null)
         {
-            mainLightRenderer.material = defaultMainMat;
+            indicatorRenderer.material = idleLightMat;
         }
 
         ClearCurrentTarget();

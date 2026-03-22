@@ -108,10 +108,10 @@ MonoBehaviour:
   PreviousPosition: {x: 0, y: 0, z: 0}
   salaryPerMinute: 0
   staffType: {fileID: 0}
-  mainLightRenderer: {fileID: 7443654683846620520}
-  defaultMainMat: {fileID: 2100000, guid: 114a6b1d068b8a24786fcd03ba9c46a9, type: 2}
-  movingMainMat: {fileID: 2100000, guid: 1deb122ac2c241340be37008efe43886, type: 2}
-  cleaningMainMat: {fileID: 2100000, guid: 26a1eb7c9ceb63b41b9fc42c5a137e5b, type: 2}
+  indicatorRenderer: {fileID: 7443654683846620520}
+  idleLightMat: {fileID: 2100000, guid: 725522c1e2bb1b64eba24895fd5d3d81, type: 2}
+  actionLightMat: {fileID: 2100000, guid: 1b320f0be85b21045bff710935e541ce, type: 2}
+  successLightMat: {fileID: 2100000, guid: 5b1195b3a5d4c9843bb2ba4073b8a0ec, type: 2}
   currentSubState: 0
 --- !u!114 &-5597025095452744463
 MonoBehaviour:
@@ -137,7 +137,7 @@ GameObject:
   - component: {fileID: 6641051505808305484}
   - component: {fileID: 7443654683846620520}
   m_Layer: 0
-  m_Name: Cylinder (2)
+  m_Name: Indicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -281,7 +281,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 39719313d056e7f438902d325bad4d03, type: 2}
+  - {fileID: 2100000, guid: a511e3de2ff09924f831592699134781, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

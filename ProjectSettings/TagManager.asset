@@ -12,6 +12,7 @@ TagManager:
   - Litter
   - UnlitterableSurface
   - BuildableFlooring
+  - BaseLitterColour
   layers:
   - Default
   - TransparentFX

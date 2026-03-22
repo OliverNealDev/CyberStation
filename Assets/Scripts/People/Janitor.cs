@@ -6,10 +6,10 @@ public class Janitor : Staff
     private float defaultStoppingDistance;
     private Vector3 startPosition;
 
-    public MeshRenderer mainLightRenderer;
-    public Material defaultMainMat;
-    public Material movingMainMat;
-    public Material cleaningMainMat;
+    public MeshRenderer indicatorRenderer;
+    public Material idleLightMat;
+    public Material actionLightMat;
+    public Material successLightMat;
     
     public janitorSubStates currentSubState = janitorSubStates.Idle;
     public enum janitorSubStates
@@ -25,9 +25,9 @@ public class Janitor : Staff
         if(navAgent != null) defaultStoppingDistance = navAgent.stoppingDistance;
         startPosition = transform.position;
 
-        if (mainLightRenderer != null && defaultMainMat != null)
+        if (indicatorRenderer != null && idleLightMat != null)
         {
-            mainLightRenderer.material = defaultMainMat;
+            indicatorRenderer.material = idleLightMat;
         }
     }
 
@@ -41,9 +41,9 @@ public class Janitor : Staff
                 if (targetLitter != null)
                 {
                     currentSubState = janitorSubStates.ApproachingLitter;
-                    if (mainLightRenderer != null && movingMainMat != null)
+                    if (indicatorRenderer != null && idleLightMat != null)
                     {
-                        mainLightRenderer.material = movingMainMat;
+                        indicatorRenderer.material = idleLightMat;
                     }
                 }
                 break;
@@ -55,8 +55,11 @@ public class Janitor : Staff
                     return;
                 }
                 
-                navAgent.stoppingDistance = 0.01f;
-                navAgent.SetDestination(targetLitter.transform.position);
+                if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
+                {
+                    navAgent.stoppingDistance = 0.01f;
+                    navAgent.SetDestination(targetLitter.transform.position);
+                }
                 
                 Vector3 flatJanitor = new Vector3(transform.position.x, 0, transform.position.z);
                 Vector3 flatLitter = new Vector3(targetLitter.transform.position.x, 0, targetLitter.transform.position.z);
@@ -66,9 +69,9 @@ public class Janitor : Staff
                     JanitorCoordinator.Instance.ResolveClean(targetLitter);
                     currentSubState = janitorSubStates.InteractingWithLitter;
 
-                    if (mainLightRenderer != null && cleaningMainMat != null)
+                    if (indicatorRenderer != null && actionLightMat != null)
                     {
-                        mainLightRenderer.material = cleaningMainMat;
+                        indicatorRenderer.material = actionLightMat;
                     }
                     
                     StartCoroutine(ShrinkAndCleanPuddle(targetLitter));
@@ -76,7 +79,10 @@ public class Janitor : Staff
                 break;
             
             case janitorSubStates.InteractingWithLitter:
-                if (navAgent.hasPath) navAgent.ResetPath(); 
+                if (navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh && navAgent.hasPath) 
+                {
+                    navAgent.ResetPath(); 
+                }
                 break;
         }
     }
@@ -98,6 +104,13 @@ public class Janitor : Staff
             yield return null;
         }
 
+        if (indicatorRenderer != null && successLightMat != null)
+        {
+            indicatorRenderer.material = successLightMat;
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
         ReturnToIdle();
     }
     
@@ -106,16 +119,16 @@ public class Janitor : Staff
         targetLitter = litter;
         currentSubState = janitorSubStates.ApproachingLitter;
 
-        if (mainLightRenderer != null && movingMainMat != null)
+        if (indicatorRenderer != null && idleLightMat != null)
         {
-            mainLightRenderer.material = movingMainMat;
+            indicatorRenderer.material = idleLightMat;
         }
     }
     
     void ReturnToIdle()
     {
         if(navAgent != null) navAgent.stoppingDistance = defaultStoppingDistance;
-        if(navAgent != null && navAgent.isOnNavMesh) navAgent.ResetPath();
+        if(navAgent != null && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh) navAgent.ResetPath();
         
         if (targetLitter != null) Destroy(targetLitter.gameObject);
         
@@ -123,9 +136,9 @@ public class Janitor : Staff
         
         currentSubState = janitorSubStates.Idle;
 
-        if (mainLightRenderer != null && defaultMainMat != null)
+        if (indicatorRenderer != null && idleLightMat != null)
         {
-            mainLightRenderer.material = defaultMainMat;
+            indicatorRenderer.material = idleLightMat;
         }
     }
 }

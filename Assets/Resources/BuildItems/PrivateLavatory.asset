@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 054f86a4a0a418449892b21e1fb915d1, type: 3}
-  m_Name: TicketMachine
+  m_Name: PrivateLavatory
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
-  objectName: Ticket Machine
-  description: Provides tickets to passengers in an automated fasion.
-  icon: {fileID: 21300000, guid: 3f08c42678d28dd46b6f24c4d4bf5612, type: 3}
-  prefab: {fileID: 1821913311329546544, guid: b8d0066b2ee5d6e498ddf2346b4232d7, type: 3}
+  objectName: Private Lavatory
+  description: Completely isolated facility to provide a comfortable experience for
+    passengers.
+  icon: {fileID: 21300000, guid: 01bee551acd106145b1d7c7bf6b9df0a, type: 3}
+  prefab: {fileID: 1821913311329546544, guid: 4ce6fa85b11c2f040915b88f15d7f60f, type: 3}
   cost: 500
   size: {x: 1, y: 1}

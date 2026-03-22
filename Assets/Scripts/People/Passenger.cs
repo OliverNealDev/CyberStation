@@ -5,6 +5,10 @@ public class Passenger : Person
     public TrainService assignedTrainService;
     public float TimeToGoToPlatform;
     
+    [Header("Visuals")]
+    [Tooltip("Assign the specific MeshRenderer (e.g. Visor, ID Badge) that should glow with the Hue color.")]
+    public MeshRenderer visorRenderer;
+    
     public bool hasTicket = false;
     public bool isTicketEvader = false;
     public bool hasBypassedBarrier = false;

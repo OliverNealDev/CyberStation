@@ -597,11 +597,11 @@ MonoBehaviour:
   dematerializeBeam: {fileID: 4954641721198713029}
   scanBeamDuration: 0.5
   dematerializeBeamDuration: 0.6
-  mainLightRenderer: {fileID: 8843857851875552021}
-  defaultMainMat: {fileID: 2100000, guid: 114a6b1d068b8a24786fcd03ba9c46a9, type: 2}
-  scanMainMat: {fileID: 2100000, guid: 413a6a39861206942b5719e18c0614ee, type: 2}
-  approveMainMat: {fileID: 2100000, guid: 26a1eb7c9ceb63b41b9fc42c5a137e5b, type: 2}
-  dematMainMat: {fileID: 2100000, guid: 18f59b5d8caf4fa4690e060e20757ac5, type: 2}
+  indicatorRenderer: {fileID: 8843857851875552021}
+  idleLightMat: {fileID: 2100000, guid: 725522c1e2bb1b64eba24895fd5d3d81, type: 2}
+  actionLightMat: {fileID: 2100000, guid: 1b320f0be85b21045bff710935e541ce, type: 2}
+  successLightMat: {fileID: 2100000, guid: 5b1195b3a5d4c9843bb2ba4073b8a0ec, type: 2}
+  punishLightMat: {fileID: 2100000, guid: 42fda02fec41eb145a67eefa8195a347, type: 2}
   outerLightRenderers:
   - {fileID: 8550532400547047578}
   - {fileID: 6832594030123211597}
@@ -1203,7 +1203,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 39719313d056e7f438902d325bad4d03, type: 2}
+  - {fileID: 2100000, guid: a511e3de2ff09924f831592699134781, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1383,7 +1383,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 39719313d056e7f438902d325bad4d03, type: 2}
+  - {fileID: 2100000, guid: a511e3de2ff09924f831592699134781, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1473,7 +1473,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 39719313d056e7f438902d325bad4d03, type: 2}
+  - {fileID: 2100000, guid: a511e3de2ff09924f831592699134781, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

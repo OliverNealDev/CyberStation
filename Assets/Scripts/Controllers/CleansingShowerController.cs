@@ -19,6 +19,7 @@ public class CleansingShowerController : StationFacility
     public float idleLightIntensity = 1f;
     public float activeLightIntensity = 3f;
     public Color idleIconColor = Color.lightGray;
+    public Color activeFacilityColor = Color.magenta; // The machine's native color!
 
     [Header("Shower Settings")]
     public float showerDuration = 4.0f;
@@ -57,22 +58,15 @@ public class CleansingShowerController : StationFacility
 
     private IEnumerator ShowerRoutine(Passenger passenger)
     {
-        Color passengerColor = Color.white;
-
-        if (passenger.assignedTrainService != null && passenger.assignedTrainService.trainData != null)
-        {
-            passengerColor = passenger.assignedTrainService.trainData.trainColor;
-        }
-
         if (facilityLight != null)
         {
-            facilityLight.color = passengerColor;
+            facilityLight.color = activeFacilityColor;
             facilityLight.intensity = activeLightIntensity;
         }
 
         if (facilityIcon != null)
         {
-            facilityIcon.color = passengerColor;
+            facilityIcon.color = activeFacilityColor;
         }
 
         float elapsed = 0f;
@@ -88,7 +82,7 @@ public class CleansingShowerController : StationFacility
             if (spawnTimer >= dropletSpawnRate)
             {
                 spawnTimer = 0f;
-                SpawnDroplet(passengerColor, passenger);
+                SpawnDroplet(activeFacilityColor, passenger);
             }
 
             yield return null;

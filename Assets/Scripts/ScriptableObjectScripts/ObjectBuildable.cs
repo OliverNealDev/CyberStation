@@ -11,5 +11,7 @@ public class ObjectBuildable : ScriptableObject
     public Sprite icon;
     public GameObject prefab;
     public int cost;
-    public Vector2 size = Vector2.one;
+    
+    // Changed to Vector2Int so it plays perfectly with our GridManager!
+    public Vector2Int size = Vector2Int.one; 
 }

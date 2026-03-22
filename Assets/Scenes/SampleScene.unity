@@ -14671,7 +14671,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c659562bc5a3674399de4fba720dd96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  money: 5000
+  money: 1000000
 --- !u!1 &778923728
 GameObject:
   m_ObjectHideFlags: 0
@@ -42367,7 +42367,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   activePassengers: []
   passengerPrefab: {fileID: 2991288983431714229, guid: d457faba8c381e94dbc79fdd56f74a28, type: 3}
-  spontaneousDematerializationRate: 0.01
+  spontaneousDematerializationRate: 0.004
   materializers: []
   litterPrefabs:
   - {fileID: 7923471293361742921, guid: 4379854c7f742bc488c569e000d46376, type: 3}
