@@ -155,6 +155,17 @@ public class PassengerManager : MonoBehaviour
                     else
                     {
                         UpdateQueuePosition(passenger);
+                        
+                        // Dynamically update their destination to their exact spot in the queue
+                        if (passenger.currentTarget != null)
+                        {
+                            Vector3 myQueueSpot = passenger.currentTarget.GetQueuePositionFor(passenger);
+                            if (Vector3.Distance(passenger.navAgent.destination, myQueueSpot) > 0.5f)
+                            {
+                                passenger.navAgent.SetDestination(myQueueSpot);
+                            }
+                        }
+
                         if (HasReachedTarget(passenger))
                         {
                             if (passenger.currentTarget != null)
@@ -175,6 +186,7 @@ public class PassengerManager : MonoBehaviour
                     break;
                 
                 case Passenger.passengerSubStates.InteractingWithSomething:
+                    // Keep updating queue position so people move up when the machine is active!
                     UpdateQueuePosition(passenger);
                     
                     if (passenger.currentTarget != null)
@@ -482,15 +494,16 @@ public class PassengerManager : MonoBehaviour
             passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
             passenger.currentTarget.AssignPerson(passenger);
                             
-            Vector3 frontOfMachine = passenger.currentTarget.transform.position + passenger.currentTarget.transform.forward * 2f;
+            // Remove the hardcoded destination and let QueuableObject handle it!
+            Vector3 targetPosition = bestMachine.GetQueuePositionFor(passenger);
                             
-            if(NavMesh.SamplePosition(frontOfMachine, out NavMeshHit hit, 4, NavMesh.AllAreas))
+            if(NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 4, NavMesh.AllAreas))
             {
                 passenger.navAgent.SetDestination(hit.position);
             }
             else
             {
-                passenger.navAgent.SetDestination(frontOfMachine);
+                passenger.navAgent.SetDestination(targetPosition);
             }
 
             return true;
@@ -504,16 +517,9 @@ public class PassengerManager : MonoBehaviour
         if (passenger.currentTarget == null) return;
         if (!passenger.navAgent.isActiveAndEnabled) return;
         
-        int queueIndex = passenger.currentTarget.PeopleOnWay.IndexOf(passenger);
-                        
-        float baseDistance = 0.25f; 
-        float queueSpacing = 1.5f; 
-        float newStoppingDistance = baseDistance + (queueIndex * queueSpacing);
-                        
-        if (Mathf.Abs(passenger.navAgent.stoppingDistance - newStoppingDistance) > 0.1f)
-        {
-            passenger.navAgent.stoppingDistance = newStoppingDistance;
-        }
+        // We now rely entirely on the exact coordinate from QueuableObject, 
+        // so we don't need to spoof stopping distance anymore!
+        passenger.navAgent.stoppingDistance = 0.1f; 
     }
     
     private void MoveToPlatformPosition(Passenger passenger)

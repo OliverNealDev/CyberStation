@@ -226,11 +226,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   queueStyle: 0
+  baseDistance: 1.5
+  queueSpacing: 1.5
   PeopleOnWay: []
   facilityType: 3
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 2
+  usePrice: 1
   nozzlePoint: {fileID: 8596009513800852768}
   passengerHeadYOffset: 3.172
   arcHeight: 0.75
@@ -238,7 +240,7 @@ MonoBehaviour:
   dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}
   facilityLight: {fileID: 905206158880049428}
   facilityIcon: {fileID: 5969262218880966119}
-  idleLightIntensity: 2
+  idleLightIntensity: 0
   activeLightIntensity: 5
   idleIconColor: {r: 0.8274511, g: 0.8274511, b: 0.8274511, a: 1}
   dropletCount: 5
@@ -381,7 +383,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 114a6b1d068b8a24786fcd03ba9c46a9, type: 2}
+  - {fileID: 2100000, guid: 2487040bbfee4df469437f01eae40fea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -613,7 +615,7 @@ Transform:
   m_GameObject: {fileID: 6776119382960442716}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.7, z: 0.069698334}
+  m_LocalPosition: {x: 0, y: 0.65, z: 0.96}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -779,7 +781,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 114a6b1d068b8a24786fcd03ba9c46a9, type: 2}
+  - {fileID: 2100000, guid: 2487040bbfee4df469437f01eae40fea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

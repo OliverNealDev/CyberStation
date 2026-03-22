@@ -15,7 +15,7 @@ MonoBehaviour:
   objectName: Hydrating Obelisk
   description: Materialises hydrating droplets and shoots them into passengers for
     a quick, uncomfortable hydration.
-  icon: {fileID: 21300000, guid: d6d58db5c184ce74d9c884f430ce7147, type: 3}
+  icon: {fileID: 21300000, guid: a865f25be15508541aee8e79651323e5, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 6a48eb4c34b0b544a885be25705a828c, type: 3}
   cost: 500
   size: {x: 1, y: 1}
