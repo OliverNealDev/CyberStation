@@ -40,7 +40,7 @@ public class TrainSelectionPopupController : MonoBehaviour
                 if (iconTransform != null) iconImage = iconTransform.GetChild(0).GetComponent<Image>();
             }
 
-            if (iconImage != null) iconImage.sprite = train.icon;
+            if (iconImage != null) iconImage.sprite = train.GetIcon();
 
             Button btnComp = newBtn.GetComponent<Button>();
             if (btnComp != null)

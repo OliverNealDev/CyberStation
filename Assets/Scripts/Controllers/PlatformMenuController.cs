@@ -56,7 +56,7 @@ public class PlatformMenuController : MonoBehaviour
         Image slotImage = slotBtn.GetComponent<Image>();
         if (train != null)
         {
-            slotImage.sprite = train.icon;
+            slotImage.sprite = train.GetIcon();
             slotImage.color = Color.white;
         }
         else

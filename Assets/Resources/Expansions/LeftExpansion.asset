@@ -16,4 +16,4 @@ MonoBehaviour:
   description: Expand left!
   icon: {fileID: 21300000, guid: 55c3d1de4826da947bb6f70e08f554d3, type: 3}
   expansionPrefab: {fileID: 8026183265185582656, guid: dd7072b3302725a489f2f4208d1f9a84, type: 3}
-  upfrontCost: 500
+  upfrontCost: 550

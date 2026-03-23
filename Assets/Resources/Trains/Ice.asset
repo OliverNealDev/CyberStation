@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
   m_Name: Ice
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  trainName: Azure
-  description: 'A beautifully timeless and nonpareil ruin. '
+  trainName: Northwind Local
+  description: A dependable starter line with strong capacity, low risk, and the
+    best upkeep efficiency in the roster.
   icon: {fileID: 21300000, guid: 0acf459aace31dd4da652bde7a2165a2, type: 3}
   trainPrefab: {fileID: 1096767433483698802, guid: 16096bf8812db2b408e1fd1f6f05600e, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 3ea3338ba431d6d43a879d98bdc16a4c, type: 3}
@@ -25,5 +26,5 @@ MonoBehaviour:
   secondsStationary: 30
   trainColor: {r: 0, g: 1, b: 1, a: 1}
   isWarm: 0
-  upfrontCost: 1200
-  costPerMinute: 80
+  upfrontCost: 500
+  costPerMinute: 35

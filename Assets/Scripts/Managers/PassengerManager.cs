@@ -57,6 +57,11 @@ public class PassengerManager : MonoBehaviour
             materializers.Remove(mat);
         }
     }
+
+    public bool HasMaterializer()
+    {
+        return materializers.Count > 0;
+    }
     
     void Update()
     {
@@ -453,7 +458,7 @@ public class PassengerManager : MonoBehaviour
     
     private void LeaveStation(Passenger passenger)
     {
-        if (passenger.navAgent == null || !passenger.navAgent.isActiveAndEnabled || !passenger.navAgent.isOnNavMesh) 
+        if (!CanUseNavAgent(passenger))
         {
             UnregisterPassenger(passenger);
             return; 
@@ -484,10 +489,18 @@ public class PassengerManager : MonoBehaviour
             passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
         }
         
-        if (passenger.navAgent != null && passenger.navAgent.isActiveAndEnabled && passenger.navAgent.isOnNavMesh)
+        if (CanUseNavAgent(passenger))
         {
             passenger.navAgent.ResetPath();
         }
+    }
+
+    private bool CanUseNavAgent(Passenger passenger)
+    {
+        return passenger != null &&
+               passenger.navAgent != null &&
+               passenger.navAgent.isActiveAndEnabled &&
+               passenger.navAgent.isOnNavMesh;
     }
     
     private bool GoToFacility(FacilityType type, Passenger passenger)
@@ -520,7 +533,7 @@ public class PassengerManager : MonoBehaviour
     private void UpdateQueuePosition(Passenger passenger)
     {
         if (passenger.currentTarget == null) return;
-        if (!passenger.navAgent.isActiveAndEnabled) return;
+        if (!CanUseNavAgent(passenger)) return;
         
         passenger.navAgent.stoppingDistance = 0.1f; 
     }
@@ -661,6 +674,7 @@ public class PassengerManager : MonoBehaviour
     public void SendPassengerToTrainDoor(Passenger passenger, TrainService service)
     {
         if (service.physicalTrainInstance == null) return;
+        if (!CanUseNavAgent(passenger)) return;
 
         TrainDoorController[] doors = service.physicalTrainInstance.GetComponentsInChildren<TrainDoorController>();
         if (doors.Length == 0) return;
@@ -689,7 +703,14 @@ public class PassengerManager : MonoBehaviour
             closestDoor.AssignPerson(passenger);
                     
             passenger.navAgent.stoppingDistance = 1f;
-            passenger.navAgent.SetDestination(closestDoor.transform.position);
+            if (NavMesh.SamplePosition(closestDoor.transform.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+            {
+                passenger.navAgent.SetDestination(hit.position);
+            }
+            else
+            {
+                passenger.navAgent.SetDestination(closestDoor.transform.position);
+            }
 
             passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
             passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None; 
@@ -842,6 +863,11 @@ public class PassengerManager : MonoBehaviour
 
     public void SpawnPassengerForService(TrainService service)
     {
+        if (service == null || !HasMaterializer())
+        {
+            return;
+        }
+
         Vector3 spawnPoint = GetRandomSpawnPoint();
         Vector3 finalSpawnPoint = spawnPoint;
         

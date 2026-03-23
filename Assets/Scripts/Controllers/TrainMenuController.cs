@@ -49,6 +49,8 @@ public class TrainMenuController : MonoBehaviour
         
         if (trains.Length == 0) return;
 
+        System.Array.Sort(trains, (a, b) => a.upfrontCost.CompareTo(b.upfrontCost));
+
         foreach (var item in trains)
         {
             CreateButton(item);
@@ -60,7 +62,7 @@ public class TrainMenuController : MonoBehaviour
         GameObject newButton = Instantiate(TrainItemButtonPrefab, contentContainer);
         
         Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
-        if (iconImage) iconImage.sprite = data.icon;
+        if (iconImage) iconImage.sprite = data.GetIcon();
         
         Button btnComp = newButton.GetComponent<Button>();
         btnComp.onClick.AddListener(() => OnTrainItemButtonClicked(data));
@@ -124,8 +126,8 @@ public class TrainMenuController : MonoBehaviour
     
     private void UpdateDetailView(Train data)
     {
-        if (detailIcon) detailIcon.sprite = data.icon;
-        if (detailName) detailName.text = data.name;
+        if (detailIcon) detailIcon.sprite = data.GetIcon();
+        if (detailName) detailName.text = data.trainName;
         if (detailDescription) detailDescription.text = data.description;
         if (costPerMinute) costPerMinute.text = $"${data.costPerMinute}/min";
 

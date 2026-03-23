@@ -25,6 +25,7 @@ public class PassengerSpawner : MonoBehaviour
     private void ProcessSpawns()
     {
         if (TrainManager.Instance == null || PassengerManager.Instance == null) return;
+        if (!PassengerManager.Instance.HasMaterializer()) return;
 
         float efficiency = Mathf.Lerp(0.2f, 1.0f, (RatingManager.Instance.stationRating - 1) / 4f);
 

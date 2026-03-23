@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
   m_Name: Purple
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  trainName: Damson
-  description: A fleeting warmth engulfed in sorrow.
+  trainName: Afterglow Line
+  description: A balanced commuter upgrade that charges more per rider without asking
+    for luxury-line upkeep.
   icon: {fileID: 21300000, guid: 0acf459aace31dd4da652bde7a2165a2, type: 3}
   trainPrefab: {fileID: 1096767433483698802, guid: a90147f236edd854391b8d75b93b21b4, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 1a0b4e3fd9561ce42a05c0dae124f801, type: 3}
@@ -21,9 +22,9 @@ MonoBehaviour:
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 36
-  costPerRide: 5
+  costPerRide: 7
   secondsStationary: 30
   trainColor: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
   isWarm: 0
-  upfrontCost: 3300
-  costPerMinute: 220
+  upfrontCost: 950
+  costPerMinute: 52

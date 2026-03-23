@@ -12,20 +12,15 @@ public class StaffManager : MonoBehaviour
         Instance = this;
     }
 
-    public void PaySalary(Staff staff)
-    {
-        if (hiredStaff.Contains(staff))
-        {
-            EconomyManager.Instance.SpendMoney(staff.salaryPerMinute);
-            /*WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                $"-${staff.salaryPerMinute}", 
-                staff.transform.position + Vector3.up * 7f, 
-                Color.red);*/
-        }
-    }
-    
     public void HireStaff(Staff staff)
     {
+        if (staff == null) return;
+        if (PassengerManager.Instance == null || !PassengerManager.Instance.HasMaterializer())
+        {
+            Destroy(staff.gameObject);
+            return;
+        }
+
         if (!hiredStaff.Contains(staff))
         {
             hiredStaff.Add(staff);
@@ -58,4 +53,5 @@ public class StaffManager : MonoBehaviour
             }
         }
     }
+
 }

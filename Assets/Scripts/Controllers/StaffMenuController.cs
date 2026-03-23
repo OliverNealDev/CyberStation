@@ -50,6 +50,8 @@ public class StaffMenuController : MonoBehaviour
             return;
         }
 
+        System.Array.Sort(staff, (a, b) => a.hiringCost.CompareTo(b.hiringCost));
+
         foreach (var staffMember in staff)
         {
             CreateButton(staffMember);
@@ -59,9 +61,10 @@ public class StaffMenuController : MonoBehaviour
     private void CreateButton(StaffMember data)
     {
         GameObject newButton = Instantiate(StaffButtonPrefab, contentContainer);
+        Sprite icon = data.GetIcon();
         
         Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
-        if (iconImage) iconImage.sprite = data.icon;
+        if (iconImage) iconImage.sprite = icon;
         
         TextMeshProUGUI nameText = newButton.transform.Find("Name").GetComponent<TextMeshProUGUI>();
         if (nameText) nameText.text = data.staffName;
@@ -87,13 +90,15 @@ public class StaffMenuController : MonoBehaviour
 
     private void checkHireButtonInteractability(StaffMember data)
     {
-        bool canHire = EconomyManager.Instance.money >= data.hiringCost;
+        bool hasMaterializer = PassengerManager.Instance != null && PassengerManager.Instance.HasMaterializer();
+        bool canHire = hasMaterializer && EconomyManager.Instance.money >= data.hiringCost;
         hireStaffButton.interactable = canHire;
     }
 
     public void OnHireStaffButtonClicked()
     {
-        if (EconomyManager.Instance.money >= selectedStaff.hiringCost)
+        bool hasMaterializer = PassengerManager.Instance != null && PassengerManager.Instance.HasMaterializer();
+        if (hasMaterializer && EconomyManager.Instance.money >= selectedStaff.hiringCost)
         {
             EconomyManager.Instance.SpendMoney(selectedStaff.hiringCost);
             
@@ -149,7 +154,7 @@ public class StaffMenuController : MonoBehaviour
     
     private void UpdateDetailView(StaffMember data)
     {
-        if (detailIcon) detailIcon.sprite = data.icon;
+        if (detailIcon) detailIcon.sprite = data.GetIcon();
         if (detailName) detailName.text = data.staffName;
         if (detailDescription) detailDescription.text = data.description;
         if (hiringCostText) hiringCostText.text = "Hire $" + data.hiringCost;

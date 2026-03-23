@@ -17,5 +17,5 @@ MonoBehaviour:
     passengers.
   icon: {fileID: 21300000, guid: 01bee551acd106145b1d7c7bf6b9df0a, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 4ce6fa85b11c2f040915b88f15d7f60f, type: 3}
-  cost: 500
+  cost: 475
   size: {x: 1, y: 1}

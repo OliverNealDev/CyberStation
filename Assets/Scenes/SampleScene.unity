@@ -3771,6 +3771,11 @@ MonoBehaviour:
   moneyText: {fileID: 1002516322}
   positiveMoneyColor: {r: 0.2784314, g: 0.7490196, b: 0, a: 1}
   negativeMoneyColor: {r: 188, g: 0, b: 0, a: 1}
+  billPrefab: {fileID: 6655367600056211879, guid: 00ff91afe0f4d7442bae09c4fc081124, type: 3}
+  billLifetime: 5
+  billFadeDuration: 0.4
+  billMoveDuration: 0.25
+  billSpacing: 56
 --- !u!1 &241609486
 GameObject:
   m_ObjectHideFlags: 0
@@ -8361,7 +8366,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &509636527
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14848,7 +14853,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c659562bc5a3674399de4fba720dd96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  money: 1000000
+  money: 1400
 --- !u!1 &778923728
 GameObject:
   m_ObjectHideFlags: 0
@@ -15699,7 +15704,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 2147483903
-  m_fontColor: {r: 1, g: 0, b: 0, a: 0.5019608}
+  m_fontColor: {r: 1, g: 0, b: 0, a: 0.7529412}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

@@ -47,6 +47,8 @@ public class BuildMenuController : MonoBehaviour
             return;
         }
 
+        System.Array.Sort(buildItems, (a, b) => a.cost.CompareTo(b.cost));
+
         foreach (var item in buildItems)
         {
             CreateButton(item);
@@ -56,9 +58,10 @@ public class BuildMenuController : MonoBehaviour
     private void CreateButton(ObjectBuildable data)
     {
         GameObject newButton = Instantiate(ItemButtonPrefab, contentContainer);
+        Sprite icon = data.GetIcon();
         
         Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
-        if (iconImage) iconImage.sprite = data.icon;
+        if (iconImage) iconImage.sprite = icon;
         
         Button btnComp = newButton.GetComponent<Button>();
         btnComp.onClick.AddListener(() => OnItemButtonClicked(data));
@@ -72,7 +75,7 @@ public class BuildMenuController : MonoBehaviour
     
     private void UpdateDetailView(ObjectBuildable data)
     {
-        if (detailIcon) detailIcon.sprite = data.icon;
+        if (detailIcon) detailIcon.sprite = data.GetIcon();
         if (detailName) detailName.text = data.objectName;
         if (detailDescription) detailDescription.text = data.description;
         if (detailCost) detailCost.text = "$" + data.cost;

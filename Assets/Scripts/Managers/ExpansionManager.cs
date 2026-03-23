@@ -16,6 +16,7 @@ public class ExpansionManager : MonoBehaviour
     {
         Instance = this;
         allExpansions = Resources.LoadAll<Expansion>("Expansions");
+        System.Array.Sort(allExpansions, (a, b) => a.upfrontCost.CompareTo(b.upfrontCost));
     }
     
     public bool TryBuyExpansion(Expansion expansion)
