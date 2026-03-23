@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5934110839818210532}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: DoorClosed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 9216194286789144486}
   - component: {fileID: 1401743895311430659}
   - component: {fileID: 8416603733540646179}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: PrivateLavatory_Prefab
   m_TagString: TicketMachine
   m_Icon: {fileID: 0}
@@ -153,18 +153,15 @@ MonoBehaviour:
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 2
+  facilityIcon: {fileID: 0}
+  idleIconColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+  activeFacilityColor: {r: 1, g: 0, b: 1, a: 1}
   doorTransform: {fileID: 2679333801809600609}
   doorIdlePosition: {fileID: 7612832003182387273}
   doorClosedPosition: {fileID: 5934110839818210532}
   doorMoveDuration: 0.8
   minUsageTime: 8
   maxUsageTime: 16
-  facilityIcon: {fileID: 0}
-  facilityLight: {fileID: 905206158880049428}
-  idleLightIntensity: 0
-  activeLightIntensity: 3
-  idleIconColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-  activeFacilityColor: {r: 1, g: 0, b: 1, a: 1}
 --- !u!1 &2087136993986482555
 GameObject:
   m_ObjectHideFlags: 0
@@ -174,7 +171,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3747216850802039661}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CubeRestPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -205,7 +202,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1035859554179908143}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CubeExtrudePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -238,7 +235,7 @@ GameObject:
   - component: {fileID: 5270187581885917361}
   - component: {fileID: 7002779485270449156}
   - component: {fileID: 4124339393013585637}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -378,7 +375,7 @@ GameObject:
   - component: {fileID: 2776612593026003510}
   - component: {fileID: 5274263428574839893}
   - component: {fileID: 5292851878983986962}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -727,7 +724,7 @@ GameObject:
   - component: {fileID: 6268281078069598008}
   - component: {fileID: 2590084152397685059}
   - component: {fileID: 8037743859376327274}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1060,7 +1057,7 @@ GameObject:
   - component: {fileID: 2645217206937178420}
   - component: {fileID: 5241553224810004752}
   - component: {fileID: 2107224377291545482}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1392,7 +1389,7 @@ GameObject:
   - component: {fileID: 1365429753505574749}
   - component: {fileID: 3886988639381283346}
   - component: {fileID: 5612096191524384038}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1493,7 +1490,7 @@ GameObject:
   - component: {fileID: 2351407417980484531}
   - component: {fileID: 905206158880049428}
   - component: {fileID: 1398671901038138229}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1622,7 +1619,7 @@ GameObject:
   - component: {fileID: 5338788728636631673}
   - component: {fileID: 8478650110164199411}
   - component: {fileID: 310131232431313252}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1956,7 +1953,7 @@ GameObject:
   - component: {fileID: 6442886401821225565}
   - component: {fileID: 3444330780674568396}
   - component: {fileID: 4352602928344582725}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2305,7 +2302,7 @@ GameObject:
   - component: {fileID: 2499700852980192318}
   - component: {fileID: 2867331464751434226}
   - component: {fileID: 2782631577204954532}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2634,7 +2631,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7612832003182387273}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: DoorOpen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2669,7 +2666,7 @@ GameObject:
   - component: {fileID: 2648129443178630820}
   - component: {fileID: 8828383766941399135}
   - component: {fileID: 5000370378234796859}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

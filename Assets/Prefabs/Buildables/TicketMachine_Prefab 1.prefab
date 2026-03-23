@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 4007099437534097313}
   - component: {fileID: 1322111707261819156}
   - component: {fileID: 2265163334914523238}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -402,7 +402,7 @@ GameObject:
   - component: {fileID: 1496368584288212945}
   - component: {fileID: 604259459888326104}
   - component: {fileID: 5763463505818405556}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -757,7 +757,7 @@ GameObject:
   - component: {fileID: 4959359869613540167}
   - component: {fileID: 505839992861496727}
   - component: {fileID: 9216194286789144486}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: TicketMachine_Prefab 1
   m_TagString: TicketMachine
   m_Icon: {fileID: 0}
@@ -844,15 +844,13 @@ MonoBehaviour:
   - {fileID: 5182001605862356388}
   screenRenderer: {fileID: 1452070661766650140}
   ticketSprite: {fileID: 4340323422367248028}
-  facilityLight: {fileID: 5669752677005930892}
-  idleLightIntensity: 0
-  activeLightIntensity: 3
-  processingTime: 1.5
-  holdDuration: 1
-  pulseSpeed: 2
   darkGrey: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   lightGrey: {r: 0.7, g: 0.7, b: 0.7, a: 1}
   screenIdleColor: {r: 0, g: 0, b: 0, a: 1}
+  processingTime: 1.5
+  holdDuration: 1
+  pulseSpeed: 2
+  transitionDuration: 0.2
 --- !u!114 &9216194286789144486
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -884,7 +882,7 @@ GameObject:
   - component: {fileID: 3747072629185638860}
   - component: {fileID: 1042823777900207901}
   - component: {fileID: 6562098621945767890}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: accentblock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1240,7 +1238,7 @@ GameObject:
   - component: {fileID: 80133610188875571}
   - component: {fileID: 8724321351716496010}
   - component: {fileID: 2853628011512589681}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1592,7 +1590,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1583088945500700123}
   - component: {fileID: 4340323422367248028}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1687,7 +1685,7 @@ GameObject:
   - component: {fileID: 5182001605862356388}
   - component: {fileID: 6249290259215306187}
   - component: {fileID: 8715258249539181404}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: accentblock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2043,7 +2041,7 @@ GameObject:
   - component: {fileID: 1630086738730020868}
   - component: {fileID: 2300154787576242248}
   - component: {fileID: 6831688023857713154}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2399,7 +2397,7 @@ GameObject:
   - component: {fileID: 2071538948356032939}
   - component: {fileID: 2451226818419870518}
   - component: {fileID: 4585165227310721461}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2750,7 +2748,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6172494994561992385}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2794,7 +2792,7 @@ GameObject:
   - component: {fileID: 1452070661766650140}
   - component: {fileID: 4754651246972535727}
   - component: {fileID: 935251953021337800}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Screen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3150,7 +3148,7 @@ GameObject:
   - component: {fileID: 5278496344222949828}
   - component: {fileID: 6099063059886383611}
   - component: {fileID: 2689154467932543890}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3503,7 +3501,7 @@ GameObject:
   - component: {fileID: 7310237192368188506}
   - component: {fileID: 5669752677005930892}
   - component: {fileID: 6458993129597289941}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Spot Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}

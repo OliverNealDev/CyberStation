@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9216194286789144486}
   - component: {fileID: 3163173911931242428}
   - component: {fileID: 1401743895311430659}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CleansingShower_Prefab
   m_TagString: TicketMachine
   m_Icon: {fileID: 0}
@@ -144,7 +144,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3747216850802039661}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CubeRestPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -175,7 +175,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1035859554179908143}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CubeExtrudePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -207,7 +207,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2472254653233923105}
   - component: {fileID: 6582851181405949919}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -301,7 +301,7 @@ GameObject:
   - component: {fileID: 2538790679600182953}
   - component: {fileID: 2776612593026003510}
   - component: {fileID: 5274263428574839893}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -634,7 +634,7 @@ GameObject:
   - component: {fileID: 2645217206937178420}
   - component: {fileID: 5241553224810004752}
   - component: {fileID: 2107224377291545482}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -965,7 +965,7 @@ GameObject:
   - component: {fileID: 2351407417980484531}
   - component: {fileID: 905206158880049428}
   - component: {fileID: 1398671901038138229}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1094,7 +1094,7 @@ GameObject:
   - component: {fileID: 5338788728636631673}
   - component: {fileID: 8478650110164199411}
   - component: {fileID: 310131232431313252}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1427,7 +1427,7 @@ GameObject:
   - component: {fileID: 7736410048081657716}
   - component: {fileID: 8221669093915321917}
   - component: {fileID: 648907699120696470}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2579,7 +2579,7 @@ GameObject:
   - component: {fileID: 2255053773449159873}
   - component: {fileID: 6442886401821225565}
   - component: {fileID: 3444330780674568396}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2912,7 +2912,7 @@ GameObject:
   - component: {fileID: 2499700852980192318}
   - component: {fileID: 2867331464751434226}
   - component: {fileID: 2782631577204954532}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3245,7 +3245,7 @@ GameObject:
   - component: {fileID: 2648129443178630820}
   - component: {fileID: 8828383766941399135}
   - component: {fileID: 5000370378234796859}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

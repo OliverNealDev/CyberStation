@@ -360,9 +360,13 @@ public class PassengerManager : MonoBehaviour
             if (Random.value <= spontaneousDematerializationRate)
             {
                 Passenger randomPassenger = activePassengers[i];
+                if (randomPassenger.currentSubState == Passenger.passengerSubStates.InteractingWithSomething)
+                {
+                    continue;
+                }
                 
                 Vector3 rayStart = randomPassenger.transform.position + (Vector3.up * 0.5f);
-                if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 2f))
+                if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 6f))
                 {
                     if (hit.collider.CompareTag("UnlitterableSurface"))
                     {

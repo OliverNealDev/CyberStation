@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2664700505688944178}
   - component: {fileID: 633798840508343897}
   - component: {fileID: 635947457280310465}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -369,7 +369,7 @@ GameObject:
   - component: {fileID: 4959359869613540167}
   - component: {fileID: 9216194286789144486}
   - component: {fileID: 2421443078952967879}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: NutrientDispenser_Prefab
   m_TagString: TicketMachine
   m_Icon: {fileID: 0}
@@ -480,20 +480,16 @@ MonoBehaviour:
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 2
-  extrudeDuration: 3
-  arcDuration: 0.75
-  lightTransitionDuration: 0.25
+  nutrientCube: {fileID: 5822321231277756889}
+  facilityIcon: {fileID: 7333661233552951150}
+  idleIconColor: {r: 0.8274511, g: 0.8274511, b: 0.8274511, a: 1}
+  activeFacilityColor: {r: 1, g: 0.64, b: 0, a: 1}
   cubeRestPoint: {fileID: 3747216850802039661}
   cubeExtrudePoint: {fileID: 1035859554179908143}
   passengerHeadYOffset: 3.172
   arcHeight: 1
-  nutrientCube: {fileID: 5822321231277756889}
-  extruderLight: {fileID: 905206158880049428}
-  facilityIcon: {fileID: 7333661233552951150}
-  idleLightIntensity: 0
-  activeLightIntensity: 5
-  idleIconColor: {r: 0.8274511, g: 0.8274511, b: 0.8274511, a: 1}
-  activeFacilityColor: {r: 1, g: 0.64, b: 0, a: 1}
+  extrudeDuration: 3
+  arcDuration: 0.75
 --- !u!1 &1890042080153126258
 GameObject:
   m_ObjectHideFlags: 0
@@ -508,7 +504,7 @@ GameObject:
   - component: {fileID: 1190467023078490334}
   - component: {fileID: 4244468140484052936}
   - component: {fileID: 2713033398120233498}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -864,7 +860,7 @@ GameObject:
   - component: {fileID: 780515248684604818}
   - component: {fileID: 8511897248979258305}
   - component: {fileID: 2261617152695082274}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1220,7 +1216,7 @@ GameObject:
   - component: {fileID: 8143251498571179486}
   - component: {fileID: 8419574291467781688}
   - component: {fileID: 8553719346865016624}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1576,7 +1572,7 @@ GameObject:
   - component: {fileID: 3901203503822070123}
   - component: {fileID: 7332628667817880618}
   - component: {fileID: 5725508543972011667}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1927,7 +1923,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3747216850802039661}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CubeRestPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1958,7 +1954,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1035859554179908143}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: CubeExtrudePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1994,7 +1990,7 @@ GameObject:
   - component: {fileID: 6048072791010159180}
   - component: {fileID: 9145740263848436370}
   - component: {fileID: 8789131727928823300}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2346,7 +2342,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4685040928181760870}
   - component: {fileID: 7333661233552951150}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2441,7 +2437,7 @@ GameObject:
   - component: {fileID: 7752385321566121998}
   - component: {fileID: 1282611419128552140}
   - component: {fileID: 2108474547091307275}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2797,7 +2793,7 @@ GameObject:
   - component: {fileID: 4235355871365021476}
   - component: {fileID: 8300506104032058143}
   - component: {fileID: 6341845865876401549}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (07)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3150,7 +3146,7 @@ GameObject:
   - component: {fileID: 2351407417980484531}
   - component: {fileID: 905206158880049428}
   - component: {fileID: 1398671901038138229}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3280,7 +3276,7 @@ GameObject:
   - component: {fileID: 8478650110164199411}
   - component: {fileID: 310131232431313252}
   - component: {fileID: 5973576319639227347}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3635,7 +3631,7 @@ GameObject:
   - component: {fileID: 36459435713615417}
   - component: {fileID: 443276595523187214}
   - component: {fileID: 132575559026853081}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Nutrient
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3969,7 +3965,7 @@ GameObject:
   - component: {fileID: 2920867427664935272}
   - component: {fileID: 3276130727789856669}
   - component: {fileID: 7731023607171602554}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Body (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

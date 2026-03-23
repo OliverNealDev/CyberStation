@@ -8,6 +8,10 @@ public class BuildController : MonoBehaviour
 
     public Material gridMaterial;
     public Material plainMaterial;
+    public Material demolishHighlightMaterial; 
+
+    public LayerMask buildFloorLayerMask; 
+    public LayerMask demolishLayerMask;
 
     [SerializeField] private bool _isBuildingMode = false;
     public bool isBuildingMode
@@ -18,11 +22,42 @@ public class BuildController : MonoBehaviour
             if (_isBuildingMode != value)
             {
                 _isBuildingMode = value;
-                UpdateFlooringMaterials(_isBuildingMode);
-                
-                if (!_isBuildingMode)
+                if (_isBuildingMode)
+                {
+                    isDemolishMode = false;
+                    UpdateFlooringMaterials(true);
+                }
+                else
                 {
                     RemovePreviewObject();
+                    if (!isDemolishMode) UpdateFlooringMaterials(false);
+                }
+            }
+        }
+    }
+
+    [SerializeField] private bool _isDemolishMode = false;
+    public bool isDemolishMode
+    {
+        get { return _isDemolishMode; }
+        set
+        {
+            if (_isDemolishMode != value)
+            {
+                _isDemolishMode = value;
+                if (_isDemolishMode)
+                {
+                    isBuildingMode = false;
+                    UpdateFlooringMaterials(true);
+                }
+                else
+                {
+                    if (currentDemolishTarget != null)
+                    {
+                        currentDemolishTarget.RemoveHighlight();
+                        currentDemolishTarget = null;
+                    }
+                    if (!isBuildingMode) UpdateFlooringMaterials(false);
                 }
             }
         }
@@ -32,6 +67,7 @@ public class BuildController : MonoBehaviour
     
     private GameObject previewObjectInstance;
     private ObjectBuildable objectBuildable; 
+    private PlacedBuildable currentDemolishTarget;
 
     private int objectRotation = 0; 
 
@@ -42,14 +78,14 @@ public class BuildController : MonoBehaviour
 
     private void Start()
     {
-        UpdateFlooringMaterials(_isBuildingMode);
+        UpdateFlooringMaterials(_isBuildingMode || _isDemolishMode);
     }
 
     void Update()
     {
         if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) 
         {
-            if (previewObjectInstance != null && previewObjectInstance.activeSelf)
+            if (isBuildingMode && previewObjectInstance != null && previewObjectInstance.activeSelf)
             {
                 Vector2Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
                 Vector2Int size = GetRotatedSize();
@@ -63,12 +99,22 @@ public class BuildController : MonoBehaviour
                     GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
                     placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); 
                     
+                    PlacedBuildable pb = placedObject.AddComponent<PlacedBuildable>();
+                    pb.Initialize(objectBuildable.cost, gridPos, size);
+
                     GridManager.Instance.OccupyArea(gridPos.x, gridPos.y, size.x, size.y);
                 }
             }
+            else if (isDemolishMode && currentDemolishTarget != null)
+            {
+                EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
+                GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
+                Destroy(currentDemolishTarget.gameObject);
+                currentDemolishTarget = null;
+            }
         }
         
-        if (Keyboard.current.rKey.wasPressedThisFrame)
+        if (isBuildingMode && Keyboard.current.rKey.wasPressedThisFrame)
         {
             objectRotation += 90;
             if (objectRotation >= 360) objectRotation = 0;
@@ -93,9 +139,9 @@ public class BuildController : MonoBehaviour
             {
                 Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
                 
-                if (Physics.Raycast(ray, out RaycastHit hitInfo) && !EventSystem.current.IsPointerOverGameObject()) 
+                if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, buildFloorLayerMask) && !EventSystem.current.IsPointerOverGameObject()) 
                 {
-                    if (hitInfo.collider.CompareTag("BuildableFlooring"))
+                    if (hitInfo.collider.CompareTag("BuildableFlooring") && hitInfo.normal.y > 0.9f)
                     {
                         if (!previewObjectInstance.activeSelf) previewObjectInstance.SetActive(true);
 
@@ -116,11 +162,42 @@ public class BuildController : MonoBehaviour
                 }
             }
         }
-        else
+        else if (isDemolishMode)
         {
-            if (previewObjectInstance != null)
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, demolishLayerMask) && !EventSystem.current.IsPointerOverGameObject())
             {
-                Destroy(previewObjectInstance);
+                PlacedBuildable hitTarget = hitInfo.collider.GetComponentInParent<PlacedBuildable>();
+
+                if (hitTarget != null)
+                {
+                    if (currentDemolishTarget != hitTarget)
+                    {
+                        if (currentDemolishTarget != null)
+                        {
+                            currentDemolishTarget.RemoveHighlight();
+                        }
+                        currentDemolishTarget = hitTarget;
+                        currentDemolishTarget.SetHighlight(demolishHighlightMaterial);
+                    }
+                }
+                else
+                {
+                    if (currentDemolishTarget != null)
+                    {
+                        currentDemolishTarget.RemoveHighlight();
+                        currentDemolishTarget = null;
+                    }
+                }
+            }
+            else
+            {
+                if (currentDemolishTarget != null)
+                {
+                    currentDemolishTarget.RemoveHighlight();
+                    currentDemolishTarget = null;
+                }
             }
         }
     }
@@ -135,9 +212,9 @@ public class BuildController : MonoBehaviour
                 
                 Ray ray = new Ray(tileCenter + Vector3.up * 5f, Vector3.down);
                 
-                if (Physics.Raycast(ray, out RaycastHit hit, 10f))
+                if (Physics.Raycast(ray, out RaycastHit hit, 10f, buildFloorLayerMask))
                 {
-                    if (!hit.collider.CompareTag("BuildableFlooring"))
+                    if (!hit.collider.CompareTag("BuildableFlooring") || hit.normal.y < 0.9f)
                     {
                         return false;
                     }
@@ -187,6 +264,8 @@ public class BuildController : MonoBehaviour
 
     public void ChangePreviewObject(ObjectBuildable objectBuildable)
     {
+        isBuildingMode = true;
+        
         if (previewObjectInstance != null)
         {
             Destroy(previewObjectInstance);

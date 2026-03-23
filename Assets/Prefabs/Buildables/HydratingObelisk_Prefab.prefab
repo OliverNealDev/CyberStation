@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8583513932292439733}
   - component: {fileID: 3750686640913818074}
   - component: {fileID: 4486929967379274723}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7407999752675718769}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: tap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 4959359869613540167}
   - component: {fileID: 9216194286789144486}
   - component: {fileID: 2416363088899092056}
-  m_Layer: 2
+  m_Layer: 14
   m_Name: HydratingObelisk_Prefab
   m_TagString: TicketMachine
   m_Icon: {fileID: 0}
@@ -233,17 +233,14 @@ MonoBehaviour:
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 1
+  facilityIcon: {fileID: 5969262218880966119}
+  idleIconColor: {r: 0.8274511, g: 0.8274511, b: 0.8274511, a: 1}
+  activeFacilityColor: {r: 0, g: 1, b: 1, a: 1}
+  tubeTransform: {fileID: 7407999752675718769}
+  dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}
   nozzlePoint: {fileID: 8596009513800852768}
   passengerHeadYOffset: 3.172
   arcHeight: 0.75
-  tubeTransform: {fileID: 7407999752675718769}
-  dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}
-  facilityLight: {fileID: 905206158880049428}
-  facilityIcon: {fileID: 5969262218880966119}
-  idleLightIntensity: 0
-  activeLightIntensity: 5
-  idleIconColor: {r: 0.8274511, g: 0.8274511, b: 0.8274511, a: 1}
-  activeFacilityColor: {r: 0, g: 1, b: 1, a: 1}
   dropletCount: 5
   timeBetweenShots: 0.2
   flightDuration: 0.4
@@ -259,7 +256,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8596009513800852768}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: NozzlePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -292,7 +289,7 @@ GameObject:
   - component: {fileID: 697325206761991715}
   - component: {fileID: 680076521901848420}
   - component: {fileID: 3956897931509055804}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -380,7 +377,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2584242146024486519}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -421,7 +418,7 @@ GameObject:
   - component: {fileID: 6373562808444818581}
   - component: {fileID: 5464020398638736330}
   - component: {fileID: 1866177669180529446}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cylinder (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -511,7 +508,7 @@ GameObject:
   - component: {fileID: 8657226669272030860}
   - component: {fileID: 500133134517072035}
   - component: {fileID: 4799997648637868431}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -600,7 +597,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7839644993727761623}
   - component: {fileID: 5969262218880966119}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -692,7 +689,7 @@ GameObject:
   - component: {fileID: 2351407417980484531}
   - component: {fileID: 905206158880049428}
   - component: {fileID: 1398671901038138229}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -819,7 +816,7 @@ GameObject:
   - component: {fileID: 7732070150298728328}
   - component: {fileID: 3406997431082802317}
   - component: {fileID: 5419328913900086454}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -909,7 +906,7 @@ GameObject:
   - component: {fileID: 4716293644774157231}
   - component: {fileID: 4763942827961156295}
   - component: {fileID: 3056337808855495354}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}

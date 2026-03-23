@@ -10,7 +10,6 @@ public class BuildMenuController : MonoBehaviour
 
     public ObjectBuildable[] buildItems;
     
-    // Detail View References
     public Image detailIcon;
     public TextMeshProUGUI detailName;
     public TextMeshProUGUI detailDescription;
@@ -30,10 +29,8 @@ public class BuildMenuController : MonoBehaviour
         
         buildItems = Resources.LoadAll<ObjectBuildable>(targetFolderPath);
         
-        // Debug check to help you verify if the path is correct
         if (buildItems.Length == 0)
         {
-            Debug.LogError($"No ObjectBuildable items found in Resources/{targetFolderPath}. Check folder name and file types!");
             return;
         }
 
@@ -56,10 +53,7 @@ public class BuildMenuController : MonoBehaviour
     
     private void OnItemButtonClicked(ObjectBuildable data)
     {
-        Debug.Log("Clicked on build item: " + data.objectName);
-        
         BuildController.Instance.ChangePreviewObject(data);
-        
         UpdateDetailView(data);
     }
     
@@ -69,5 +63,10 @@ public class BuildMenuController : MonoBehaviour
         if (detailName) detailName.text = data.objectName;
         if (detailDescription) detailDescription.text = data.description;
         if (detailCost) detailCost.text = "$" + data.cost;
+    }
+
+    public void ActivateDemolishMode()
+    {
+        BuildController.Instance.isDemolishMode = true;
     }
 }
