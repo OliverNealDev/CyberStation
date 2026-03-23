@@ -13,6 +13,8 @@ public class BuildController : MonoBehaviour
     public LayerMask buildFloorLayerMask; 
     public LayerMask demolishLayerMask;
 
+    public float highlightPadding = 0.1f;
+
     [SerializeField] private bool _isBuildingMode = false;
     public bool isBuildingMode
     {
@@ -54,8 +56,8 @@ public class BuildController : MonoBehaviour
                 {
                     if (currentDemolishTarget != null)
                     {
-                        currentDemolishTarget.RemoveHighlight();
                         currentDemolishTarget = null;
+                        demolishHighlightBox.SetActive(false);
                     }
                     if (!isBuildingMode) UpdateFlooringMaterials(false);
                 }
@@ -68,8 +70,10 @@ public class BuildController : MonoBehaviour
     private GameObject previewObjectInstance;
     private ObjectBuildable objectBuildable; 
     private PlacedBuildable currentDemolishTarget;
+    private GameObject demolishHighlightBox;
 
     private int objectRotation = 0; 
+    private float defaultHighlightHeight = 5f;
 
     private void Awake()
     {
@@ -79,6 +83,7 @@ public class BuildController : MonoBehaviour
     private void Start()
     {
         UpdateFlooringMaterials(_isBuildingMode || _isDemolishMode);
+        CreateDemolishHighlightBox();
     }
 
     void Update()
@@ -110,7 +115,9 @@ public class BuildController : MonoBehaviour
                 EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
                 GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
                 Destroy(currentDemolishTarget.gameObject);
+                
                 currentDemolishTarget = null;
+                demolishHighlightBox.SetActive(false);
             }
         }
         
@@ -174,20 +181,16 @@ public class BuildController : MonoBehaviour
                 {
                     if (currentDemolishTarget != hitTarget)
                     {
-                        if (currentDemolishTarget != null)
-                        {
-                            currentDemolishTarget.RemoveHighlight();
-                        }
                         currentDemolishTarget = hitTarget;
-                        currentDemolishTarget.SetHighlight(demolishHighlightMaterial);
+                        UpdateDemolishHighlight();
                     }
                 }
                 else
                 {
                     if (currentDemolishTarget != null)
                     {
-                        currentDemolishTarget.RemoveHighlight();
                         currentDemolishTarget = null;
+                        demolishHighlightBox.SetActive(false);
                     }
                 }
             }
@@ -195,11 +198,39 @@ public class BuildController : MonoBehaviour
             {
                 if (currentDemolishTarget != null)
                 {
-                    currentDemolishTarget.RemoveHighlight();
                     currentDemolishTarget = null;
+                    demolishHighlightBox.SetActive(false);
                 }
             }
         }
+    }
+
+    private void CreateDemolishHighlightBox()
+    {
+        demolishHighlightBox = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        Destroy(demolishHighlightBox.GetComponent<Collider>());
+        demolishHighlightBox.GetComponent<Renderer>().material = demolishHighlightMaterial;
+        demolishHighlightBox.SetActive(false);
+    }
+
+    private void UpdateDemolishHighlight()
+    {
+        if (currentDemolishTarget == null) return;
+
+        demolishHighlightBox.SetActive(true);
+        
+        float cellSize = GridManager.Instance.cellSize;
+        
+        float width = (currentDemolishTarget.size.x * cellSize) + highlightPadding;
+        float depth = (currentDemolishTarget.size.y * cellSize) + highlightPadding;
+        float height = defaultHighlightHeight + highlightPadding;
+
+        demolishHighlightBox.transform.localScale = new Vector3(width, height, depth);
+        
+        Vector3 targetPos = currentDemolishTarget.transform.position;
+        demolishHighlightBox.transform.position = new Vector3(targetPos.x, targetPos.y + (height / 2f) - (highlightPadding / 2f), targetPos.z);
+        
+        demolishHighlightBox.transform.rotation = Quaternion.identity;
     }
 
     private bool IsFootprintOnFloor(Vector2Int startGridPos, Vector2Int size, float currentY)

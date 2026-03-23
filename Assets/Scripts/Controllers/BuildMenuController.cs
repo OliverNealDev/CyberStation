@@ -15,9 +15,22 @@ public class BuildMenuController : MonoBehaviour
     public TextMeshProUGUI detailDescription;
     public TextMeshProUGUI detailCost;
     
+    public GameObject demolishModeUI; 
+    
     void Start()
     {
         LoadItems();
+    }
+
+    void Update()
+    {
+        if (demolishModeUI != null && BuildController.Instance != null)
+        {
+            if (demolishModeUI.activeSelf != BuildController.Instance.isDemolishMode)
+            {
+                demolishModeUI.SetActive(BuildController.Instance.isDemolishMode);
+            }
+        }
     }
 
     public void LoadItems()
