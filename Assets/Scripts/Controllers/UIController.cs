@@ -18,6 +18,7 @@ public class UIController : MonoBehaviour
     public Button ratingsMenuButton;
     public Button expansionMenuButton;
     public Button platformMenuButton;
+    public Button progressionMenuButton;
 
     [Header("Panel References")]
     public GameObject settingsPanel;
@@ -27,6 +28,7 @@ public class UIController : MonoBehaviour
     public GameObject ratingsPanel;
     public GameObject expansionPanel;
     public GameObject platformPanel;
+    public GameObject progressionPanel;
     
     [Header("Popup References")]
     public GameObject trainSelectionPopup;
@@ -77,6 +79,7 @@ public class UIController : MonoBehaviour
         if (ratingsMenuButton) ratingsMenuButton.onClick.AddListener(() => TogglePanel(ratingsPanel));
         if (expansionMenuButton) expansionMenuButton.onClick.AddListener(() => TogglePanel(expansionPanel));
         if (platformMenuButton) platformMenuButton.onClick.AddListener(() => TogglePanel(platformPanel));
+        if (progressionMenuButton) progressionMenuButton.onClick.AddListener(() => TogglePanel(progressionPanel));
 
         if (cameraSwitchButton) cameraSwitchButton.onClick.AddListener(OnCameraSwitchClicked);
 
@@ -153,6 +156,7 @@ public class UIController : MonoBehaviour
         if (ratingsPanel) ratingsPanel.SetActive(false);
         if (expansionPanel) expansionPanel.SetActive(false);
         if (platformPanel) platformPanel.SetActive(false);
+         if (progressionPanel) progressionPanel.SetActive(false);
 
         currentActivePanel = null;
 
@@ -182,6 +186,7 @@ public class UIController : MonoBehaviour
         if (ratingsMenuButton) ratingsMenuButton.onClick.RemoveAllListeners();
         if (expansionMenuButton) expansionMenuButton.onClick.RemoveAllListeners();
         if (platformMenuButton) platformMenuButton.onClick.RemoveAllListeners();
+        if (progressionMenuButton) progressionMenuButton.onClick.RemoveAllListeners();
     }
 
     private void OnExpenseRecorded(int amount, Sprite icon)
