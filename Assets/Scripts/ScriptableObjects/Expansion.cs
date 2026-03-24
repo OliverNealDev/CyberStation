@@ -12,4 +12,16 @@ public class Expansion : ScriptableObject
 
     [Header("Economy")]
     public int upfrontCost = 100;
+
+    [System.NonSerialized] private Sprite runtimeIcon;
+
+    public Sprite GetIcon()
+    {
+        if (runtimeIcon == null)
+        {
+            runtimeIcon = PrefabIconRenderer.GetIcon(expansionPrefab, icon, PrefabIconView.BuildablesAndStaff);
+        }
+
+        return runtimeIcon;
+    }
 }

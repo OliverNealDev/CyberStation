@@ -53,7 +53,7 @@ public class ExpansionMenuController : MonoBehaviour
         GameObject newButton = Instantiate(expansionItemButtonPrefab, contentContainer);
         
         Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
-        if (iconImage) iconImage.sprite = data.icon;
+        if (iconImage) iconImage.sprite = data.GetIcon();
         
         Button btnComp = newButton.GetComponent<Button>();
         btnComp.onClick.AddListener(() => OnExpansionItemButtonClicked(data));
@@ -98,7 +98,7 @@ public class ExpansionMenuController : MonoBehaviour
     
     private void UpdateDetailView(Expansion data)
     {
-        if (detailIcon) detailIcon.sprite = data.icon;
+        if (detailIcon) detailIcon.sprite = data.GetIcon();
         if (detailName) detailName.text = data.name;
         if (detailDescription) detailDescription.text = data.description;
         if (upfrontServiceCost) upfrontServiceCost.text = ExpansionManager.Instance.IsExpansionBuilt(data) ? "Owned" : $"Buy ${data.upfrontCost}";
