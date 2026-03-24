@@ -24,6 +24,8 @@ public class ExpansionMenuController : MonoBehaviour
     {
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
         ExpansionManager.OnExpansionBuilt += CheckButtonInteractabilities;
+        ProgressionManager.OnProgressionChanged += LoadItems;
+        LoadItems();
         if (selectedExpansion != null) UpdateDetailView(selectedExpansion);
     }
     
@@ -31,6 +33,7 @@ public class ExpansionMenuController : MonoBehaviour
     {
         UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
         ExpansionManager.OnExpansionBuilt -= CheckButtonInteractabilities;
+        ProgressionManager.OnProgressionChanged -= LoadItems;
     }
 
     public void LoadItems()
@@ -44,6 +47,11 @@ public class ExpansionMenuController : MonoBehaviour
 
         foreach (var item in ExpansionManager.Instance.allExpansions)
         {
+            if (ProgressionManager.Instance != null && !ProgressionManager.Instance.IsUnlocked(item))
+            {
+                continue;
+            }
+
             CreateButton(item);
         }
     }

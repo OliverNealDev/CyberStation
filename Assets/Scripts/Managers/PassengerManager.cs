@@ -587,6 +587,11 @@ public class PassengerManager : MonoBehaviour
             {
                 EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
             }
+
+            if (ProgressionManager.Instance != null)
+            {
+                ProgressionManager.Instance.RecordTicketSold();
+            }
             
             ApplyPassengerVisuals(passenger);
             
@@ -607,6 +612,11 @@ public class PassengerManager : MonoBehaviour
 
             passenger.ClearNeed(needType);
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
+
+            if (ProgressionManager.Instance != null)
+            {
+                ProgressionManager.Instance.RecordNeedFulfilled();
+            }
             
             MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
             if (animator != null) animator.Pop();
@@ -801,6 +811,12 @@ public class PassengerManager : MonoBehaviour
         {
             passenger.currentTarget.RemovePerson(passenger);
         }
+
+        if (ProgressionManager.Instance != null)
+        {
+            ProgressionManager.Instance.RecordPassengerBoarded();
+        }
+
         UnregisterPassenger(passenger);
     }
     

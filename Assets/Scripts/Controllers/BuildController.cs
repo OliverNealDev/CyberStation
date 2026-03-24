@@ -108,6 +108,11 @@ public class BuildController : MonoBehaviour
                     pb.Initialize(objectBuildable.cost, gridPos, size);
 
                     GridManager.Instance.OccupyArea(gridPos.x, gridPos.y, size.x, size.y);
+
+                    if (ProgressionManager.Instance != null)
+                    {
+                        ProgressionManager.Instance.RecordBuildPlaced();
+                    }
                 }
             }
             else if (isDemolishMode && currentDemolishTarget != null)

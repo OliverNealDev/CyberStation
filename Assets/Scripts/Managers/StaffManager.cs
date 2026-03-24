@@ -24,6 +24,11 @@ public class StaffManager : MonoBehaviour
         if (!hiredStaff.Contains(staff))
         {
             hiredStaff.Add(staff);
+
+            if (ProgressionManager.Instance != null)
+            {
+                ProgressionManager.Instance.RecordStaffHired();
+            }
         }
     }
     

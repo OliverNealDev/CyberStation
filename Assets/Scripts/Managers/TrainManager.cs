@@ -40,7 +40,15 @@ public class TrainManager : MonoBehaviour
 
     public void UnlockTrain(Train train)
     {
-        if (!unlockedTrains.Contains(train)) unlockedTrains.Add(train);
+        if (!unlockedTrains.Contains(train))
+        {
+            unlockedTrains.Add(train);
+
+            if (ProgressionManager.Instance != null)
+            {
+                ProgressionManager.Instance.RecordTrainUnlocked();
+            }
+        }
     }
 
     public void RegisterPlatform(PlatformController platform)

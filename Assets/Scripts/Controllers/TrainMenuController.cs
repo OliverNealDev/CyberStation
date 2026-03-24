@@ -30,12 +30,15 @@ public class TrainMenuController : MonoBehaviour
     void OnEnable()
     {
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
+        ProgressionManager.OnProgressionChanged += LoadItems;
+        LoadItems();
         if (selectedTrain != null) UpdateDetailView(selectedTrain);
     }
     
     void OnDisable()
     {
         UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
+        ProgressionManager.OnProgressionChanged -= LoadItems;
     }
 
     public void LoadItems()
@@ -53,6 +56,11 @@ public class TrainMenuController : MonoBehaviour
 
         foreach (var item in trains)
         {
+            if (ProgressionManager.Instance != null && !ProgressionManager.Instance.IsUnlocked(item))
+            {
+                continue;
+            }
+
             CreateButton(item);
         }
     }

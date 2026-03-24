@@ -29,11 +29,14 @@ public class StaffMenuController : MonoBehaviour
     void OnEnable()
     {
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
+        ProgressionManager.OnProgressionChanged += LoadItems;
+        LoadItems();
     }
     
     void OnDisable()
     {
         UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
+        ProgressionManager.OnProgressionChanged -= LoadItems;
     }
 
     public void LoadItems()
@@ -54,6 +57,11 @@ public class StaffMenuController : MonoBehaviour
 
         foreach (var staffMember in staff)
         {
+            if (ProgressionManager.Instance != null && !ProgressionManager.Instance.IsUnlocked(staffMember))
+            {
+                continue;
+            }
+
             CreateButton(staffMember);
         }
     }

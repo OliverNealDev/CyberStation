@@ -9,6 +9,8 @@ public class ProgressionTierView : MonoBehaviour
     [SerializeField] private ProgressionUnlockableView[] unlockables = System.Array.Empty<ProgressionUnlockableView>();
     [SerializeField] private bool autoDiscoverUnlockables = true;
 
+    private int runtimeTierNumber = 1;
+
     private void OnEnable()
     {
         RefreshView();
@@ -43,6 +45,43 @@ public class ProgressionTierView : MonoBehaviour
         }
     }
 
+    public int GetTierNumber(int fallbackTierNumber)
+    {
+        EnsureReferences();
+
+        runtimeTierNumber = ExtractTierNumber(titleText != null ? titleText.text : string.Empty, 0);
+        if (runtimeTierNumber <= 0)
+        {
+            runtimeTierNumber = ExtractTierNumber(tierTitle, 0);
+        }
+
+        if (runtimeTierNumber <= 0)
+        {
+            runtimeTierNumber = ExtractTierNumber(gameObject.name, fallbackTierNumber);
+        }
+
+        return runtimeTierNumber;
+    }
+
+    public ProgressionUnlockableView[] GetUnlockables()
+    {
+        EnsureReferences();
+        return unlockables;
+    }
+
+    public void SetUnlockedState(bool isUnlocked)
+    {
+        EnsureReferences();
+
+        for (int i = 0; i < unlockables.Length; i++)
+        {
+            if (unlockables[i] != null)
+            {
+                unlockables[i].SetUnlocked(isUnlocked);
+            }
+        }
+    }
+
     private void EnsureReferences()
     {
         if (titleText == null)
@@ -58,5 +97,30 @@ public class ProgressionTierView : MonoBehaviour
         {
             unlockables = GetComponentsInChildren<ProgressionUnlockableView>(true);
         }
+    }
+
+    private int ExtractTierNumber(string source, int fallbackTierNumber)
+    {
+        if (string.IsNullOrWhiteSpace(source))
+        {
+            return fallbackTierNumber;
+        }
+
+        int value = 0;
+        bool foundDigit = false;
+
+        for (int i = 0; i < source.Length; i++)
+        {
+            char character = source[i];
+            if (!char.IsDigit(character))
+            {
+                continue;
+            }
+
+            foundDigit = true;
+            value = (value * 10) + (character - '0');
+        }
+
+        return foundDigit ? Mathf.Max(1, value) : fallbackTierNumber;
     }
 }

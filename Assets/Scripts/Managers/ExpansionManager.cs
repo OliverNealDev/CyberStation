@@ -33,6 +33,11 @@ public class ExpansionManager : MonoBehaviour
             NavMeshManager.Instance.BuildNavMesh();
         }
 
+        if (ProgressionManager.Instance != null)
+        {
+            ProgressionManager.Instance.RecordExpansionBuilt();
+        }
+
         OnExpansionBuilt?.Invoke();
         return true;
     }

@@ -8,11 +8,19 @@ using TMPro;
 public class ProgressionUnlockableView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image backgroundImage;
     [SerializeField] private ProgressionIconSource iconSource = new ProgressionIconSource();
     [SerializeField] private bool preserveAspect = true;
     [SerializeField] private bool hideWhenIconMissing;
     [SerializeField] private TextMeshProUGUI hoverText;
     [SerializeField] private string hoverTextOverride;
+    [SerializeField] private float lockedIconAlphaMultiplier = 0.25f;
+    [SerializeField] private float lockedBackgroundAlphaMultiplier = 0.6f;
+
+    private bool isUnlocked = true;
+    private bool cachedDefaultColors;
+    private Color defaultIconColor = Color.white;
+    private Color defaultBackgroundColor = Color.white;
 
     private void OnEnable()
     {
@@ -27,10 +35,17 @@ public class ProgressionUnlockableView : MonoBehaviour, IPointerEnterHandler, IP
             iconImage = transform.Find("Icon")?.GetComponent<Image>();
         }
 
+        if (backgroundImage == null)
+        {
+            backgroundImage = transform.Find("Panel")?.GetComponent<Image>();
+        }
+
         if (iconImage == null)
         {
             return;
         }
+
+        CacheDefaultColors();
 
         Sprite resolvedIcon = iconSource.GetIcon();
         iconImage.sprite = resolvedIcon;
@@ -47,6 +62,8 @@ public class ProgressionUnlockableView : MonoBehaviour, IPointerEnterHandler, IP
             hoverText.text = GetHoverText();
             SetHoverVisible(false);
         }
+
+        ApplyUnlockVisuals();
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -86,6 +103,56 @@ public class ProgressionUnlockableView : MonoBehaviour, IPointerEnterHandler, IP
         Transform hoverRoot = hoverText.transform.parent;
         GameObject target = hoverRoot != null && hoverRoot != transform ? hoverRoot.gameObject : hoverText.gameObject;
         target.SetActive(isVisible);
+    }
+
+    public void SetUnlocked(bool value)
+    {
+        isUnlocked = value;
+        ApplyUnlockVisuals();
+    }
+
+    public void GetUnlockTargets(System.Collections.Generic.List<Object> results)
+    {
+        iconSource.GetUnlockTargets(results);
+    }
+
+    private void ApplyUnlockVisuals()
+    {
+        if (iconImage != null)
+        {
+            iconImage.color = GetStateColor(defaultIconColor, isUnlocked ? 1f : lockedIconAlphaMultiplier);
+        }
+
+        if (backgroundImage != null)
+        {
+            backgroundImage.color = GetStateColor(defaultBackgroundColor, isUnlocked ? 1f : lockedBackgroundAlphaMultiplier);
+        }
+    }
+
+    private void CacheDefaultColors()
+    {
+        if (cachedDefaultColors)
+        {
+            return;
+        }
+
+        if (iconImage != null)
+        {
+            defaultIconColor = iconImage.color;
+        }
+
+        if (backgroundImage != null)
+        {
+            defaultBackgroundColor = backgroundImage.color;
+        }
+
+        cachedDefaultColors = true;
+    }
+
+    private Color GetStateColor(Color baseColor, float alphaMultiplier)
+    {
+        baseColor.a *= alphaMultiplier;
+        return baseColor;
     }
 }
 
@@ -153,5 +220,57 @@ public class ProgressionIconSource
             default:
                 return string.Empty;
         }
+    }
+
+    public void GetUnlockTargets(System.Collections.Generic.List<Object> results)
+    {
+        AddTarget(results, GetPrimaryObject());
+
+        switch (sourceType)
+        {
+            case ProgressionIconSourceType.Buildable:
+                AddTarget(results, buildable != null ? buildable.prefab : null);
+                break;
+            case ProgressionIconSourceType.Train:
+                AddTarget(results, train != null ? train.trainPrefab : null);
+                break;
+            case ProgressionIconSourceType.Staff:
+                AddTarget(results, staffMember != null ? staffMember.staffPrefab : null);
+                break;
+            case ProgressionIconSourceType.Expansion:
+                AddTarget(results, expansion != null ? expansion.expansionPrefab : null);
+                break;
+        }
+    }
+
+    private Object GetPrimaryObject()
+    {
+        switch (sourceType)
+        {
+            case ProgressionIconSourceType.SpriteOverride:
+                return spriteOverride;
+            case ProgressionIconSourceType.Buildable:
+                return buildable;
+            case ProgressionIconSourceType.Train:
+                return train;
+            case ProgressionIconSourceType.Staff:
+                return staffMember;
+            case ProgressionIconSourceType.Expansion:
+                return expansion;
+            case ProgressionIconSourceType.Prefab:
+                return prefab;
+            default:
+                return null;
+        }
+    }
+
+    private void AddTarget(System.Collections.Generic.List<Object> results, Object target)
+    {
+        if (target == null || results.Contains(target))
+        {
+            return;
+        }
+
+        results.Add(target);
     }
 }

@@ -7,7 +7,18 @@ public class ProgressionMenuController : MonoBehaviour
 
     private void OnEnable()
     {
+        if (ProgressionManager.Instance != null)
+        {
+            ProgressionManager.Instance.RefreshUnlocksFromScene();
+        }
+
+        ProgressionManager.OnProgressionChanged += RefreshAll;
         RefreshAll();
+    }
+
+    private void OnDisable()
+    {
+        ProgressionManager.OnProgressionChanged -= RefreshAll;
     }
 
     private void OnTransformChildrenChanged()

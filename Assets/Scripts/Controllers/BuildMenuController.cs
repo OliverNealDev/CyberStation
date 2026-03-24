@@ -22,6 +22,17 @@ public class BuildMenuController : MonoBehaviour
         LoadItems();
     }
 
+    void OnEnable()
+    {
+        ProgressionManager.OnProgressionChanged += LoadItems;
+        LoadItems();
+    }
+
+    void OnDisable()
+    {
+        ProgressionManager.OnProgressionChanged -= LoadItems;
+    }
+
     void Update()
     {
         if (demolishModeUI != null && BuildController.Instance != null)
@@ -51,6 +62,11 @@ public class BuildMenuController : MonoBehaviour
 
         foreach (var item in buildItems)
         {
+            if (ProgressionManager.Instance != null && !ProgressionManager.Instance.IsUnlocked(item))
+            {
+                continue;
+            }
+
             CreateButton(item);
         }
     }
