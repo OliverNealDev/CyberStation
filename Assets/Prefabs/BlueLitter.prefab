@@ -275,3 +275,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Litter
   timeToClean: 5
+  interactablePromptPrefab: {fileID: 610401586093004303, guid: 44b00c41e02feb342ac63da0521aaeda, type: 3}

@@ -13,6 +13,7 @@ TagManager:
   - UnlitterableSurface
   - BuildableFlooring
   - BaseLitterColour
+  - InteractablePrompts
   layers:
   - Default
   - TransparentFX

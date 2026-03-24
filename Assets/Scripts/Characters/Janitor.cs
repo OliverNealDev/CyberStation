@@ -66,7 +66,6 @@ public class Janitor : Staff
                 
                 if (Vector3.Distance(flatJanitor, flatLitter) <= 0.2f)
                 {
-                    JanitorCoordinator.Instance.ResolveClean(targetLitter);
                     currentSubState = janitorSubStates.InteractingWithLitter;
 
                     if (indicatorRenderer != null && actionLightMat != null)
@@ -74,7 +73,7 @@ public class Janitor : Staff
                         indicatorRenderer.material = actionLightMat;
                     }
                     
-                    StartCoroutine(ShrinkAndCleanPuddle(targetLitter));
+                    StartCoroutine(CleanAssignedLitter(targetLitter));
                 }
                 break;
             
@@ -87,21 +86,16 @@ public class Janitor : Staff
         }
     }
     
-    private System.Collections.IEnumerator ShrinkAndCleanPuddle(Litter litterObj)
+    private System.Collections.IEnumerator CleanAssignedLitter(Litter litterObj)
     {
-        float duration = litterObj.timeToClean;
-        float elapsed = 0f;
-        Vector3 initialScale = litterObj.transform.localScale;
-
-        while (elapsed < duration)
+        if (litterObj != null)
         {
-            if (litterObj == null) break;
-            
-            float t = elapsed / duration;
-            litterObj.transform.localScale = Vector3.Lerp(initialScale, Vector3.zero, t);
-            
-            elapsed += Time.deltaTime;
-            yield return null;
+            litterObj.BeginCleanup(litterObj.timeToClean);
+
+            while (litterObj != null)
+            {
+                yield return null;
+            }
         }
 
         if (indicatorRenderer != null && successLightMat != null)
