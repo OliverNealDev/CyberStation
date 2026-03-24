@@ -5,6 +5,7 @@ using UnityEngine.Serialization;
 public class StaffMember : ScriptableObject
 {
     public string staffName = "New StaffMember";
+    public int requiredTier = 1;
     [TextArea]
     public string description = "Description of the staff.";
     public Sprite icon;

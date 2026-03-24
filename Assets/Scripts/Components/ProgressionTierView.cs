@@ -9,8 +9,6 @@ public class ProgressionTierView : MonoBehaviour
     [SerializeField] private ProgressionUnlockableView[] unlockables = System.Array.Empty<ProgressionUnlockableView>();
     [SerializeField] private bool autoDiscoverUnlockables = true;
 
-    private int runtimeTierNumber = 1;
-
     private void OnEnable()
     {
         RefreshView();
@@ -49,7 +47,7 @@ public class ProgressionTierView : MonoBehaviour
     {
         EnsureReferences();
 
-        runtimeTierNumber = ExtractTierNumber(titleText != null ? titleText.text : string.Empty, 0);
+        int runtimeTierNumber = ExtractTierNumber(titleText != null ? titleText.text : string.Empty, 0);
         if (runtimeTierNumber <= 0)
         {
             runtimeTierNumber = ExtractTierNumber(tierTitle, 0);
@@ -61,12 +59,6 @@ public class ProgressionTierView : MonoBehaviour
         }
 
         return runtimeTierNumber;
-    }
-
-    public ProgressionUnlockableView[] GetUnlockables()
-    {
-        EnsureReferences();
-        return unlockables;
     }
 
     public void SetUnlockedState(bool isUnlocked)

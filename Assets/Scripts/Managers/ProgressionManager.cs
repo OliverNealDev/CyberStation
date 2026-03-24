@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 public class ProgressionManager : MonoBehaviour
@@ -25,10 +23,6 @@ public class ProgressionManager : MonoBehaviour
 
     [SerializeField] private int currentLevel = 1;
     [SerializeField] private int currentXp;
-
-    private readonly Dictionary<UnityEngine.Object, int> unlockTierByObject = new Dictionary<UnityEngine.Object, int>();
-    private readonly List<ProgressionTierView> tierViews = new List<ProgressionTierView>();
-    private readonly List<UnityEngine.Object> scratchUnlockTargets = new List<UnityEngine.Object>();
 
     private int maxLevel = 1;
 
@@ -54,21 +48,7 @@ public class ProgressionManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-            Instance = null;
-        }
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode loadMode)
-    {
-        RefreshUnlocksFromScene();
+        RefreshMaxLevel();
     }
 
     public int CurrentLevel => currentLevel;
@@ -89,18 +69,7 @@ public class ProgressionManager : MonoBehaviour
         }
     }
 
-    public int XpNeededForNextLevel
-    {
-        get
-        {
-            if (IsMaxLevel)
-            {
-                return GetXpRequiredForLevel(currentLevel);
-            }
-
-            return GetXpRequiredForLevel(currentLevel);
-        }
-    }
+    public int XpNeededForNextLevel => GetXpRequiredForLevel(currentLevel);
 
     public float LevelProgress01
     {
@@ -115,78 +84,24 @@ public class ProgressionManager : MonoBehaviour
         }
     }
 
-    public void RefreshUnlocksFromScene()
-    {
-        unlockTierByObject.Clear();
-        tierViews.Clear();
-
-        ProgressionTierView[] foundTierViews = FindObjectsByType<ProgressionTierView>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        if (foundTierViews == null || foundTierViews.Length == 0)
-        {
-            maxLevel = 1;
-            UpdateLevelFromXp();
-            NotifyProgressChanged();
-            return;
-        }
-
-        Array.Sort(foundTierViews, CompareTierViews);
-
-        for (int i = 0; i < foundTierViews.Length; i++)
-        {
-            ProgressionTierView tierView = foundTierViews[i];
-            if (tierView == null)
-            {
-                continue;
-            }
-
-            int fallbackTierNumber = i + 1;
-            int tierNumber = tierView.GetTierNumber(fallbackTierNumber);
-
-            tierViews.Add(tierView);
-
-            ProgressionUnlockableView[] unlockables = tierView.GetUnlockables();
-            for (int j = 0; j < unlockables.Length; j++)
-            {
-                ProgressionUnlockableView unlockable = unlockables[j];
-                if (unlockable == null)
-                {
-                    continue;
-                }
-
-                scratchUnlockTargets.Clear();
-                unlockable.GetUnlockTargets(scratchUnlockTargets);
-
-                for (int k = 0; k < scratchUnlockTargets.Count; k++)
-                {
-                    RegisterUnlockTarget(scratchUnlockTargets[k], tierNumber);
-                }
-            }
-        }
-
-        maxLevel = Mathf.Max(1, GetHighestRegisteredTier());
-        UpdateLevelFromXp();
-        UpdateTierVisuals();
-        NotifyProgressChanged();
-    }
-
     public bool IsUnlocked(ObjectBuildable buildable)
     {
-        return IsUnlockedInternal(buildable, buildable != null ? buildable.prefab : null);
+        return buildable == null || currentLevel >= Mathf.Max(1, buildable.requiredTier);
     }
 
     public bool IsUnlocked(Train train)
     {
-        return IsUnlockedInternal(train, train != null ? train.trainPrefab : null);
+        return train == null || currentLevel >= Mathf.Max(1, train.requiredTier);
     }
 
     public bool IsUnlocked(StaffMember staffMember)
     {
-        return IsUnlockedInternal(staffMember, staffMember != null ? staffMember.staffPrefab : null);
+        return staffMember == null || currentLevel >= Mathf.Max(1, staffMember.requiredTier);
     }
 
     public bool IsUnlocked(Expansion expansion)
     {
-        return IsUnlockedInternal(expansion, expansion != null ? expansion.expansionPrefab : null);
+        return expansion == null || currentLevel >= Mathf.Max(1, expansion.requiredTier);
     }
 
     public void AddXp(int amount)
@@ -198,7 +113,6 @@ public class ProgressionManager : MonoBehaviour
 
         currentXp += amount;
         UpdateLevelFromXp();
-        UpdateTierVisuals();
         NotifyProgressChanged();
     }
 
@@ -254,45 +168,60 @@ public class ProgressionManager : MonoBehaviour
         return requiredXp;
     }
 
-    private void RegisterUnlockTarget(UnityEngine.Object target, int tierNumber)
+    private void RefreshMaxLevel()
     {
-        if (target == null)
-        {
-            return;
-        }
+        maxLevel = 1;
 
-        if (unlockTierByObject.TryGetValue(target, out int existingTier))
-        {
-            unlockTierByObject[target] = Mathf.Min(existingTier, tierNumber);
-            return;
-        }
+        UpdateMaxLevel(Resources.LoadAll<ObjectBuildable>("BuildItems"));
+        UpdateMaxLevel(Resources.LoadAll<Train>("Trains"));
+        UpdateMaxLevel(Resources.LoadAll<StaffMember>("Staff"));
+        UpdateMaxLevel(Resources.LoadAll<Expansion>("Expansions"));
 
-        unlockTierByObject[target] = tierNumber;
+        UpdateLevelFromXp();
     }
 
-    private bool IsUnlockedInternal(UnityEngine.Object mainObject, UnityEngine.Object fallbackObject)
+    private void UpdateMaxLevel(ObjectBuildable[] buildables)
     {
-        int requiredTier = int.MaxValue;
-        bool foundTier = false;
-
-        if (mainObject != null && unlockTierByObject.TryGetValue(mainObject, out int mainTier))
+        for (int i = 0; i < buildables.Length; i++)
         {
-            requiredTier = Mathf.Min(requiredTier, mainTier);
-            foundTier = true;
+            if (buildables[i] != null)
+            {
+                maxLevel = Mathf.Max(maxLevel, Mathf.Max(1, buildables[i].requiredTier));
+            }
         }
+    }
 
-        if (fallbackObject != null && unlockTierByObject.TryGetValue(fallbackObject, out int fallbackTier))
+    private void UpdateMaxLevel(Train[] trains)
+    {
+        for (int i = 0; i < trains.Length; i++)
         {
-            requiredTier = Mathf.Min(requiredTier, fallbackTier);
-            foundTier = true;
+            if (trains[i] != null)
+            {
+                maxLevel = Mathf.Max(maxLevel, Mathf.Max(1, trains[i].requiredTier));
+            }
         }
+    }
 
-        if (!foundTier)
+    private void UpdateMaxLevel(StaffMember[] staffMembers)
+    {
+        for (int i = 0; i < staffMembers.Length; i++)
         {
-            return true;
+            if (staffMembers[i] != null)
+            {
+                maxLevel = Mathf.Max(maxLevel, Mathf.Max(1, staffMembers[i].requiredTier));
+            }
         }
+    }
 
-        return currentLevel >= requiredTier;
+    private void UpdateMaxLevel(Expansion[] expansions)
+    {
+        for (int i = 0; i < expansions.Length; i++)
+        {
+            if (expansions[i] != null)
+            {
+                maxLevel = Mathf.Max(maxLevel, Mathf.Max(1, expansions[i].requiredTier));
+            }
+        }
     }
 
     private void UpdateLevelFromXp()
@@ -303,65 +232,6 @@ public class ProgressionManager : MonoBehaviour
         {
             currentLevel++;
         }
-    }
-
-    private void UpdateTierVisuals()
-    {
-        for (int i = 0; i < tierViews.Count; i++)
-        {
-            if (tierViews[i] == null)
-            {
-                continue;
-            }
-
-            int tierNumber = tierViews[i].GetTierNumber(i + 1);
-            tierViews[i].SetUnlockedState(currentLevel >= tierNumber);
-        }
-    }
-
-    private int GetHighestRegisteredTier()
-    {
-        int highestTier = 1;
-
-        foreach (var pair in unlockTierByObject)
-        {
-            highestTier = Mathf.Max(highestTier, pair.Value);
-        }
-
-        return highestTier;
-    }
-
-    private int CompareTierViews(ProgressionTierView left, ProgressionTierView right)
-    {
-        if (left == right)
-        {
-            return 0;
-        }
-
-        int leftTierNumber = left != null ? left.GetTierNumber(GetHierarchyOrder(left.transform)) : int.MaxValue;
-        int rightTierNumber = right != null ? right.GetTierNumber(GetHierarchyOrder(right.transform)) : int.MaxValue;
-
-        if (leftTierNumber != rightTierNumber)
-        {
-            return leftTierNumber.CompareTo(rightTierNumber);
-        }
-
-        return GetHierarchyOrder(left.transform).CompareTo(GetHierarchyOrder(right.transform));
-    }
-
-    private int GetHierarchyOrder(Transform target)
-    {
-        int order = 0;
-        int multiplier = 1;
-
-        while (target != null)
-        {
-            order += target.GetSiblingIndex() * multiplier;
-            multiplier *= 100;
-            target = target.parent;
-        }
-
-        return order;
     }
 
     private void NotifyProgressChanged()

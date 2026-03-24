@@ -4,6 +4,7 @@ using UnityEngine;
 public class Train : ScriptableObject
 {
     public string trainName = "New Train";
+    public int requiredTier = 1;
     [TextArea]
     public string description = "Description of the train.";
     public Sprite icon;

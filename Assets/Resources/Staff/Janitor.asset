@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Janitor
   m_EditorClassIdentifier: Assembly-CSharp::StaffMember
   staffName: Janitor
+  requiredTier: 6
   description: Keeps spills from dragging down cleanliness and station rating.
   icon: {fileID: 21300000, guid: 9d3e9c72cf72c834da9977f46eaef76c, type: 3}
   staffPrefab: {fileID: 2991288983431714229, guid: 3e558a62844dd8f4abd32d2629b742c3, type: 3}

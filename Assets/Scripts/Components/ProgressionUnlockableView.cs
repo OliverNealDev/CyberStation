@@ -111,11 +111,6 @@ public class ProgressionUnlockableView : MonoBehaviour, IPointerEnterHandler, IP
         ApplyUnlockVisuals();
     }
 
-    public void GetUnlockTargets(System.Collections.Generic.List<Object> results)
-    {
-        iconSource.GetUnlockTargets(results);
-    }
-
     private void ApplyUnlockVisuals()
     {
         if (iconImage != null)
@@ -220,57 +215,5 @@ public class ProgressionIconSource
             default:
                 return string.Empty;
         }
-    }
-
-    public void GetUnlockTargets(System.Collections.Generic.List<Object> results)
-    {
-        AddTarget(results, GetPrimaryObject());
-
-        switch (sourceType)
-        {
-            case ProgressionIconSourceType.Buildable:
-                AddTarget(results, buildable != null ? buildable.prefab : null);
-                break;
-            case ProgressionIconSourceType.Train:
-                AddTarget(results, train != null ? train.trainPrefab : null);
-                break;
-            case ProgressionIconSourceType.Staff:
-                AddTarget(results, staffMember != null ? staffMember.staffPrefab : null);
-                break;
-            case ProgressionIconSourceType.Expansion:
-                AddTarget(results, expansion != null ? expansion.expansionPrefab : null);
-                break;
-        }
-    }
-
-    private Object GetPrimaryObject()
-    {
-        switch (sourceType)
-        {
-            case ProgressionIconSourceType.SpriteOverride:
-                return spriteOverride;
-            case ProgressionIconSourceType.Buildable:
-                return buildable;
-            case ProgressionIconSourceType.Train:
-                return train;
-            case ProgressionIconSourceType.Staff:
-                return staffMember;
-            case ProgressionIconSourceType.Expansion:
-                return expansion;
-            case ProgressionIconSourceType.Prefab:
-                return prefab;
-            default:
-                return null;
-        }
-    }
-
-    private void AddTarget(System.Collections.Generic.List<Object> results, Object target)
-    {
-        if (target == null || results.Contains(target))
-        {
-            return;
-        }
-
-        results.Add(target);
     }
 }

@@ -7,11 +7,6 @@ public class ProgressionMenuController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (ProgressionManager.Instance != null)
-        {
-            ProgressionManager.Instance.RefreshUnlocksFromScene();
-        }
-
         ProgressionManager.OnProgressionChanged += RefreshAll;
         RefreshAll();
     }
@@ -41,6 +36,9 @@ public class ProgressionMenuController : MonoBehaviour
             if (tierViews[i] != null)
             {
                 tierViews[i].RefreshView();
+                int tierNumber = tierViews[i].GetTierNumber(i + 1);
+                int currentLevel = ProgressionManager.Instance != null ? ProgressionManager.Instance.CurrentLevel : 1;
+                tierViews[i].SetUnlockedState(currentLevel >= tierNumber);
             }
         }
     }

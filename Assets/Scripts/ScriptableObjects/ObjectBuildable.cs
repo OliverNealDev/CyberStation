@@ -7,6 +7,7 @@ using TMPro;
 public class ObjectBuildable : ScriptableObject
 {
     public string objectName = "New Buildable Object";
+    public int requiredTier = 1;
     [TextArea]
     public string description = "Description of the buildable object.";
     public Sprite icon;

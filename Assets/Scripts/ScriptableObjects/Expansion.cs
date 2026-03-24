@@ -4,6 +4,7 @@ using UnityEngine;
 public class Expansion : ScriptableObject
 {
     public string name = "New Expansion";
+    public int requiredTier = 1;
     [TextArea]
     public string description = "Description of the expansion.";
     public Sprite icon;
