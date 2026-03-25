@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum FacilityType
@@ -35,6 +36,8 @@ public abstract class StationFacility : QueuableObject
 
     protected virtual void OnDestroy()
     {
+        ReleaseAssignedPassengers();
+
         if (FacilityManager.Instance != null)
         {
             FacilityManager.Instance.DeregisterFacility(this);
@@ -64,6 +67,18 @@ public abstract class StationFacility : QueuableObject
         }
         
         state = MachineState.Idle;
+    }
+
+    private void ReleaseAssignedPassengers()
+    {
+        if (PassengerManager.Instance == null)
+        {
+            return;
+        }
+
+        PassengerManager.Instance.HandleDestroyedQueueTarget(this);
+        PeopleOnWay.Clear();
+        currentPerson = null;
     }
 
     protected abstract void DeliverService(Passenger passenger);

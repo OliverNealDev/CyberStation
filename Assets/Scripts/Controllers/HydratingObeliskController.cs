@@ -75,6 +75,7 @@ public class HydratingObeliskController : StationFacility
             if (dropletPrefab != null && nozzlePoint != null)
             {
                 GameObject droplet = Instantiate(dropletPrefab, nozzlePoint.position, Quaternion.identity);
+                droplet.transform.SetParent(transform, true);
                 MeshRenderer rend = droplet.GetComponent<MeshRenderer>();
                 if (rend != null) rend.material.color = activeFacilityColor;
 

@@ -106,6 +106,7 @@ public class CleansingShowerController : StationFacility
         Vector3 spawnPos = showerHeadPoint.position + randomOffset;
 
         GameObject droplet = Instantiate(dropletPrefab, spawnPos, Quaternion.identity);
+        droplet.transform.SetParent(transform, true);
         
         droplet.transform.localScale = new Vector3(dropletWidth, dropletLength, dropletWidth);
 

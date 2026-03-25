@@ -119,7 +119,7 @@ public class UIController : MonoBehaviour
 
         if (buildController != null)
         {
-            buildController.isBuildingMode = false;
+            buildController.ExitBuildModes();
         }
     }
 
@@ -162,7 +162,7 @@ public class UIController : MonoBehaviour
 
         if (buildController != null) 
         {
-            buildController.isBuildingMode = false;
+            buildController.ExitBuildModes();
         }
     }
 

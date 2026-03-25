@@ -355,6 +355,12 @@ public class BuildController : MonoBehaviour
         ClearPreviewPlacement();
     }
 
+    public void ExitBuildModes()
+    {
+        isBuildingMode = false;
+        isDemolishMode = false;
+    }
+
     public void ChangePreviewObject(ObjectBuildable objectBuildable)
     {
         isBuildingMode = true;

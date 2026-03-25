@@ -228,6 +228,13 @@ public class PassengerManager : MonoBehaviour
                     break;
                 
                 case Passenger.passengerSubStates.InteractingWithSomething:
+                    if (passenger.currentTarget == null)
+                    {
+                        passenger.currentSubState = Passenger.passengerSubStates.Idle;
+                        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+                        break;
+                    }
+
                     UpdateQueuePosition(passenger);
                     
                     if (passenger.currentTarget != null)
@@ -529,6 +536,27 @@ public class PassengerManager : MonoBehaviour
         if (CanUseNavAgent(passenger))
         {
             passenger.navAgent.ResetPath();
+        }
+    }
+
+    public void HandleDestroyedQueueTarget(QueuableObject destroyedTarget)
+    {
+        if (destroyedTarget == null)
+        {
+            return;
+        }
+
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        {
+            Passenger passenger = activePassengers[i];
+            if (passenger == null || passenger.currentTarget != destroyedTarget)
+            {
+                continue;
+            }
+
+            UnassignTarget(passenger);
+            passenger.currentSubState = Passenger.passengerSubStates.Idle;
+            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
         }
     }
 

@@ -24535,14 +24535,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressionManager
   baseXpPerLevel: 100
-  xpIncreasePerLevel: 100
+  xpIncreasePerLevel: 150
   buildPlacedXp: 0
   ticketSoldXp: 5
-  passengerBoardedXp: 3
-  needFulfilledXp: 4
-  trainUnlockedXp: 15
-  staffHiredXp: 12
-  expansionBuiltXp: 20
+  passengerBoardedXp: 0
+  needFulfilledXp: 2
+  trainUnlockedXp: 25
+  staffHiredXp: 50
+  expansionBuiltXp: 70
   currentLevel: 1
   currentXp: 0
 --- !u!43 &1276102437

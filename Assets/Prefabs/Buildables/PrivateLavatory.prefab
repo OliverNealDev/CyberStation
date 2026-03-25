@@ -161,8 +161,8 @@ MonoBehaviour:
   doorIdlePosition: {fileID: 7612832003182387273}
   doorClosedPosition: {fileID: 5934110839818210532}
   doorMoveDuration: 0.8
-  minUsageTime: 8
-  maxUsageTime: 16
+  minUsageTime: 4
+  maxUsageTime: 12
 --- !u!1 &2087136993986482555
 GameObject:
   m_ObjectHideFlags: 0
