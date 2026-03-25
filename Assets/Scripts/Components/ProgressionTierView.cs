@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public class ProgressionTierView : MonoBehaviour
@@ -8,6 +9,11 @@ public class ProgressionTierView : MonoBehaviour
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private ProgressionUnlockableView[] unlockables = System.Array.Empty<ProgressionUnlockableView>();
     [SerializeField] private bool autoDiscoverUnlockables = true;
+    [SerializeField] private Image panelImage;
+    [SerializeField] private Color unlockedPanelColor = new Color(0.08f, 0.2f, 0.12f, 0.6f);
+
+    private Color defaultPanelColor = Color.white;
+    private bool hasDefaultPanelColor;
 
     private void OnEnable()
     {
@@ -41,6 +47,23 @@ public class ProgressionTierView : MonoBehaviour
                 unlockables[i].RefreshView();
             }
         }
+
+        Image sourceImage = gameObject.GetComponentInChildren<Image>(true);
+        if (panelImage == null && sourceImage != null)
+        {
+            panelImage = sourceImage;
+        }
+
+        if (panelImage != null && sourceImage != null)
+        {
+            panelImage.sprite = sourceImage.sprite;
+
+            if (!hasDefaultPanelColor)
+            {
+                defaultPanelColor = panelImage.color;
+                hasDefaultPanelColor = true;
+            }
+        }
     }
 
     public int GetTierNumber(int fallbackTierNumber)
@@ -72,6 +95,11 @@ public class ProgressionTierView : MonoBehaviour
                 unlockables[i].SetUnlocked(isUnlocked);
             }
         }
+
+        if (panelImage != null)
+        {
+            panelImage.color = isUnlocked ? unlockedPanelColor : defaultPanelColor;
+        }
     }
 
     private void EnsureReferences()
@@ -88,6 +116,22 @@ public class ProgressionTierView : MonoBehaviour
         if (autoDiscoverUnlockables || unlockables == null || unlockables.Length == 0)
         {
             unlockables = GetComponentsInChildren<ProgressionUnlockableView>(true);
+        }
+
+        if (panelImage == null)
+        {
+            panelImage = GetComponent<Image>();
+        }
+
+        if (panelImage == null)
+        {
+            panelImage = GetComponentInChildren<Image>(true);
+        }
+
+        if (panelImage != null && !hasDefaultPanelColor)
+        {
+            defaultPanelColor = panelImage.color;
+            hasDefaultPanelColor = true;
         }
     }
 

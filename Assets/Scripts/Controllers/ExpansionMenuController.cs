@@ -38,12 +38,13 @@ public class ExpansionMenuController : MonoBehaviour
 
     public void LoadItems()
     {
-        foreach (Transform child in contentContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        UIRuntimeListUtility.ClearChildren(contentContainer);
         
-        if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null) return;
+        if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null)
+        {
+            UIRuntimeListUtility.RefreshLayout(contentContainer);
+            return;
+        }
 
         foreach (var item in ExpansionManager.Instance.allExpansions)
         {
@@ -54,6 +55,8 @@ public class ExpansionMenuController : MonoBehaviour
 
             CreateButton(item);
         }
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
     }
 
     private void CreateButton(Expansion data)

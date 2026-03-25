@@ -22,12 +22,13 @@ public class TrainSelectionPopupController : MonoBehaviour
 
     public void LoadTrains()
     {
-        foreach (Transform child in contentContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        UIRuntimeListUtility.ClearChildren(contentContainer);
 
-        if (TrainManager.Instance == null) return;
+        if (TrainManager.Instance == null)
+        {
+            UIRuntimeListUtility.RefreshLayout(contentContainer);
+            return;
+        }
 
         foreach (Train train in TrainManager.Instance.unlockedTrains)
         {
@@ -48,6 +49,8 @@ public class TrainSelectionPopupController : MonoBehaviour
                 btnComp.onClick.AddListener(() => OnTrainSelected(train));
             }
         }
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
     }
 
     private void OnTrainSelected(Train train)

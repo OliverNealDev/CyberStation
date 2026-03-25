@@ -330,6 +330,8 @@ MonoBehaviour:
   titleText: {fileID: 0}
   unlockables: []
   autoDiscoverUnlockables: 1
+  panelImage: {fileID: 0}
+  unlockedPanelColor: {r: 0, g: 0.20754719, b: 0.07325197, a: 0.6}
 --- !u!1 &9033857088210453133
 GameObject:
   m_ObjectHideFlags: 0

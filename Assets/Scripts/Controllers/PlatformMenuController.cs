@@ -21,17 +21,20 @@ public class PlatformMenuController : MonoBehaviour
 
     public void LoadPlatforms()
     {
-        foreach (Transform child in contentContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        UIRuntimeListUtility.ClearChildren(contentContainer);
 
-        if (TrainManager.Instance == null) return;
+        if (TrainManager.Instance == null)
+        {
+            UIRuntimeListUtility.RefreshLayout(contentContainer);
+            return;
+        }
 
         foreach (var platform in TrainManager.Instance.activePlatforms)
         {
             CreatePlatformButton(platform);
         }
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
     }
 
     private void CreatePlatformButton(PlatformController platform)

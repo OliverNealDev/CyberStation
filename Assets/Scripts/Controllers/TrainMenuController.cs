@@ -43,14 +43,15 @@ public class TrainMenuController : MonoBehaviour
 
     public void LoadItems()
     {
-        foreach (Transform child in contentContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        UIRuntimeListUtility.ClearChildren(contentContainer);
         
         trains = Resources.LoadAll<Train>(targetFolderPath);
         
-        if (trains.Length == 0) return;
+        if (trains.Length == 0)
+        {
+            UIRuntimeListUtility.RefreshLayout(contentContainer);
+            return;
+        }
 
         System.Array.Sort(trains, (a, b) => a.upfrontCost.CompareTo(b.upfrontCost));
 
@@ -63,6 +64,8 @@ public class TrainMenuController : MonoBehaviour
 
             CreateButton(item);
         }
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
     }
 
     private void CreateButton(Train data)

@@ -387,3 +387,40 @@ public class UIController : MonoBehaviour
         return $"{abbreviatedNumber.ToString(format)}{suffixes[suffixIndex]}";
     }
 }
+
+public static class UIRuntimeListUtility
+{
+    public static void ClearChildren(Transform container)
+    {
+        if (container == null)
+        {
+            return;
+        }
+
+        for (int i = container.childCount - 1; i >= 0; i--)
+        {
+            Transform child = container.GetChild(i);
+            child.SetParent(null, false);
+            UnityEngine.Object.Destroy(child.gameObject);
+        }
+    }
+
+    public static void RefreshLayout(Transform container)
+    {
+        RectTransform current = container as RectTransform;
+        if (current == null)
+        {
+            return;
+        }
+
+        Canvas.ForceUpdateCanvases();
+
+        while (current != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(current);
+            current = current.parent as RectTransform;
+        }
+
+        Canvas.ForceUpdateCanvases();
+    }
+}

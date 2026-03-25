@@ -301,7 +301,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8182ee3b1cb3533439b1fff2eaa4e3bf, type: 2}
+  - {fileID: 2100000, guid: 230044a2f7b739749951427d5124d9ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -634,7 +634,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8182ee3b1cb3533439b1fff2eaa4e3bf, type: 2}
+  - {fileID: 2100000, guid: 230044a2f7b739749951427d5124d9ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -967,7 +967,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8182ee3b1cb3533439b1fff2eaa4e3bf, type: 2}
+  - {fileID: 2100000, guid: 230044a2f7b739749951427d5124d9ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1300,7 +1300,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8182ee3b1cb3533439b1fff2eaa4e3bf, type: 2}
+  - {fileID: 2100000, guid: 230044a2f7b739749951427d5124d9ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1699,7 +1699,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bdd767b4ac810c94ebf0b9a75a88e8e2, type: 2}
+  - {fileID: 2100000, guid: 114a6b1d068b8a24786fcd03ba9c46a9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1742,6 +1742,7 @@ GameObject:
   - component: {fileID: 815258200101414931}
   - component: {fileID: -8553933590772192422}
   - component: {fileID: 1064335323610039212}
+  - component: {fileID: 4967476336883074047}
   m_Layer: 14
   m_Name: Materializer
   m_TagString: Untagged
@@ -1782,6 +1783,7 @@ MonoBehaviour:
   isInPreviewMode: 1
   componentsToEnable:
   - {fileID: 1064335323610039212}
+  - {fileID: 4967476336883074047}
 --- !u!114 &1064335323610039212
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1795,3 +1797,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   padSize: {x: 3, y: 3}
+--- !u!65 &4967476336883074047
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8727649448683996293}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 6, y: 1, z: 6}
+  m_Center: {x: 0, y: 0.5, z: 0}

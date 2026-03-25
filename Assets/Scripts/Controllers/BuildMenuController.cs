@@ -46,15 +46,13 @@ public class BuildMenuController : MonoBehaviour
 
     public void LoadItems()
     {
-        foreach (Transform child in contentContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        UIRuntimeListUtility.ClearChildren(contentContainer);
         
         buildItems = Resources.LoadAll<ObjectBuildable>(targetFolderPath);
         
         if (buildItems.Length == 0)
         {
+            UIRuntimeListUtility.RefreshLayout(contentContainer);
             return;
         }
 
@@ -69,6 +67,8 @@ public class BuildMenuController : MonoBehaviour
 
             CreateButton(item);
         }
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
     }
 
     private void CreateButton(ObjectBuildable data)

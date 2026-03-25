@@ -41,15 +41,13 @@ public class StaffMenuController : MonoBehaviour
 
     public void LoadItems()
     {
-        foreach (Transform child in contentContainer)
-        {
-            Destroy(child.gameObject);
-        }
+        UIRuntimeListUtility.ClearChildren(contentContainer);
         
         staff = Resources.LoadAll<StaffMember>(targetFolderPath);
         
         if (staff.Length == 0)
         {
+            UIRuntimeListUtility.RefreshLayout(contentContainer);
             return;
         }
 
@@ -64,6 +62,8 @@ public class StaffMenuController : MonoBehaviour
 
             CreateButton(staffMember);
         }
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
     }
 
     private void CreateButton(StaffMember data)
