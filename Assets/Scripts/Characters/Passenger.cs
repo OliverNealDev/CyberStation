@@ -16,6 +16,13 @@ public class Passenger : Person
     public bool hasBeenInspected = false;
     
     public bool hasFailedNeed = false;
+    [HideInInspector] public NeedType blockedNeed = NeedType.None;
+    [HideInInspector] public float blockedNeedStartTime;
+    [HideInInspector] public float nextBlockedNeedCheckTime;
+    [HideInInspector] public int blockedNeedFailureStage;
+    [HideInInspector] public PassengerNeedIconController blockedNeedIcon;
+    [HideInInspector] public Vector3 blockedNeedWanderCenter;
+    [HideInInspector] public float nextBlockedNeedWanderTime;
     
     public QueuableObject currentTarget;
     public Vector3 trainWaitPosition;
@@ -32,7 +39,7 @@ public class Passenger : Person
     public enum passengerSubStates { Idle, MovingToTarget, InteractingWithSomething }
     
     public passengerSpecialTargets currentSpecialTarget = passengerSpecialTargets.None;
-    public enum passengerSpecialTargets { None, Platform, TrainDoor, Exit }
+    public enum passengerSpecialTargets { None, Platform, TrainDoor, Exit, BlockedNeedWander }
     
     public enum NeedType { None, Hunger, Thirst, Energy, Hygiene }
 
@@ -43,12 +50,12 @@ public class Passenger : Person
         base.Awake();
     }
 
-    public void RollNeeds()
+    public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked)
     {
-        needsHunger = Random.value > 0.5f;
-        needsThirst = Random.value > 0.5f;
-        needsEnergy = Random.value > 0.5f;
-        needsHygiene = Random.value > 0.5f;
+        needsHunger = hungerUnlocked && Random.value < 0.5f;
+        needsThirst = thirstUnlocked && Random.value < 0.5f;
+        needsEnergy = energyUnlocked && Random.value < 0.5f;
+        needsHygiene = hygieneUnlocked && Random.value < 0.5f;
     }
     
     public NeedType GetNextNeed()

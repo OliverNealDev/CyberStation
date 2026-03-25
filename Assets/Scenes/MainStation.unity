@@ -24067,8 +24067,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressionManager
   baseXpPerLevel: 100
-  xpIncreasePerLevel: 50
-  buildPlacedXp: 10
+  xpIncreasePerLevel: 100
+  buildPlacedXp: 0
   ticketSoldXp: 5
   passengerBoardedXp: 3
   needFulfilledXp: 4
@@ -47423,10 +47423,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   activePassengers: []
   passengerPrefab: {fileID: 2991288983431714229, guid: d457faba8c381e94dbc79fdd56f74a28, type: 3}
-  spontaneousDematerializationRate: 0.004
+  spontaneousDematerializationRate: 0
   materializers: []
   litterPrefabs:
   - {fileID: 7923471293361742921, guid: 4379854c7f742bc488c569e000d46376, type: 3}
+  hungerNeedStartTier: 3
+  thirstNeedStartTier: 2
+  energyNeedStartTier: 999
+  hygieneNeedStartTier: 4
+  needIconPrefab: {fileID: 8039886225430953968, guid: d1f4f20af3d8ef348a5a33044a99a4e0, type: 3}
+  thirstNeedSprite: {fileID: 21300000, guid: a865f25be15508541aee8e79651323e5, type: 3}
+  hungerNeedSprite: {fileID: 21300000, guid: 6cd76c581bc8f5647a6c7319881635e0, type: 3}
+  hygieneNeedSprite: {fileID: 21300000, guid: 9fa99ec8ef5823845a9c80e1aefd7f3c, type: 3}
+  thirstNeedColor: {r: 0, g: 0.55506897, b: 1, a: 1}
+  hungerNeedColor: {r: 1, g: 0.4694984, b: 0, a: 1}
+  hygieneNeedColor: {r: 1, g: 0, b: 0.8612037, a: 1}
+  blockedNeedRetryDelay: 30
+  needIconWorldOffset: {x: 0, y: 5.5, z: 0}
+  blockedNeedWanderRadius: 12
+  blockedNeedWanderIntervalMin: 3
+  blockedNeedWanderIntervalMax: 5
 --- !u!114 &2131610380
 MonoBehaviour:
   m_ObjectHideFlags: 0

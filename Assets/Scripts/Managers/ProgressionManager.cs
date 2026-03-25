@@ -26,18 +26,6 @@ public class ProgressionManager : MonoBehaviour
 
     private int maxLevel = 1;
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void Bootstrap()
-    {
-        if (Instance != null)
-        {
-            return;
-        }
-
-        GameObject managerObject = new GameObject("ProgressionManager");
-        managerObject.AddComponent<ProgressionManager>();
-    }
-
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -111,8 +99,10 @@ public class ProgressionManager : MonoBehaviour
             return;
         }
 
+        int previousLevel = currentLevel;
         currentXp += amount;
         UpdateLevelFromXp();
+        AwardLevelUpMoney(previousLevel, currentLevel);
         NotifyProgressChanged();
     }
 
@@ -231,6 +221,40 @@ public class ProgressionManager : MonoBehaviour
         while (currentLevel < maxLevel && currentXp >= GetXpRequiredToReachLevel(currentLevel + 1))
         {
             currentLevel++;
+        }
+    }
+
+    private void AwardLevelUpMoney(int previousLevel, int newLevel)
+    {
+        if (newLevel <= previousLevel || EconomyManager.Instance == null)
+        {
+            return;
+        }
+
+        int totalReward = 0;
+        for (int level = previousLevel + 1; level <= newLevel; level++)
+        {
+            totalReward += GetMoneyRewardForLevel(level);
+        }
+
+        if (totalReward > 0)
+        {
+            EconomyManager.Instance.AddMoney(totalReward);
+        }
+    }
+
+    private int GetMoneyRewardForLevel(int level)
+    {
+        switch (Mathf.Max(1, level))
+        {
+            case 2:
+                return 225;
+            case 3:
+                return 250;
+            case 4:
+                return 475;
+            default:
+                return level >= 5 ? 150 * level : 0;
         }
     }
 

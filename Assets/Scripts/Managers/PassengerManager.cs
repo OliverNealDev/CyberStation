@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PassengerManager : MonoBehaviour
 {
@@ -18,6 +19,30 @@ public class PassengerManager : MonoBehaviour
     
     public List<GameObject> litterPrefabs = new List<GameObject>();
 
+    [Header("Need Unlock Tiers")]
+    [Min(1)] public int hungerNeedStartTier = 1;
+    [Min(1)] public int thirstNeedStartTier = 1;
+    [Min(1)] public int energyNeedStartTier = 999;
+    [Min(1)] public int hygieneNeedStartTier = 1;
+
+    [Header("Need Warning UI")]
+    [SerializeField] private GameObject needIconPrefab;
+    [SerializeField] private Sprite thirstNeedSprite;
+    [SerializeField] private Sprite hungerNeedSprite;
+    [SerializeField] private Sprite hygieneNeedSprite;
+    [SerializeField] private Color thirstNeedColor = new Color(0.22f, 0.67f, 1f);
+    [SerializeField] private Color hungerNeedColor = new Color(0.88f, 0.53f, 0.2f);
+    [SerializeField] private Color hygieneNeedColor = new Color(0.54f, 0.87f, 0.64f);
+    [Min(0f)] public float blockedNeedPassiveDuration = 10f;
+    [Min(0f)] public float blockedNeedUrgentDuration = 10f;
+    public Vector3 needIconWorldOffset = new Vector3(0f, 5.5f, 0f);
+
+    [Header("Blocked Need Movement")]
+    [Min(0f)] public float blockedNeedWanderRadius = 4f;
+    [Min(0f)] public float blockedNeedWanderIntervalMin = 1.5f;
+    [Min(0f)] public float blockedNeedWanderIntervalMax = 3.5f;
+
+    private const float BlockedNeedCheckInterval = 1f;
     private float tickLength = 0.1f; 
     private float tickTimer;
     
@@ -39,7 +64,6 @@ public class PassengerManager : MonoBehaviour
     void Start()
     {
         UpdatePassengerEntrances();
-        InvokeRepeating("DropLitter", 1, 1);
     }
     
     public void RegisterMaterializer(MaterializerController mat)
@@ -93,6 +117,11 @@ public class PassengerManager : MonoBehaviour
             {
                 case Passenger.passengerSubStates.Idle:
                     DecideNextAction(passenger);
+
+                    if (!IsActivePassenger(passenger))
+                    {
+                        continue;
+                    }
                     
                     if (passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform)
                     {
@@ -141,6 +170,10 @@ public class PassengerManager : MonoBehaviour
                                         UnregisterPassenger(passenger);
                                     }
                                     break;
+                                case Passenger.passengerSpecialTargets.BlockedNeedWander:
+                                    passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+                                    passenger.currentSubState = Passenger.passengerSubStates.Idle;
+                                    break;
                             }
                         }
                         else if (passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.Exit)
@@ -156,6 +189,11 @@ public class PassengerManager : MonoBehaviour
                     if (passenger.currentTarget == null) 
                     {
                         DecideNextAction(passenger);
+
+                        if (!IsActivePassenger(passenger))
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
@@ -197,6 +235,11 @@ public class PassengerManager : MonoBehaviour
                         passenger.FaceTarget(passenger.currentTarget.transform.position);
                     }
                     break;
+            }
+
+            if (!IsActivePassenger(passenger))
+            {
+                continue;
             }
             
             if (passenger.navAgent.isOnOffMeshLink && passenger.currentSubState != Passenger.passengerSubStates.InteractingWithSomething)
@@ -292,6 +335,7 @@ public class PassengerManager : MonoBehaviour
 
         if (passenger.assignedTrainService == null || !TrainManager.Instance.activeTrainServices.Contains(passenger.assignedTrainService))
         {
+            ClearBlockedNeed(passenger);
             passenger.assignedTrainService = null;
             LeaveStation(passenger);
             return;
@@ -317,31 +361,26 @@ public class PassengerManager : MonoBehaviour
                 
                 if (nextNeed == Passenger.NeedType.None)
                 {
+                    ClearBlockedNeed(passenger);
                     break;
                 }
 
-                List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(nextNeed);
-                bool foundFacility = false;
-
-                foreach (FacilityType type in validFacilities)
+                if (passenger.blockedNeed == nextNeed &&
+                    passenger.blockedNeedFailureStage > 0 &&
+                    Time.time < passenger.nextBlockedNeedCheckTime)
                 {
-                    if (FacilityManager.Instance.HasFacility(type))
-                    {
-                        if (GoToFacility(type, passenger))
-                        {
-                            foundFacility = true;
-                            break;
-                        }
-                    }
+                    TryWanderWhileBlocked(passenger);
+                    return;
                 }
-                
-                if (foundFacility)
+
+                if (TrySendPassengerToNeedFacility(passenger, nextNeed))
                 {
+                    ClearBlockedNeed(passenger, true);
                     return; 
                 }
-                
-                passenger.hasFailedNeed = false;
-                passenger.ClearNeed(nextNeed);
+
+                HandleBlockedNeed(passenger, nextNeed);
+                return;
             }
 
             MoveToPlatformPosition(passenger);
@@ -379,11 +418,7 @@ public class PassengerManager : MonoBehaviour
                     }
                 }
 
-                activePassengers.RemoveAt(i);
-                UnassignTarget(randomPassenger);
-                if (randomPassenger.navAgent != null) randomPassenger.navAgent.enabled = false;
-                
-                StartCoroutine(ReplacePassengerWithLitter(randomPassenger));
+                RemovePassengerAsLitter(randomPassenger);
             }
         }
     }
@@ -458,6 +493,8 @@ public class PassengerManager : MonoBehaviour
     
     private void LeaveStation(Passenger passenger)
     {
+        ClearBlockedNeed(passenger);
+
         if (!CanUseNavAgent(passenger))
         {
             UnregisterPassenger(passenger);
@@ -493,6 +530,297 @@ public class PassengerManager : MonoBehaviour
         {
             passenger.navAgent.ResetPath();
         }
+    }
+
+    private bool IsActivePassenger(Passenger passenger)
+    {
+        return passenger != null && activePassengers.Contains(passenger);
+    }
+
+    private int GetCurrentNeedTier()
+    {
+        return ProgressionManager.Instance != null ? Mathf.Max(1, ProgressionManager.Instance.CurrentLevel) : 1;
+    }
+
+    private int GetNeedStartTier(Passenger.NeedType needType)
+    {
+        switch (needType)
+        {
+            case Passenger.NeedType.Hunger:
+                return Mathf.Max(1, hungerNeedStartTier);
+            case Passenger.NeedType.Thirst:
+                return Mathf.Max(1, thirstNeedStartTier);
+            case Passenger.NeedType.Energy:
+                return Mathf.Max(1, energyNeedStartTier);
+            case Passenger.NeedType.Hygiene:
+                return Mathf.Max(1, hygieneNeedStartTier);
+            default:
+                return int.MaxValue;
+        }
+    }
+
+    private bool IsNeedUnlocked(Passenger.NeedType needType)
+    {
+        return GetCurrentNeedTier() >= GetNeedStartTier(needType);
+    }
+
+    private bool TrySendPassengerToNeedFacility(Passenger passenger, Passenger.NeedType needType)
+    {
+        if (FacilityManager.Instance == null)
+        {
+            return false;
+        }
+
+        List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(needType);
+        for (int i = 0; i < validFacilities.Count; i++)
+        {
+            FacilityType type = validFacilities[i];
+            if (!FacilityManager.Instance.HasFacility(type))
+            {
+                continue;
+            }
+
+            if (GoToFacility(type, passenger))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void HandleBlockedNeed(Passenger passenger, Passenger.NeedType needType)
+    {
+        if (passenger == null || needType == Passenger.NeedType.None)
+        {
+            return;
+        }
+
+        if (passenger.blockedNeed != needType || passenger.blockedNeedFailureStage == 0)
+        {
+            passenger.blockedNeed = needType;
+            passenger.blockedNeedStartTime = Time.time;
+            passenger.blockedNeedFailureStage = 1;
+            passenger.nextBlockedNeedCheckTime = Time.time + BlockedNeedCheckInterval;
+            passenger.blockedNeedWanderCenter = passenger.transform.position;
+            passenger.nextBlockedNeedWanderTime = Time.time;
+            passenger.hasFailedNeed = true;
+            ShowBlockedNeedIcon(passenger, needType, false);
+            return;
+        }
+
+        if (Time.time < passenger.nextBlockedNeedCheckTime)
+        {
+            return;
+        }
+
+        passenger.nextBlockedNeedCheckTime = Time.time + BlockedNeedCheckInterval;
+
+        float blockedDuration = Time.time - passenger.blockedNeedStartTime;
+        float passiveDuration = Mathf.Max(0f, blockedNeedPassiveDuration);
+        float urgentDuration = Mathf.Max(0f, blockedNeedUrgentDuration);
+
+        if (passenger.blockedNeedFailureStage == 1 && blockedDuration >= passiveDuration)
+        {
+            passenger.blockedNeedFailureStage = 2;
+            ShowBlockedNeedIcon(passenger, needType, true);
+        }
+
+        if (blockedDuration >= passiveDuration + urgentDuration)
+        {
+            RemovePassengerAsLitter(passenger);
+        }
+    }
+
+    private void ShowBlockedNeedIcon(Passenger passenger, Passenger.NeedType needType, bool shouldBlink)
+    {
+        Sprite needSprite = GetNeedSprite(needType);
+        if (needSprite == null)
+        {
+            return;
+        }
+
+        PassengerNeedIconController iconController = passenger.blockedNeedIcon;
+        if (iconController == null)
+        {
+            Transform iconParent = GetNeedIconParent(passenger);
+            if (iconParent == null)
+            {
+                return;
+            }
+
+            GameObject iconObject;
+            if (needIconPrefab != null)
+            {
+                iconObject = Instantiate(needIconPrefab, iconParent);
+            }
+            else
+            {
+                iconObject = new GameObject("NeedIcon", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                iconObject.transform.SetParent(iconParent, false);
+            }
+
+            iconController = iconObject.GetComponent<PassengerNeedIconController>();
+            if (iconController == null)
+            {
+                iconController = iconObject.AddComponent<PassengerNeedIconController>();
+            }
+
+            passenger.blockedNeedIcon = iconController;
+            iconController.Initialize(passenger, needSprite, GetNeedColor(needType), needIconWorldOffset);
+        }
+        else
+        {
+            iconController.SetSprite(needSprite);
+        }
+
+        iconController.SetNormalColor(GetNeedColor(needType));
+        iconController.SetAlertState(shouldBlink, shouldBlink);
+    }
+
+    private void TryWanderWhileBlocked(Passenger passenger)
+    {
+        if (!CanUseNavAgent(passenger))
+        {
+            return;
+        }
+
+        if (passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.BlockedNeedWander)
+        {
+            return;
+        }
+
+        if (Time.time < passenger.nextBlockedNeedWanderTime)
+        {
+            return;
+        }
+
+        float wanderRadius = Mathf.Max(0.5f, blockedNeedWanderRadius);
+        for (int attempt = 0; attempt < 8; attempt++)
+        {
+            Vector2 offset2D = Random.insideUnitCircle * wanderRadius;
+            Vector3 targetPosition = passenger.blockedNeedWanderCenter + new Vector3(offset2D.x, 0f, offset2D.y);
+
+            if (!NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 2.5f, NavMesh.AllAreas))
+            {
+                continue;
+            }
+
+            passenger.navAgent.SetDestination(hit.position);
+            passenger.navAgent.stoppingDistance = 0.2f;
+            passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
+            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.BlockedNeedWander;
+            passenger.nextBlockedNeedWanderTime = Time.time + Random.Range(
+                blockedNeedWanderIntervalMin,
+                Mathf.Max(blockedNeedWanderIntervalMin, blockedNeedWanderIntervalMax));
+            return;
+        }
+
+        passenger.nextBlockedNeedWanderTime = Time.time + 1f;
+    }
+
+    private Transform GetNeedIconParent(Passenger passenger)
+    {
+        if (WorldSpacePromptCoordinator.Instance != null && WorldSpacePromptCoordinator.Instance.worldSpaceCanvas != null)
+        {
+            return WorldSpacePromptCoordinator.Instance.worldSpaceCanvas.transform;
+        }
+
+        if (passenger != null)
+        {
+            passenger.CreateNewPersonalCanvas(passenger);
+            if (passenger.personalCanvas != null)
+            {
+                return passenger.personalCanvas.transform;
+            }
+        }
+
+        return null;
+    }
+
+    private Sprite GetNeedSprite(Passenger.NeedType needType)
+    {
+        switch (needType)
+        {
+            case Passenger.NeedType.Thirst:
+                return thirstNeedSprite;
+            case Passenger.NeedType.Hunger:
+                return hungerNeedSprite;
+            case Passenger.NeedType.Hygiene:
+                return hygieneNeedSprite;
+            default:
+                return null;
+        }
+    }
+
+    private Color GetNeedColor(Passenger.NeedType needType)
+    {
+        switch (needType)
+        {
+            case Passenger.NeedType.Thirst:
+                return thirstNeedColor;
+            case Passenger.NeedType.Hunger:
+                return hungerNeedColor;
+            case Passenger.NeedType.Hygiene:
+                return hygieneNeedColor;
+            default:
+                return Color.white;
+        }
+    }
+
+    private void ClearBlockedNeed(Passenger passenger, bool fadeIcon = false)
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        passenger.blockedNeed = Passenger.NeedType.None;
+        passenger.blockedNeedStartTime = 0f;
+        passenger.nextBlockedNeedCheckTime = 0f;
+        passenger.blockedNeedFailureStage = 0;
+        passenger.blockedNeedWanderCenter = Vector3.zero;
+        passenger.nextBlockedNeedWanderTime = 0f;
+        passenger.hasFailedNeed = false;
+
+        if (passenger.blockedNeedIcon != null)
+        {
+            if (fadeIcon)
+            {
+                passenger.blockedNeedIcon.FadeOutAndDestroy();
+            }
+            else
+            {
+                Destroy(passenger.blockedNeedIcon.gameObject);
+            }
+
+            passenger.blockedNeedIcon = null;
+        }
+    }
+
+    private void RemovePassengerAsLitter(Passenger passenger)
+    {
+        if (!IsActivePassenger(passenger))
+        {
+            return;
+        }
+
+        ClearBlockedNeed(passenger);
+        activePassengers.Remove(passenger);
+        UnassignTarget(passenger);
+
+        if (passenger.navAgent != null && passenger.navAgent.isActiveAndEnabled)
+        {
+            passenger.navAgent.enabled = false;
+        }
+
+        if (litterPrefabs.Count == 0)
+        {
+            Destroy(passenger.gameObject);
+            return;
+        }
+
+        StartCoroutine(ReplacePassengerWithLitter(passenger));
     }
 
     private bool CanUseNavAgent(Passenger passenger)
@@ -611,6 +939,7 @@ public class PassengerManager : MonoBehaviour
             }
 
             passenger.ClearNeed(needType);
+            ClearBlockedNeed(passenger, true);
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
 
             if (ProgressionManager.Instance != null)
@@ -896,7 +1225,11 @@ public class PassengerManager : MonoBehaviour
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = service;
-        newPassenger.RollNeeds();
+        newPassenger.RollNeeds(
+            IsNeedUnlocked(Passenger.NeedType.Hunger),
+            IsNeedUnlocked(Passenger.NeedType.Thirst),
+            IsNeedUnlocked(Passenger.NeedType.Energy),
+            IsNeedUnlocked(Passenger.NeedType.Hygiene));
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);
