@@ -74,6 +74,10 @@ public class BuildController : MonoBehaviour
 
     private int objectRotation = 0; 
     private float defaultHighlightHeight = 5f;
+    private Vector2Int currentPreviewGridPos;
+    private Vector2Int currentPreviewSize = Vector2Int.one;
+    private bool hasPreviewPlacement;
+    private bool currentPreviewPlacementValid;
 
     private void Awake()
     {
@@ -88,34 +92,27 @@ public class BuildController : MonoBehaviour
 
     void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame && !EventSystem.current.IsPointerOverGameObject()) 
+        if (isBuildingMode)
         {
-            if (isBuildingMode && previewObjectInstance != null && previewObjectInstance.activeSelf)
+            HandleBuildPreview();
+
+            if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
-                Vector2Int gridPos = GridManager.Instance.GetGridPosition(previewObjectInstance.transform.position);
-                Vector2Int size = GetRotatedSize();
-                
-                if (GridManager.Instance.IsAreaFree(gridPos.x, gridPos.y, size.x, size.y) &&
-                    IsFootprintOnFloor(gridPos, size, previewObjectInstance.transform.position.y) &&
-                    EconomyManager.Instance.money >= objectBuildable.cost)
-                {
-                    EconomyManager.Instance.SpendMoney(objectBuildable.cost);
-                    
-                    GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
-                    placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); 
-                    
-                    PlacedBuildable pb = placedObject.AddComponent<PlacedBuildable>();
-                    pb.Initialize(objectBuildable, gridPos, size);
-
-                    GridManager.Instance.OccupyArea(gridPos.x, gridPos.y, size.x, size.y);
-
-                    if (ProgressionManager.Instance != null)
-                    {
-                        ProgressionManager.Instance.RecordBuildPlaced();
-                    }
-                }
+                objectRotation += 90;
+                if (objectRotation >= 360) objectRotation = 0;
+                HandleBuildPreview();
             }
-            else if (isDemolishMode && currentDemolishTarget != null)
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOverUI()) 
+            {
+                TryPlaceCurrentPreview();
+            }
+        }
+        else if (isDemolishMode)
+        {
+            UpdateDemolishTarget();
+
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOverUI() && currentDemolishTarget != null)
             {
                 EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
                 GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
@@ -125,88 +122,139 @@ public class BuildController : MonoBehaviour
                 demolishHighlightBox.SetActive(false);
             }
         }
-        
-        if (isBuildingMode && Keyboard.current.rKey.wasPressedThisFrame)
+    }
+
+    private void HandleBuildPreview()
+    {
+        if (previewObjectInstance == null && selectedPreviewObject != null)
         {
-            objectRotation += 90;
-            if (objectRotation >= 360) objectRotation = 0;
-            if (previewObjectInstance != null)
+            previewObjectInstance = Instantiate(selectedPreviewObject);
+            previewObjectInstance.SetActive(false); 
+        }
+
+        if (previewObjectInstance == null)
+        {
+            ClearPreviewPlacement();
+            return;
+        }
+
+        if (TryGetBuildSurfaceHit(out RaycastHit hitInfo))
+        {
+            if (!previewObjectInstance.activeSelf)
             {
-                previewObjectInstance.transform.rotation = Quaternion.Euler(0, objectRotation, 0);
+                previewObjectInstance.SetActive(true);
             }
+
+            currentPreviewSize = GetRotatedSize();
+            currentPreviewGridPos = GridManager.Instance.GetGridPosition(hitInfo.point);
+            hasPreviewPlacement = true;
+
+            Vector3 previewPosition = GridManager.Instance.GetWorldPositionForArea(
+                currentPreviewGridPos.x,
+                currentPreviewGridPos.y,
+                currentPreviewSize.x,
+                currentPreviewSize.y,
+                hitInfo.point.y);
+
+            previewObjectInstance.transform.SetPositionAndRotation(
+                previewPosition,
+                Quaternion.Euler(0, objectRotation, 0));
+
+            currentPreviewPlacementValid = CanPlaceAt(currentPreviewGridPos, currentPreviewSize, hitInfo.point.y);
+        }
+        else
+        {
+            ClearPreviewPlacement();
         }
     }
 
-    void FixedUpdate()
+    private bool TryGetBuildSurfaceHit(out RaycastHit hitInfo)
     {
-        if (isBuildingMode)
+        hitInfo = default;
+
+        if (Camera.main == null || Mouse.current == null || IsPointerOverUI())
         {
-            if (previewObjectInstance == null && selectedPreviewObject != null)
-            {
-                previewObjectInstance = Instantiate(selectedPreviewObject);
-                previewObjectInstance.SetActive(false); 
-            }
+            return false;
+        }
 
-            if (previewObjectInstance) 
-            {
-                Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-                
-                if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, buildFloorLayerMask) && !EventSystem.current.IsPointerOverGameObject()) 
-                {
-                    if (hitInfo.collider.CompareTag("BuildableFlooring") && hitInfo.normal.y > 0.9f)
-                    {
-                        if (!previewObjectInstance.activeSelf) previewObjectInstance.SetActive(true);
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (!Physics.Raycast(ray, out hitInfo, Mathf.Infinity, buildFloorLayerMask))
+        {
+            return false;
+        }
 
-                        Vector3 buildPosition = hitInfo.point;
-                        Vector2Int gridPos = GridManager.Instance.GetGridPosition(buildPosition);
-                        
-                        previewObjectInstance.transform.position = GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, buildPosition.y);
-                        previewObjectInstance.transform.rotation = Quaternion.Euler(0, objectRotation, 0);
-                    }
-                    else
-                    {
-                        if (previewObjectInstance.activeSelf) previewObjectInstance.SetActive(false);
-                    }
-                }
-                else
+        return hitInfo.collider.CompareTag("BuildableFlooring") && hitInfo.normal.y > 0.9f;
+    }
+
+    private void TryPlaceCurrentPreview()
+    {
+        if (previewObjectInstance == null ||
+            !previewObjectInstance.activeSelf ||
+            !hasPreviewPlacement ||
+            !currentPreviewPlacementValid ||
+            objectBuildable == null ||
+            EconomyManager.Instance.money < objectBuildable.cost)
+        {
+            return;
+        }
+
+        EconomyManager.Instance.SpendMoney(objectBuildable.cost);
+        
+        GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
+        PreviewableObject previewableObject = placedObject.GetComponent<PreviewableObject>();
+        if (previewableObject != null)
+        {
+            previewableObject.ExitPreviewMode(objectBuildable.cost);
+        }
+        
+        PlacedBuildable pb = placedObject.AddComponent<PlacedBuildable>();
+        pb.Initialize(objectBuildable, currentPreviewGridPos, currentPreviewSize);
+
+        GridManager.Instance.OccupyArea(currentPreviewGridPos.x, currentPreviewGridPos.y, currentPreviewSize.x, currentPreviewSize.y);
+
+        if (ProgressionManager.Instance != null)
+        {
+            ProgressionManager.Instance.RecordBuildPlaced();
+        }
+    }
+
+    private void UpdateDemolishTarget()
+    {
+        if (Camera.main == null || Mouse.current == null || IsPointerOverUI())
+        {
+            ClearDemolishTarget();
+            return;
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, demolishLayerMask))
+        {
+            PlacedBuildable hitTarget = hitInfo.collider.GetComponentInParent<PlacedBuildable>();
+
+            if (hitTarget != null)
+            {
+                if (currentDemolishTarget != hitTarget)
                 {
-                    if (previewObjectInstance.activeSelf) previewObjectInstance.SetActive(false);
+                    currentDemolishTarget = hitTarget;
+                    UpdateDemolishHighlight();
                 }
+                return;
             }
         }
-        else if (isDemolishMode)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, Mathf.Infinity, demolishLayerMask) && !EventSystem.current.IsPointerOverGameObject())
-            {
-                PlacedBuildable hitTarget = hitInfo.collider.GetComponentInParent<PlacedBuildable>();
 
-                if (hitTarget != null)
-                {
-                    if (currentDemolishTarget != hitTarget)
-                    {
-                        currentDemolishTarget = hitTarget;
-                        UpdateDemolishHighlight();
-                    }
-                }
-                else
-                {
-                    if (currentDemolishTarget != null)
-                    {
-                        currentDemolishTarget = null;
-                        demolishHighlightBox.SetActive(false);
-                    }
-                }
-            }
-            else
-            {
-                if (currentDemolishTarget != null)
-                {
-                    currentDemolishTarget = null;
-                    demolishHighlightBox.SetActive(false);
-                }
-            }
+        ClearDemolishTarget();
+    }
+
+    private void ClearDemolishTarget()
+    {
+        if (currentDemolishTarget != null)
+        {
+            currentDemolishTarget = null;
+        }
+
+        if (demolishHighlightBox != null)
+        {
+            demolishHighlightBox.SetActive(false);
         }
     }
 
@@ -264,6 +312,12 @@ public class BuildController : MonoBehaviour
         return true;
     }
 
+    private bool CanPlaceAt(Vector2Int gridPos, Vector2Int size, float worldY)
+    {
+        return GridManager.Instance.IsAreaFree(gridPos.x, gridPos.y, size.x, size.y) &&
+               IsFootprintOnFloor(gridPos, size, worldY);
+    }
+
     private Vector2Int GetRotatedSize()
     {
         if (objectBuildable == null) return Vector2Int.one;
@@ -295,7 +349,10 @@ public class BuildController : MonoBehaviour
         if (previewObjectInstance != null)
         {
             Destroy(previewObjectInstance);
+            previewObjectInstance = null;
         }
+
+        ClearPreviewPlacement();
     }
 
     public void ChangePreviewObject(ObjectBuildable objectBuildable)
@@ -305,9 +362,27 @@ public class BuildController : MonoBehaviour
         if (previewObjectInstance != null)
         {
             Destroy(previewObjectInstance);
+            previewObjectInstance = null;
         }
 
         selectedPreviewObject = objectBuildable.prefab;
         this.objectBuildable = objectBuildable;
+        ClearPreviewPlacement();
+    }
+
+    private void ClearPreviewPlacement()
+    {
+        hasPreviewPlacement = false;
+        currentPreviewPlacementValid = false;
+
+        if (previewObjectInstance != null && previewObjectInstance.activeSelf)
+        {
+            previewObjectInstance.SetActive(false);
+        }
+    }
+
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 }

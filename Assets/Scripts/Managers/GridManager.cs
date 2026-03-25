@@ -27,6 +27,26 @@ public class GridManager : MonoBehaviour
         return new Vector3(x * cellSize + (cellSize * 0.5f), worldY, z * cellSize + (cellSize * 0.5f));
     }
 
+    public Vector3 GetWorldPositionForArea(int startX, int startZ, int areaWidth, int areaHeight, float worldY = 0f)
+    {
+        float centerX = (startX + (areaWidth * 0.5f)) * cellSize;
+        float centerZ = (startZ + (areaHeight * 0.5f)) * cellSize;
+        return new Vector3(centerX, worldY, centerZ);
+    }
+
+    public bool IsAreaWithinBounds(int startX, int startZ, int areaWidth, int areaHeight)
+    {
+        if (areaWidth <= 0 || areaHeight <= 0)
+        {
+            return false;
+        }
+
+        return startX >= 0 &&
+               startZ >= 0 &&
+               startX + areaWidth <= width &&
+               startZ + areaHeight <= height;
+    }
+
     public bool IsTileFree(int x, int z)
     {
         if (x >= 0 && x < width && z >= 0 && z < height)
@@ -40,7 +60,7 @@ public class GridManager : MonoBehaviour
     {
         if (x >= 0 && x < width && z >= 0 && z < height)
         {
-            grid[x, z].isOccupied = true;
+            grid[x, z].occupancyCount++;
         }
     }
     
@@ -48,12 +68,20 @@ public class GridManager : MonoBehaviour
     {
         if (x >= 0 && x < width && z >= 0 && z < height)
         {
-            grid[x, z].isOccupied = false;
+            if (grid[x, z].occupancyCount > 0)
+            {
+                grid[x, z].occupancyCount--;
+            }
         }
     }
 
     public bool IsAreaFree(int startX, int startZ, int areaWidth, int areaHeight)
     {
+        if (!IsAreaWithinBounds(startX, startZ, areaWidth, areaHeight))
+        {
+            return false;
+        }
+
         for (int x = 0; x < areaWidth; x++)
         {
             for (int z = 0; z < areaHeight; z++)
@@ -89,6 +117,7 @@ public class GridManager : MonoBehaviour
     [System.Serializable]
     public struct GridCell
     {
-        public bool isOccupied;
+        public int occupancyCount;
+        public bool isOccupied => occupancyCount > 0;
     }
 }
