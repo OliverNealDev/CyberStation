@@ -137,8 +137,8 @@ GameObject:
   - component: {fileID: 9216194286789144486}
   - component: {fileID: 2416363088899092056}
   m_Layer: 14
-  m_Name: HydratingObelisk_Prefab
-  m_TagString: TicketMachine
+  m_Name: HydratingObelisk
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

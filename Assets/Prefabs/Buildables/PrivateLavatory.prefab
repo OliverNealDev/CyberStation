@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 8416603733540646179}
   m_Layer: 14
   m_Name: PrivateLavatory
-  m_TagString: TicketMachine
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

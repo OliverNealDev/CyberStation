@@ -14,6 +14,7 @@ TagManager:
   - BuildableFlooring
   - BaseLitterColour
   - InteractablePrompts
+  - Decoration
   layers:
   - Default
   - TransparentFX
