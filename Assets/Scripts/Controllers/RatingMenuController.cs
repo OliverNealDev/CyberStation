@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class RatingMenuController : MonoBehaviour
@@ -16,8 +17,9 @@ public class RatingMenuController : MonoBehaviour
     public Transform crowdednessRatingStarsContainer;
     public Transform queueTimesRatingStarsContainer;
     public Transform passengerNeedsRatingStarsContainer;
-    public Transform trainSelectionRatingStarsContainer;
     public Transform stationSizeRatingStarsContainer;
+    [FormerlySerializedAs("trainSelectionRatingStarsContainer")]
+    public Transform decorationRatingStarsContainer;
     
     void Start()
     {
@@ -46,12 +48,14 @@ public class RatingMenuController : MonoBehaviour
         SetStars(crowdednessRatingStarsContainer, RatingManager.Instance.crowdednessRating);
         SetStars(queueTimesRatingStarsContainer, RatingManager.Instance.queueTimesRating);
         SetStars(passengerNeedsRatingStarsContainer, RatingManager.Instance.passengerNeedsRating);
-        SetStars(trainSelectionRatingStarsContainer, RatingManager.Instance.trainSelectionRating);
         SetStars(stationSizeRatingStarsContainer, RatingManager.Instance.stationSizeRating);
+        SetStars(decorationRatingStarsContainer, RatingManager.Instance.decorationRating);
     }
     
     void SetStars(Transform starsContainer, float rating)
     {
+        if (starsContainer == null) return;
+
         float roundedRating = Mathf.Round(rating * 2f) / 2f;
         int fullStars = Mathf.FloorToInt(roundedRating);
         bool hasHalfStar = (roundedRating - fullStars) >= 0.5f;

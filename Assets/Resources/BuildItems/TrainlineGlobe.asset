@@ -19,3 +19,4 @@ MonoBehaviour:
   prefab: {fileID: 1821913311329546544, guid: 90fe77bd0ab64924fb61748d5fd09a02, type: 3}
   cost: 125
   size: {x: 1, y: 1}
+  decorationStrength: 5

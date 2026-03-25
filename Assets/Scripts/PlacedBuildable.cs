@@ -5,11 +5,15 @@ public class PlacedBuildable : MonoBehaviour
     public int cost;
     public Vector2Int gridPos;
     public Vector2Int size;
+    public float decorationStrength;
 
-    public void Initialize(int buildCost, Vector2Int position, Vector2Int buildSize)
+    public bool HasDecoration => decorationStrength > 0f;
+
+    public void Initialize(ObjectBuildable buildable, Vector2Int position, Vector2Int buildSize)
     {
-        cost = buildCost;
+        cost = buildable != null ? buildable.cost : 0;
         gridPos = position;
         size = buildSize;
+        decorationStrength = buildable != null ? Mathf.Max(0f, buildable.decorationStrength) : 0f;
     }
 }

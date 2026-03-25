@@ -16,6 +16,7 @@ public class ObjectBuildable : ScriptableObject
     
     // Changed to Vector2Int so it plays perfectly with our GridManager!
     public Vector2Int size = Vector2Int.one; 
+    [Min(0f)] public float decorationStrength = 0f;
 
     [System.NonSerialized] private Sprite runtimeIcon;
 

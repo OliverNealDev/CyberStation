@@ -9,8 +9,11 @@ public class RatingManager : MonoBehaviour
     public float crowdednessRating = 5f;
     public float queueTimesRating = 5f;
     public float passengerNeedsRating = 5f;
-    public float trainSelectionRating = 5f;
     public float stationSizeRating = 5f;
+    public float decorationRating = 5f;
+
+    private const float DecorationSampleRadius = 8f;
+    private const float MaxDecorationScorePerPassenger = 5f;
 
     private float tickTimer;
 
@@ -35,18 +38,18 @@ public class RatingManager : MonoBehaviour
         float targetCleanliness = GetCleanlinessTarget();
         float targetCrowdedness = GetCrowdednessTarget();
         float targetQueueTimes = GetQueueTimesTarget();
-        float targetTrainSelection = GetTrainSelectionTarget();
         float targetStationSize = GetStationSizeTarget();
         float targetPassengerNeeds = GetPassengerNeedsTarget();
+        float targetDecoration = GetDecorationTarget();
 
         cleanlinessRating = Mathf.Lerp(cleanlinessRating, targetCleanliness, 0.2f);
         crowdednessRating = Mathf.Lerp(crowdednessRating, targetCrowdedness, 0.2f);
         queueTimesRating = Mathf.Lerp(queueTimesRating, targetQueueTimes, 0.2f);
-        trainSelectionRating = Mathf.Lerp(trainSelectionRating, targetTrainSelection, 0.2f);
         stationSizeRating = Mathf.Lerp(stationSizeRating, targetStationSize, 0.2f);
         passengerNeedsRating = Mathf.Lerp(passengerNeedsRating, targetPassengerNeeds, 0.2f);
+        decorationRating = Mathf.Lerp(decorationRating, targetDecoration, 0.2f);
 
-        stationRating = (cleanlinessRating + crowdednessRating + queueTimesRating + passengerNeedsRating + trainSelectionRating + stationSizeRating) / 6f;
+        stationRating = (cleanlinessRating + crowdednessRating + queueTimesRating + passengerNeedsRating + stationSizeRating + decorationRating) / 6f;
     }
     
     float GetCleanlinessTarget()
@@ -115,12 +118,6 @@ public class RatingManager : MonoBehaviour
         return 0f;
     }
 
-    float GetTrainSelectionTarget()
-    {
-        int activeTrains = TrainManager.Instance.activeTrainServices.Count;
-        return Mathf.Clamp((activeTrains / 8f) * 5f, 0f, 5f);
-    }
-
     float GetStationSizeTarget()
     {
         if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null) return 1f;
@@ -154,5 +151,59 @@ public class RatingManager : MonoBehaviour
 
         // If 50% or more of the station has a failed need, rating drops to 0.
         return Mathf.Clamp((1f - (failRatio / 0.5f)) * 5f, 0f, 5f);
+    }
+
+    float GetDecorationTarget()
+    {
+        var passengers = PassengerManager.Instance.activePassengers;
+        int count = passengers.Count;
+
+        if (count == 0) return 5f;
+
+        PlacedBuildable[] placedBuildables = FindObjectsByType<PlacedBuildable>(FindObjectsSortMode.None);
+        if (placedBuildables.Length == 0) return 0f;
+
+        int sampleSize = Mathf.Min(count, 20);
+        int validSampleCount = 0;
+        float totalDecorationScore = 0f;
+        float sqrSampleRadius = DecorationSampleRadius * DecorationSampleRadius;
+
+        for (int i = 0; i < sampleSize; i++)
+        {
+            Passenger passenger = passengers[Random.Range(0, count)];
+            if (passenger == null) continue;
+
+            float localDecorationScore = 0f;
+            Vector3 passengerPosition = passenger.transform.position;
+            validSampleCount++;
+
+            for (int j = 0; j < placedBuildables.Length; j++)
+            {
+                PlacedBuildable buildable = placedBuildables[j];
+                if (buildable == null || !buildable.HasDecoration)
+                {
+                    continue;
+                }
+
+                Vector3 offset = buildable.transform.position - passengerPosition;
+                offset.y = 0f;
+
+                float sqrDistance = offset.sqrMagnitude;
+                if (sqrDistance > sqrSampleRadius)
+                {
+                    continue;
+                }
+
+                float distance = Mathf.Sqrt(sqrDistance);
+                float falloff = 1f - (distance / DecorationSampleRadius);
+                localDecorationScore += buildable.decorationStrength * falloff;
+            }
+
+            totalDecorationScore += Mathf.Clamp(localDecorationScore, 0f, MaxDecorationScorePerPassenger);
+        }
+
+        if (validSampleCount == 0) return 5f;
+
+        return totalDecorationScore / validSampleCount;
     }
 }

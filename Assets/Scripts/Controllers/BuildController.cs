@@ -105,7 +105,7 @@ public class BuildController : MonoBehaviour
                     placedObject.GetComponent<PreviewableObject>().ExitPreviewMode(objectBuildable.cost); 
                     
                     PlacedBuildable pb = placedObject.AddComponent<PlacedBuildable>();
-                    pb.Initialize(objectBuildable.cost, gridPos, size);
+                    pb.Initialize(objectBuildable, gridPos, size);
 
                     GridManager.Instance.OccupyArea(gridPos.x, gridPos.y, size.x, size.y);
 
