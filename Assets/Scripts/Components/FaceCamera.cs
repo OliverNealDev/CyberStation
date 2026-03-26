@@ -1,26 +1,38 @@
 using UnityEngine;
+
 public class FaceCamera : MonoBehaviour
 {
     public Camera mainCamera;
-    void Start()
+
+    private void Start()
     {
         if (mainCamera == null)
         {
-            mainCamera = Camera.main; // Automatically assign the main camera
+            mainCamera = Camera.main;
         }
-        
+
         FaceCameraMethod();
     }
-    void Update()
+
+    private void LateUpdate()
     {
         FaceCameraMethod();
     }
 
-    void FaceCameraMethod()
+    private void FaceCameraMethod()
     {
-        // Make the text face the camera
-        transform.LookAt(mainCamera.transform);
-        // Adjust rotation to prevent flipping
-        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y + 180, 0);
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                return;
+            }
+        }
+
+        // Screen-aligned billboard: match the camera's orientation exactly.
+        // This avoids edge-of-screen skew in orthographic mode and keeps
+        // world-space UI from appearing mirrored.
+        transform.rotation = mainCamera.transform.rotation;
     }
 }

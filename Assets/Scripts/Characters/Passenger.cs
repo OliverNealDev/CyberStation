@@ -16,6 +16,7 @@ public class Passenger : Person
     public bool hasBeenInspected = false;
     
     public bool hasFailedNeed = false;
+    public bool hasGivenUpNeed = false;
     [HideInInspector] public NeedType blockedNeed = NeedType.None;
     [HideInInspector] public float blockedNeedStartTime;
     [HideInInspector] public float nextBlockedNeedCheckTime;
@@ -41,7 +42,7 @@ public class Passenger : Person
     public passengerSpecialTargets currentSpecialTarget = passengerSpecialTargets.None;
     public enum passengerSpecialTargets { None, Platform, TrainDoor, Exit, BlockedNeedWander }
     
-    public enum NeedType { None, Hunger, Thirst, Energy, Hygiene }
+    public enum NeedType { None, Ticket, Hunger, Thirst, Energy, Hygiene }
 
     protected override void OnTick(float tickLength) { }
 

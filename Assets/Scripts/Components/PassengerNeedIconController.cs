@@ -9,20 +9,17 @@ public class PassengerNeedIconController : MonoBehaviour
     [SerializeField] private float popDuration = 0.32f;
     [SerializeField] private float popOvershootScale = 1.14f;
     [SerializeField] private float fadeOutDuration = 0.22f;
-    [SerializeField] private float alertTransitionDuration = 0.35f;
 
     private Passenger targetPassenger;
     private Image iconImage;
+    private Image failedOverlayImage;
     private Vector3 worldOffset = new Vector3(0f, 5.5f, 0f);
     private Color normalColor = Color.white;
-    private Color alertColor = Color.red;
     private bool isBlinking;
     private Vector3 baseLocalScale = Vector3.one;
     private float alphaMultiplier = 1f;
-    private float alertTransition01;
     private Coroutine popCoroutine;
     private Coroutine fadeCoroutine;
-    private Coroutine alertCoroutine;
 
     private void Awake()
     {
@@ -49,6 +46,7 @@ public class PassengerNeedIconController : MonoBehaviour
         alphaMultiplier = 1f;
         UpdatePosition();
         PlayPopInAnimation();
+        SetFailedState(false, null);
         ApplyVisuals();
     }
 
@@ -73,12 +71,21 @@ public class PassengerNeedIconController : MonoBehaviour
 
     public void SetAlertState(bool shouldAlert, bool shouldBlink)
     {
-        if (alertCoroutine != null)
+        isBlinking = shouldAlert && shouldBlink;
+        ApplyVisuals();
+    }
+
+    public void SetFailedState(bool isFailed, Sprite overlaySprite)
+    {
+        EnsureFailedOverlay();
+
+        if (failedOverlayImage == null)
         {
-            StopCoroutine(alertCoroutine);
+            return;
         }
 
-        alertCoroutine = StartCoroutine(AlertTransitionRoutine(shouldAlert, shouldBlink));
+        failedOverlayImage.sprite = overlaySprite;
+        failedOverlayImage.enabled = isFailed && overlaySprite != null;
     }
 
     public void FadeOutAndDestroy()
@@ -108,6 +115,31 @@ public class PassengerNeedIconController : MonoBehaviour
         transform.position = targetPassenger.transform.position + worldOffset;
     }
 
+    private void EnsureFailedOverlay()
+    {
+        if (failedOverlayImage != null)
+        {
+            return;
+        }
+
+        GameObject overlayObject = new GameObject("FailedOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        overlayObject.transform.SetParent(transform, false);
+
+        RectTransform overlayTransform = overlayObject.GetComponent<RectTransform>();
+        overlayTransform.anchorMin = Vector2.one;
+        overlayTransform.anchorMax = Vector2.one;
+        overlayTransform.pivot = Vector2.one;
+        overlayTransform.anchoredPosition = new Vector2(-6f, 6f);
+        overlayTransform.sizeDelta = new Vector2(38f, 38f);
+        overlayTransform.localScale = Vector3.one;
+
+        failedOverlayImage = overlayObject.GetComponent<Image>();
+        failedOverlayImage.raycastTarget = false;
+        failedOverlayImage.preserveAspect = true;
+        failedOverlayImage.color = Color.red;
+        failedOverlayImage.enabled = false;
+    }
+
     private void ApplyVisuals()
     {
         if (iconImage == null)
@@ -121,8 +153,7 @@ public class PassengerNeedIconController : MonoBehaviour
             alpha = Mathf.Lerp(minBlinkAlpha, 1f, 0.5f + (0.5f * Mathf.Sin(Time.unscaledTime * blinkSpeed)));
         }
 
-        Color activeColor = Color.Lerp(normalColor, alertColor, alertTransition01);
-        iconImage.color = new Color(activeColor.r, activeColor.g, activeColor.b, alpha * alphaMultiplier);
+        iconImage.color = new Color(normalColor.r, normalColor.g, normalColor.b, alpha * alphaMultiplier);
     }
 
     private void PlayPopInAnimation()
@@ -178,31 +209,5 @@ public class PassengerNeedIconController : MonoBehaviour
         }
 
         Destroy(gameObject);
-    }
-
-    private System.Collections.IEnumerator AlertTransitionRoutine(bool shouldAlert, bool shouldBlink)
-    {
-        float start = alertTransition01;
-        float target = shouldAlert ? 1f : 0f;
-
-        if (!shouldAlert)
-        {
-            isBlinking = false;
-        }
-
-        float elapsed = 0f;
-        while (elapsed < alertTransitionDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, alertTransitionDuration));
-            alertTransition01 = Mathf.Lerp(start, target, t);
-            ApplyVisuals();
-            yield return null;
-        }
-
-        alertTransition01 = target;
-        isBlinking = shouldAlert && shouldBlink;
-        ApplyVisuals();
-        alertCoroutine = null;
     }
 }

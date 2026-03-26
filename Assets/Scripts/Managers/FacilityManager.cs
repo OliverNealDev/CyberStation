@@ -88,6 +88,9 @@ public class FacilityManager : MonoBehaviour
 
         switch (need)
         {
+            case Passenger.NeedType.Ticket:
+                validFacilities.Add(FacilityType.TicketMachine);
+                break;
             case Passenger.NeedType.Hunger:
                 validFacilities.Add(FacilityType.NutrientExtruder);
                 validFacilities.Add(FacilityType.CaloricInjectionPort);
