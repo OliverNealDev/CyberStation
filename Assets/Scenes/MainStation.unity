@@ -48818,6 +48818,7 @@ MonoBehaviour:
   thirstNeedStartTier: 2
   energyNeedStartTier: 999
   hygieneNeedStartTier: 4
+  disembarkingFacilityUsageChance: 0.5
   needIconPrefab: {fileID: 8039886225430953968, guid: d1f4f20af3d8ef348a5a33044a99a4e0, type: 3}
   failedNeedOverlaySprite: {fileID: 21300000, guid: 9ab8c1eeab7c71849b1383b6bc78aac5, type: 3}
   ticketNeedSprite: {fileID: 21300000, guid: 9c8248cdaaccd404a97ef64faa0b111f, type: 3}
@@ -48830,7 +48831,7 @@ MonoBehaviour:
   hygieneNeedColor: {r: 1, g: 0, b: 0.8612037, a: 1}
   blockedNeedPassiveDuration: 10
   blockedNeedUrgentDuration: 10
-  needIconWorldOffset: {x: 0, y: 5, z: 0}
+  needIconWorldOffset: {x: 0, y: 5.25, z: 0}
   blockedNeedWanderRadius: 12
   blockedNeedWanderIntervalMin: 3
   blockedNeedWanderIntervalMax: 5

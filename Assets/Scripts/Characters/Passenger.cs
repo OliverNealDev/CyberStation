@@ -32,6 +32,7 @@ public class Passenger : Person
     public bool needsThirst;
     public bool needsEnergy;
     public bool needsHygiene;
+    [HideInInspector] public bool shouldUseFacilitiesBeforeExit = false;
     
     public passengerMasterStates currentMasterState = passengerMasterStates.InStation;
     public enum passengerMasterStates { InStation, OnPlatform, OnTrain }
@@ -51,12 +52,17 @@ public class Passenger : Person
         base.Awake();
     }
 
-    public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked)
+    public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked, bool requireAtLeastOne = false)
     {
         needsHunger = hungerUnlocked && Random.value < 0.5f;
         needsThirst = thirstUnlocked && Random.value < 0.5f;
         needsEnergy = energyUnlocked && Random.value < 0.5f;
         needsHygiene = hygieneUnlocked && Random.value < 0.5f;
+
+        if (requireAtLeastOne && !HasAnyNeed())
+        {
+            EnsureAtLeastOneNeed(hungerUnlocked, thirstUnlocked, energyUnlocked, hygieneUnlocked);
+        }
     }
     
     public NeedType GetNextNeed()
@@ -75,5 +81,52 @@ public class Passenger : Person
         if (need == NeedType.Thirst) needsThirst = false;
         if (need == NeedType.Energy) needsEnergy = false;
         if (need == NeedType.Hygiene) needsHygiene = false;
+    }
+
+    public bool HasAnyNeed()
+    {
+        return needsHunger || needsThirst || needsEnergy || needsHygiene;
+    }
+
+    private void EnsureAtLeastOneNeed(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked)
+    {
+        if (HasAnyNeed())
+        {
+            return;
+        }
+
+        NeedType[] availableNeeds = new NeedType[4];
+        int availableNeedCount = 0;
+
+        if (hungerUnlocked)
+        {
+            availableNeeds[availableNeedCount++] = NeedType.Hunger;
+        }
+
+        if (thirstUnlocked)
+        {
+            availableNeeds[availableNeedCount++] = NeedType.Thirst;
+        }
+
+        if (energyUnlocked)
+        {
+            availableNeeds[availableNeedCount++] = NeedType.Energy;
+        }
+
+        if (hygieneUnlocked)
+        {
+            availableNeeds[availableNeedCount++] = NeedType.Hygiene;
+        }
+
+        if (availableNeedCount == 0)
+        {
+            return;
+        }
+
+        NeedType guaranteedNeed = availableNeeds[Random.Range(0, availableNeedCount)];
+        if (guaranteedNeed == NeedType.Hunger) needsHunger = true;
+        if (guaranteedNeed == NeedType.Thirst) needsThirst = true;
+        if (guaranteedNeed == NeedType.Energy) needsEnergy = true;
+        if (guaranteedNeed == NeedType.Hygiene) needsHygiene = true;
     }
 }

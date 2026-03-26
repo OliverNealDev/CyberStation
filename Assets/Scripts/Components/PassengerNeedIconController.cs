@@ -4,20 +4,33 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class PassengerNeedIconController : MonoBehaviour
 {
+    public enum OverlayState
+    {
+        None,
+        Unreachable,
+        Failed
+    }
+
     [SerializeField] private float blinkSpeed = 7f;
     [SerializeField] private float minBlinkAlpha = 0.2f;
     [SerializeField] private float popDuration = 0.32f;
     [SerializeField] private float popOvershootScale = 1.14f;
     [SerializeField] private float fadeOutDuration = 0.22f;
+    [SerializeField] private Color unreachableOverlayColor = new Color(1f, 0.55f, 0f, 1f);
+    [SerializeField] private Color failedOverlayColor = new Color(1f, 0.2f, 0.2f, 1f);
 
     private Passenger targetPassenger;
     private Image iconImage;
-    private Image failedOverlayImage;
+    private Image statusOverlayImage;
     private Vector3 worldOffset = new Vector3(0f, 5.5f, 0f);
     private Color normalColor = Color.white;
     private bool isBlinking;
     private Vector3 baseLocalScale = Vector3.one;
-    private float alphaMultiplier = 1f;
+    private float iconOpacity = 1f;
+    private float fadeMultiplier = 1f;
+    private OverlayState overlayState = OverlayState.None;
+    private Sprite unreachableOverlaySprite;
+    private Sprite failedOverlaySprite;
     private Coroutine popCoroutine;
     private Coroutine fadeCoroutine;
 
@@ -43,10 +56,11 @@ public class PassengerNeedIconController : MonoBehaviour
             iconImage.sprite = sprite;
         }
 
-        alphaMultiplier = 1f;
+        iconOpacity = 1f;
+        fadeMultiplier = 1f;
         UpdatePosition();
         PlayPopInAnimation();
-        SetFailedState(false, null);
+        SetOverlayState(OverlayState.None);
         ApplyVisuals();
     }
 
@@ -75,17 +89,23 @@ public class PassengerNeedIconController : MonoBehaviour
         ApplyVisuals();
     }
 
-    public void SetFailedState(bool isFailed, Sprite overlaySprite)
+    public void SetOverlayState(OverlayState state)
     {
-        EnsureFailedOverlay();
+        overlayState = state;
+        ApplyVisuals();
+    }
 
-        if (failedOverlayImage == null)
-        {
-            return;
-        }
+    public void SetOverlaySprites(Sprite unreachableSprite, Sprite failedSprite)
+    {
+        unreachableOverlaySprite = unreachableSprite;
+        failedOverlaySprite = failedSprite;
+        ApplyVisuals();
+    }
 
-        failedOverlayImage.sprite = overlaySprite;
-        failedOverlayImage.enabled = isFailed && overlaySprite != null;
+    public void SetIconOpacity(float opacity)
+    {
+        iconOpacity = Mathf.Clamp01(opacity);
+        ApplyVisuals();
     }
 
     public void FadeOutAndDestroy()
@@ -115,14 +135,14 @@ public class PassengerNeedIconController : MonoBehaviour
         transform.position = targetPassenger.transform.position + worldOffset;
     }
 
-    private void EnsureFailedOverlay()
+    private void EnsureStatusOverlay()
     {
-        if (failedOverlayImage != null)
+        if (statusOverlayImage != null)
         {
             return;
         }
 
-        GameObject overlayObject = new GameObject("FailedOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        GameObject overlayObject = new GameObject("StatusOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
         overlayObject.transform.SetParent(transform, false);
 
         RectTransform overlayTransform = overlayObject.GetComponent<RectTransform>();
@@ -133,11 +153,10 @@ public class PassengerNeedIconController : MonoBehaviour
         overlayTransform.sizeDelta = new Vector2(38f, 38f);
         overlayTransform.localScale = Vector3.one;
 
-        failedOverlayImage = overlayObject.GetComponent<Image>();
-        failedOverlayImage.raycastTarget = false;
-        failedOverlayImage.preserveAspect = true;
-        failedOverlayImage.color = Color.red;
-        failedOverlayImage.enabled = false;
+        statusOverlayImage = overlayObject.GetComponent<Image>();
+        statusOverlayImage.raycastTarget = false;
+        statusOverlayImage.preserveAspect = true;
+        statusOverlayImage.enabled = false;
     }
 
     private void ApplyVisuals()
@@ -153,7 +172,29 @@ public class PassengerNeedIconController : MonoBehaviour
             alpha = Mathf.Lerp(minBlinkAlpha, 1f, 0.5f + (0.5f * Mathf.Sin(Time.unscaledTime * blinkSpeed)));
         }
 
-        iconImage.color = new Color(normalColor.r, normalColor.g, normalColor.b, alpha * alphaMultiplier);
+        iconImage.color = new Color(normalColor.r, normalColor.g, normalColor.b, alpha * iconOpacity * fadeMultiplier);
+
+        EnsureStatusOverlay();
+        if (statusOverlayImage == null)
+        {
+            return;
+        }
+
+        Sprite overlaySprite = overlayState == OverlayState.Unreachable
+            ? unreachableOverlaySprite
+            : failedOverlaySprite;
+        statusOverlayImage.enabled = overlayState != OverlayState.None && overlaySprite != null;
+        if (!statusOverlayImage.enabled)
+        {
+            return;
+        }
+
+        statusOverlayImage.sprite = overlaySprite;
+        Color overlayColor = overlayState == OverlayState.Unreachable
+            ? unreachableOverlayColor
+            : failedOverlayColor;
+        overlayColor.a *= fadeMultiplier;
+        statusOverlayImage.color = overlayColor;
     }
 
     private void PlayPopInAnimation()
@@ -197,13 +238,13 @@ public class PassengerNeedIconController : MonoBehaviour
     private System.Collections.IEnumerator FadeOutRoutine()
     {
         float elapsed = 0f;
-        float startingAlpha = alphaMultiplier;
+        float startingAlpha = fadeMultiplier;
 
         while (elapsed < fadeOutDuration)
         {
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, fadeOutDuration));
-            alphaMultiplier = Mathf.Lerp(startingAlpha, 0f, t);
+            fadeMultiplier = Mathf.Lerp(startingAlpha, 0f, t);
             ApplyVisuals();
             yield return null;
         }
