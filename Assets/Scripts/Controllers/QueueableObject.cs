@@ -7,16 +7,36 @@ public enum QueueStyle
     FourSided   
 }
 
+public enum QueueLineMode
+{
+    OrderlyLines,
+    StoppingDistance
+}
+
 public abstract class QueuableObject : MonoBehaviour
 {
     [Header("Queue Settings")]
+    public QueueLineMode queueLineMode = QueueLineMode.OrderlyLines;
     public QueueStyle queueStyle = QueueStyle.FrontOnly;
     
-    [Header("Spacing")]
-    [Tooltip("How far away the first person stands from the machine's center.")]
+    [Header("Orderly Lines")]
+    [Tooltip("How far away the first person stands from the machine's center when using orderly lines.")]
+    [Min(0.1f)]
     public float baseDistance = 1.5f; 
-    [Tooltip("How much space is between each person in the line.")]
+    [Tooltip("How much space is between each person in the line when using orderly lines.")]
+    [Min(0.1f)]
     public float queueSpacing = 1.5f; 
+
+    [Header("Stopping Distance Lines")]
+    [Tooltip("Shared point passengers move toward when using stopping distance lines.")]
+    [Min(0.1f)]
+    public float stoppingDistanceTargetDistance = 1.1f;
+    [Tooltip("How close the first passenger gets to the shared target.")]
+    [Min(0f)]
+    public float stoppingDistanceBase = 0.35f;
+    [Tooltip("Extra stopping distance added for each passenger further back in the queue.")]
+    [Min(0f)]
+    public float stoppingDistanceStep = 1f;
 
     public List<Person> PeopleOnWay = new List<Person>();
 
@@ -33,6 +53,12 @@ public abstract class QueuableObject : MonoBehaviour
     public virtual Vector3 GetQueuePositionFor(Person person)
     {
         int index = PeopleOnWay.IndexOf(person);
+        
+        if (queueLineMode == QueueLineMode.StoppingDistance)
+        {
+            return transform.position + (transform.forward * stoppingDistanceTargetDistance);
+        }
+
         if (index == -1) return transform.position; 
 
         if (queueStyle == QueueStyle.FrontOnly)
@@ -66,6 +92,17 @@ public abstract class QueuableObject : MonoBehaviour
             float distance = baseDistance + (depth * queueSpacing);
             return transform.position + (direction * distance);
         }
+    }
+
+    public virtual float GetStoppingDistanceFor(Person person)
+    {
+        if (queueLineMode != QueueLineMode.StoppingDistance)
+        {
+            return 0.1f;
+        }
+
+        int index = PeopleOnWay.IndexOf(person);
+        return stoppingDistanceBase + (Mathf.Max(0, index) * stoppingDistanceStep);
     }
     
     public abstract void ProcessInteraction(Person person);

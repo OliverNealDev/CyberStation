@@ -48835,6 +48835,9 @@ MonoBehaviour:
   blockedNeedWanderRadius: 12
   blockedNeedWanderIntervalMin: 3
   blockedNeedWanderIntervalMax: 5
+  minServiceWaitTime: 10
+  maxServiceWaitTime: 24
+  maxFacilityQueueLength: 8
 --- !u!114 &2131610380
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -7,7 +7,6 @@ public class PassengerNeedIconController : MonoBehaviour
     public enum OverlayState
     {
         None,
-        Unreachable,
         Failed
     }
 
@@ -16,7 +15,6 @@ public class PassengerNeedIconController : MonoBehaviour
     [SerializeField] private float popDuration = 0.32f;
     [SerializeField] private float popOvershootScale = 1.14f;
     [SerializeField] private float fadeOutDuration = 0.22f;
-    [SerializeField] private Color unreachableOverlayColor = new Color(1f, 0.55f, 0f, 1f);
     [SerializeField] private Color failedOverlayColor = new Color(1f, 0.2f, 0.2f, 1f);
 
     private Passenger targetPassenger;
@@ -29,7 +27,6 @@ public class PassengerNeedIconController : MonoBehaviour
     private float iconOpacity = 1f;
     private float fadeMultiplier = 1f;
     private OverlayState overlayState = OverlayState.None;
-    private Sprite unreachableOverlaySprite;
     private Sprite failedOverlaySprite;
     private Coroutine popCoroutine;
     private Coroutine fadeCoroutine;
@@ -95,9 +92,8 @@ public class PassengerNeedIconController : MonoBehaviour
         ApplyVisuals();
     }
 
-    public void SetOverlaySprites(Sprite unreachableSprite, Sprite failedSprite)
+    public void SetFailedOverlaySprite(Sprite failedSprite)
     {
-        unreachableOverlaySprite = unreachableSprite;
         failedOverlaySprite = failedSprite;
         ApplyVisuals();
     }
@@ -180,19 +176,14 @@ public class PassengerNeedIconController : MonoBehaviour
             return;
         }
 
-        Sprite overlaySprite = overlayState == OverlayState.Unreachable
-            ? unreachableOverlaySprite
-            : failedOverlaySprite;
-        statusOverlayImage.enabled = overlayState != OverlayState.None && overlaySprite != null;
+        statusOverlayImage.enabled = overlayState == OverlayState.Failed && failedOverlaySprite != null;
         if (!statusOverlayImage.enabled)
         {
             return;
         }
 
-        statusOverlayImage.sprite = overlaySprite;
-        Color overlayColor = overlayState == OverlayState.Unreachable
-            ? unreachableOverlayColor
-            : failedOverlayColor;
+        statusOverlayImage.sprite = failedOverlaySprite;
+        Color overlayColor = failedOverlayColor;
         overlayColor.a *= fadeMultiplier;
         statusOverlayImage.color = overlayColor;
     }

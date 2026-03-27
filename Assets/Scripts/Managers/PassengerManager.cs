@@ -28,7 +28,6 @@ public class PassengerManager : MonoBehaviour
 
     [Header("Need Warning UI")]
     [SerializeField] private GameObject needIconPrefab;
-    [SerializeField] private Sprite unreachableNeedOverlaySprite;
     [SerializeField] private Sprite failedNeedOverlaySprite;
     [SerializeField] private Sprite ticketNeedSprite;
     [SerializeField] private Sprite thirstNeedSprite;
@@ -801,8 +800,8 @@ public class PassengerManager : MonoBehaviour
         }
 
         iconController.SetNormalColor(GetNeedColor(needType));
-        iconController.SetOverlaySprites(unreachableNeedOverlaySprite, failedNeedOverlaySprite);
-        iconController.SetOverlayState(PassengerNeedIconController.OverlayState.Unreachable);
+        iconController.SetFailedOverlaySprite(failedNeedOverlaySprite);
+        iconController.SetOverlayState(PassengerNeedIconController.OverlayState.None);
         iconController.SetIconOpacity(1f);
         iconController.SetAlertState(shouldBlink, shouldBlink);
     }
@@ -1589,9 +1588,9 @@ public class PassengerManager : MonoBehaviour
 
     private float GetTargetStoppingDistance(QueuableObject target, Passenger passenger)
     {
-        if (target is TrainDoorController trainDoor)
+        if (target != null)
         {
-            return trainDoor.GetCrowdStoppingDistanceFor(passenger);
+            return target.GetStoppingDistanceFor(passenger);
         }
 
         return 0.1f;
