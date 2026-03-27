@@ -25,6 +25,7 @@ public abstract class StationFacility : QueuableObject
     public MachineState state = MachineState.Idle;
     
     public override bool IsAvailable => state == MachineState.Idle;
+    public virtual float EstimatedServiceDuration => 3f;
 
     protected virtual void Start()
     {
@@ -79,6 +80,12 @@ public abstract class StationFacility : QueuableObject
         PassengerManager.Instance.HandleDestroyedQueueTarget(this);
         PeopleOnWay.Clear();
         currentPerson = null;
+    }
+
+    public float GetEstimatedQueueWaitTime()
+    {
+        int queuedCount = Mathf.Max(PeopleOnWay.Count, currentPerson != null ? 1 : 0);
+        return queuedCount * EstimatedServiceDuration;
     }
 
     protected abstract void DeliverService(Passenger passenger);

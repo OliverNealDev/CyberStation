@@ -30,7 +30,7 @@ public abstract class QueuableObject : MonoBehaviour
         if (PeopleOnWay.Contains(person)) PeopleOnWay.Remove(person);
     }
 
-    public Vector3 GetQueuePositionFor(Person person)
+    public virtual Vector3 GetQueuePositionFor(Person person)
     {
         int index = PeopleOnWay.IndexOf(person);
         if (index == -1) return transform.position; 

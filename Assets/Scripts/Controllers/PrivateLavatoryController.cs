@@ -4,6 +4,7 @@ using System.Collections;
 public class PrivateLavatoryController : StationFacility
 {
     public int usePrice = 15; 
+    public override float EstimatedServiceDuration => ((minUsageTime + maxUsageTime) * 0.5f) + (doorMoveDuration * 2f);
 
     [Header("Visuals")]
     public SpriteRenderer facilityIcon;

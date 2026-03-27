@@ -20,6 +20,7 @@ public class TicketMachineController : StationFacility
     public float transitionDuration = 0.2f;
 
     private bool isHoldingResult = false;
+    public override float EstimatedServiceDuration => processingTime + holdDuration + (transitionDuration * 2f);
 
     protected override void Start()
     {

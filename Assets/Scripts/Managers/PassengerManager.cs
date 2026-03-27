@@ -28,6 +28,7 @@ public class PassengerManager : MonoBehaviour
 
     [Header("Need Warning UI")]
     [SerializeField] private GameObject needIconPrefab;
+    [SerializeField] private Sprite unreachableNeedOverlaySprite;
     [SerializeField] private Sprite failedNeedOverlaySprite;
     [SerializeField] private Sprite ticketNeedSprite;
     [SerializeField] private Sprite thirstNeedSprite;
@@ -45,6 +46,11 @@ public class PassengerManager : MonoBehaviour
     [Min(0f)] public float blockedNeedWanderRadius = 4f;
     [Min(0f)] public float blockedNeedWanderIntervalMin = 1.5f;
     [Min(0f)] public float blockedNeedWanderIntervalMax = 3.5f;
+
+    [Header("Service Queue Tolerance")]
+    [Min(0f)] public float minServiceWaitTime = 10f;
+    [Min(0f)] public float maxServiceWaitTime = 24f;
+    [Min(1)] public int maxFacilityQueueLength = 8;
 
     private const float BlockedNeedCheckInterval = 1f;
     private Sprite runtimeTicketNeedSprite;
@@ -679,27 +685,33 @@ public class PassengerManager : MonoBehaviour
 
     private bool TrySendPassengerToNeedFacility(Passenger passenger, Passenger.NeedType needType)
     {
-        if (FacilityManager.Instance == null)
+        if (FacilityManager.Instance == null || passenger == null)
         {
             return false;
         }
 
         List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(needType);
+        StationFacility bestFacility = null;
+        float bestWait = Mathf.Infinity;
+
         for (int i = 0; i < validFacilities.Count; i++)
         {
             FacilityType type = validFacilities[i];
-            if (!FacilityManager.Instance.HasFacility(type))
+            List<StationFacility> facilities = FacilityManager.Instance.GetFacilities(type);
+            if (facilities == null || facilities.Count == 0)
             {
                 continue;
             }
 
-            if (GoToFacility(type, passenger))
+            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger.maxServiceWaitTime, out float candidateWait);
+            if (candidateFacility != null && candidateWait < bestWait)
             {
-                return true;
+                bestWait = candidateWait;
+                bestFacility = candidateFacility;
             }
         }
 
-        return false;
+        return bestFacility != null && GoToFacility(bestFacility, passenger);
     }
 
     private void HandleBlockedNeed(Passenger passenger, Passenger.NeedType needType)
@@ -789,8 +801,8 @@ public class PassengerManager : MonoBehaviour
         }
 
         iconController.SetNormalColor(GetNeedColor(needType));
-        iconController.SetOverlaySprites(null, failedNeedOverlaySprite);
-        iconController.SetOverlayState(PassengerNeedIconController.OverlayState.None);
+        iconController.SetOverlaySprites(unreachableNeedOverlaySprite, failedNeedOverlaySprite);
+        iconController.SetOverlayState(PassengerNeedIconController.OverlayState.Unreachable);
         iconController.SetIconOpacity(1f);
         iconController.SetAlertState(shouldBlink, shouldBlink);
     }
@@ -1006,10 +1018,8 @@ public class PassengerManager : MonoBehaviour
                passenger.navAgent.isOnNavMesh;
     }
     
-    private bool GoToFacility(FacilityType type, Passenger passenger)
+    private bool GoToFacility(StationFacility bestMachine, Passenger passenger)
     {
-        StationFacility bestMachine = FacilityManager.Instance.GetLeastOccupiedFacility(type);
-        
         if (bestMachine != null)
         {
             passenger.currentTarget = bestMachine;
@@ -1037,8 +1047,8 @@ public class PassengerManager : MonoBehaviour
     {
         if (passenger.currentTarget == null) return;
         if (!CanUseNavAgent(passenger)) return;
-        
-        passenger.navAgent.stoppingDistance = 0.1f; 
+
+        passenger.navAgent.stoppingDistance = GetTargetStoppingDistance(passenger.currentTarget, passenger);
     }
     
     private void MoveToPlatformPosition(Passenger passenger, bool preserveNeedFailureState = false)
@@ -1221,15 +1231,23 @@ public class PassengerManager : MonoBehaviour
                     
             passenger.currentTarget = closestDoor;
             closestDoor.AssignPerson(passenger);
-                    
-            passenger.navAgent.stoppingDistance = 1f;
+
+            passenger.navAgent.stoppingDistance = GetTargetStoppingDistance(closestDoor, passenger);
             if (NavMesh.SamplePosition(closestDoor.transform.position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
             {
-                passenger.navAgent.SetDestination(hit.position);
+                Vector3 targetPosition = closestDoor.GetQueuePositionFor(passenger);
+                if (NavMesh.SamplePosition(targetPosition, out NavMeshHit queueHit, 2.5f, NavMesh.AllAreas))
+                {
+                    passenger.navAgent.SetDestination(queueHit.position);
+                }
+                else
+                {
+                    passenger.navAgent.SetDestination(hit.position);
+                }
             }
             else
             {
-                passenger.navAgent.SetDestination(closestDoor.transform.position);
+                passenger.navAgent.SetDestination(closestDoor.GetQueuePositionFor(passenger));
             }
 
             passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
@@ -1291,6 +1309,7 @@ public class PassengerManager : MonoBehaviour
         newPassenger.assignedTrainService = null; 
 
         RegisterPassenger(newPassenger);
+        AssignServiceWaitTime(newPassenger);
 
         newPassenger.hasTicket = true; 
         newPassenger.shouldUseFacilitiesBeforeExit = Random.value < disembarkingFacilityUsageChance;
@@ -1457,6 +1476,7 @@ public class PassengerManager : MonoBehaviour
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);
+        AssignServiceWaitTime(newPassenger);
         
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
         newPassenger.navAgent.avoidancePriority = Random.Range(50, 100);
@@ -1525,5 +1545,67 @@ public class PassengerManager : MonoBehaviour
             activePassengers.Remove(passenger);
             Destroy(passenger.gameObject);
         }
+    }
+
+    private StationFacility GetMostAccessibleFacility(List<StationFacility> facilities, float maxWaitTime, out float bestWait)
+    {
+        bestWait = Mathf.Infinity;
+        if (facilities == null || facilities.Count == 0)
+        {
+            return null;
+        }
+
+        float clampedMaxWait = Mathf.Max(0f, maxWaitTime);
+        StationFacility bestFacility = null;
+
+        for (int i = 0; i < facilities.Count; i++)
+        {
+            StationFacility facility = facilities[i];
+            if (facility == null)
+            {
+                continue;
+            }
+
+            if (facility.PeopleOnWay.Count >= Mathf.Max(1, maxFacilityQueueLength))
+            {
+                continue;
+            }
+
+            float estimatedWait = facility.GetEstimatedQueueWaitTime();
+            if (estimatedWait > clampedMaxWait)
+            {
+                continue;
+            }
+
+            if (estimatedWait < bestWait)
+            {
+                bestWait = estimatedWait;
+                bestFacility = facility;
+            }
+        }
+
+        return bestFacility;
+    }
+
+    private float GetTargetStoppingDistance(QueuableObject target, Passenger passenger)
+    {
+        if (target is TrainDoorController trainDoor)
+        {
+            return trainDoor.GetCrowdStoppingDistanceFor(passenger);
+        }
+
+        return 0.1f;
+    }
+
+    private void AssignServiceWaitTime(Passenger passenger)
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        float minWait = Mathf.Max(0f, minServiceWaitTime);
+        float maxWait = Mathf.Max(minWait, maxServiceWaitTime);
+        passenger.maxServiceWaitTime = Random.Range(minWait, maxWait);
     }
 }

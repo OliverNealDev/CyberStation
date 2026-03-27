@@ -4,6 +4,7 @@ using System.Collections;
 public class CleansingShowerController : StationFacility
 {
     public int usePrice = 1;
+    public override float EstimatedServiceDuration => showerDuration + dropletFallDuration;
 
     [Header("Waypoints & Targeting")]
     public Transform showerHeadPoint;

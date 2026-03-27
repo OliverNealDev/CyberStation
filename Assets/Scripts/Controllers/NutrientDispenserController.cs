@@ -4,6 +4,7 @@ using System.Collections;
 public class NutrientDispenserController : StationFacility
 {
     public int usePrice = 1;
+    public override float EstimatedServiceDuration => extrudeDuration + arcDuration;
     
     [Header("Visuals")]
     public Transform nutrientCube;

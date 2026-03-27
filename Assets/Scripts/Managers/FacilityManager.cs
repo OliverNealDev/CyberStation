@@ -53,6 +53,16 @@ public class FacilityManager : MonoBehaviour
 
         return leastOccupied;
     }
+
+    public List<StationFacility> GetFacilities(FacilityType type)
+    {
+        if (!facilitiesMap.TryGetValue(type, out List<StationFacility> facilities))
+        {
+            return null;
+        }
+
+        return facilities;
+    }
     
     public bool HasFacility(FacilityType type)
     {

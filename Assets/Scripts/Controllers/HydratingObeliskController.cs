@@ -4,6 +4,7 @@ using System.Collections;
 public class HydratingObeliskController : StationFacility
 {
     public int usePrice = 1;
+    public override float EstimatedServiceDuration => (dropletCount * timeBetweenShots) + flightDuration;
 
     [Header("Visuals")]
     public SpriteRenderer facilityIcon;
