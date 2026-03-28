@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class BuildController : MonoBehaviour
 {
@@ -66,6 +68,7 @@ public class BuildController : MonoBehaviour
     }
 
     public GameObject selectedPreviewObject;
+    public bool HasBuildSelection => objectBuildable != null && selectedPreviewObject != null;
     
     private GameObject previewObjectInstance;
     private ObjectBuildable objectBuildable; 
@@ -126,11 +129,7 @@ public class BuildController : MonoBehaviour
 
     private void HandleBuildPreview()
     {
-        if (previewObjectInstance == null && selectedPreviewObject != null)
-        {
-            previewObjectInstance = Instantiate(selectedPreviewObject);
-            previewObjectInstance.SetActive(false); 
-        }
+        EnsurePreviewObject();
 
         if (previewObjectInstance == null)
         {
@@ -138,34 +137,18 @@ public class BuildController : MonoBehaviour
             return;
         }
 
-        if (TryGetBuildSurfaceHit(out RaycastHit hitInfo))
-        {
-            if (!previewObjectInstance.activeSelf)
-            {
-                previewObjectInstance.SetActive(true);
-            }
-
-            currentPreviewSize = GetRotatedSize();
-            currentPreviewGridPos = GridManager.Instance.GetGridPosition(hitInfo.point);
-            hasPreviewPlacement = true;
-
-            Vector3 previewPosition = GridManager.Instance.GetWorldPositionForArea(
-                currentPreviewGridPos.x,
-                currentPreviewGridPos.y,
-                currentPreviewSize.x,
-                currentPreviewSize.y,
-                hitInfo.point.y);
-
-            previewObjectInstance.transform.SetPositionAndRotation(
-                previewPosition,
-                Quaternion.Euler(0, objectRotation, 0));
-
-            currentPreviewPlacementValid = CanPlaceAt(currentPreviewGridPos, currentPreviewSize, hitInfo.point.y);
-        }
-        else
+        if (!TryGetBuildPreviewPlacement(out BuildPreviewPlacement placement))
         {
             ClearPreviewPlacement();
+            return;
         }
+
+        currentPreviewGridPos = placement.gridPos;
+        currentPreviewSize = placement.size;
+        hasPreviewPlacement = true;
+        currentPreviewPlacementValid = placement.isValid;
+
+        ApplyPreviewTransform(placement.gridPos, placement.size, placement.surfaceY);
     }
 
     private bool TryGetBuildSurfaceHit(out RaycastHit hitInfo)
@@ -178,12 +161,8 @@ public class BuildController : MonoBehaviour
         }
 
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (!Physics.Raycast(ray, out hitInfo, Mathf.Infinity, buildFloorLayerMask))
-        {
-            return false;
-        }
-
-        return hitInfo.collider.CompareTag("BuildableFlooring") && hitInfo.normal.y > 0.9f;
+        return Physics.Raycast(ray, out hitInfo, Mathf.Infinity, buildFloorLayerMask, QueryTriggerInteraction.Ignore) &&
+               IsBuildSurface(hitInfo);
     }
 
     private void TryPlaceCurrentPreview()
@@ -286,36 +265,18 @@ public class BuildController : MonoBehaviour
         demolishHighlightBox.transform.rotation = Quaternion.identity;
     }
 
-    private bool IsFootprintOnFloor(Vector2Int startGridPos, Vector2Int size, float currentY)
+    private bool TryGetTileSurfaceHit(Vector2Int gridPos, float approximateWorldY, out RaycastHit hitInfo)
     {
-        for (int x = 0; x < size.x; x++)
-        {
-            for (int z = 0; z < size.y; z++)
-            {
-                Vector3 tileCenter = GridManager.Instance.GetWorldPositionCenter(startGridPos.x + x, startGridPos.y + z, currentY);
-                
-                Ray ray = new Ray(tileCenter + Vector3.up * 5f, Vector3.down);
-                
-                if (Physics.Raycast(ray, out RaycastHit hit, 10f, buildFloorLayerMask))
-                {
-                    if (!hit.collider.CompareTag("BuildableFlooring") || hit.normal.y < 0.9f)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false; 
-                }
-            }
-        }
-        return true;
+        Vector3 tileCenter = GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, approximateWorldY);
+        Ray ray = new Ray(tileCenter + Vector3.up * 5f, Vector3.down);
+        return Physics.Raycast(ray, out hitInfo, 10f, buildFloorLayerMask, QueryTriggerInteraction.Ignore) &&
+               IsBuildSurface(hitInfo);
     }
 
-    private bool CanPlaceAt(Vector2Int gridPos, Vector2Int size, float worldY)
+    private bool IsBuildSurface(RaycastHit hitInfo)
     {
-        return GridManager.Instance.IsAreaFree(gridPos.x, gridPos.y, size.x, size.y) &&
-               IsFootprintOnFloor(gridPos, size, worldY);
+        return hitInfo.collider != null &&
+               hitInfo.collider.CompareTag("BuildableFlooring");
     }
 
     private Vector2Int GetRotatedSize()
@@ -361,9 +322,17 @@ public class BuildController : MonoBehaviour
         isDemolishMode = false;
     }
 
+    public void ResumeBuildMode()
+    {
+        isBuildingMode = HasBuildSelection;
+    }
+
     public void ChangePreviewObject(ObjectBuildable objectBuildable)
     {
-        isBuildingMode = true;
+        if (objectBuildable == null || objectBuildable.prefab == null)
+        {
+            return;
+        }
         
         if (previewObjectInstance != null)
         {
@@ -374,6 +343,7 @@ public class BuildController : MonoBehaviour
         selectedPreviewObject = objectBuildable.prefab;
         this.objectBuildable = objectBuildable;
         ClearPreviewPlacement();
+        isBuildingMode = true;
     }
 
     private void ClearPreviewPlacement()
@@ -389,6 +359,207 @@ public class BuildController : MonoBehaviour
 
     private bool IsPointerOverUI()
     {
-        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        return PointerUiUtility.IsPointerOverBlockingUi();
+    }
+
+    private void EnsurePreviewObject()
+    {
+        if (previewObjectInstance != null || selectedPreviewObject == null)
+        {
+            return;
+        }
+
+        previewObjectInstance = Instantiate(selectedPreviewObject);
+
+        PreviewableObject previewableObject = previewObjectInstance.GetComponent<PreviewableObject>();
+        if (previewableObject != null)
+        {
+            previewableObject.EnterPreviewMode();
+        }
+
+        previewObjectInstance.SetActive(false);
+    }
+
+    private bool TryGetBuildPreviewPlacement(out BuildPreviewPlacement placement)
+    {
+        placement = default;
+
+        if (!TryGetBuildSurfaceHit(out RaycastHit cursorHit))
+        {
+            return false;
+        }
+
+        Vector2Int size = GetRotatedSize();
+        Vector2Int gridPos = GridManager.Instance.GetGridPosition(cursorHit.point);
+
+        if (!GridManager.Instance.IsAreaWithinBounds(gridPos.x, gridPos.y, size.x, size.y))
+        {
+            return false;
+        }
+
+        if (!TryGetFootprintSurfaceY(gridPos, size, cursorHit.point.y, out float surfaceY))
+        {
+            return false;
+        }
+
+        placement = new BuildPreviewPlacement
+        {
+            gridPos = gridPos,
+            size = size,
+            surfaceY = surfaceY,
+            isValid = GridManager.Instance.IsAreaFree(gridPos.x, gridPos.y, size.x, size.y)
+        };
+
+        return true;
+    }
+
+    private void ApplyPreviewTransform(Vector2Int gridPos, Vector2Int size, float worldY)
+    {
+        if (previewObjectInstance == null)
+        {
+            return;
+        }
+
+        Vector3 previewPosition = GridManager.Instance.GetWorldPositionForArea(
+            gridPos.x,
+            gridPos.y,
+            size.x,
+            size.y,
+            worldY);
+
+        previewObjectInstance.transform.SetPositionAndRotation(
+            previewPosition,
+            Quaternion.Euler(0, objectRotation, 0));
+
+        if (!previewObjectInstance.activeSelf)
+        {
+            previewObjectInstance.SetActive(true);
+        }
+    }
+
+    private bool TryGetFootprintSurfaceY(Vector2Int startGridPos, Vector2Int size, float approximateWorldY, out float surfaceY)
+    {
+        surfaceY = 0f;
+
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int z = 0; z < size.y; z++)
+            {
+                if (!TryGetTileSurfaceHit(new Vector2Int(startGridPos.x + x, startGridPos.y + z), approximateWorldY, out RaycastHit tileHit))
+                {
+                    return false;
+                }
+
+                if (x == 0 && z == 0)
+                {
+                    surfaceY = tileHit.point.y;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private struct BuildPreviewPlacement
+    {
+        public Vector2Int gridPos;
+        public Vector2Int size;
+        public float surfaceY;
+        public bool isValid;
+    }
+}
+
+public static class PointerUiUtility
+{
+    private static readonly List<RaycastResult> RaycastResults = new List<RaycastResult>();
+    private static EventSystem cachedEventSystem;
+    private static PointerEventData pointerEventData;
+
+    public static bool IsPointerOverBlockingUi()
+    {
+        if (EventSystem.current == null || Mouse.current == null)
+        {
+            return false;
+        }
+
+        if (pointerEventData == null || cachedEventSystem != EventSystem.current)
+        {
+            cachedEventSystem = EventSystem.current;
+            pointerEventData = new PointerEventData(EventSystem.current);
+        }
+
+        pointerEventData.position = Mouse.current.position.ReadValue();
+
+        RaycastResults.Clear();
+        EventSystem.current.RaycastAll(pointerEventData, RaycastResults);
+
+        for (int i = 0; i < RaycastResults.Count; i++)
+        {
+            if (ShouldBlockPointer(RaycastResults[i].gameObject))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void DisableRaycastTargets(GameObject root)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        Graphic[] graphics = root.GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            if (graphics[i] != null)
+            {
+                graphics[i].raycastTarget = false;
+            }
+        }
+    }
+
+    public static void DisableWorldSpaceCanvasInteraction(GameObject root)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        DisableRaycastTargets(root);
+
+        Canvas[] canvases = root.GetComponentsInChildren<Canvas>(true);
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (canvas == null || canvas.renderMode != RenderMode.WorldSpace)
+            {
+                continue;
+            }
+
+            GraphicRaycaster raycaster = canvas.GetComponent<GraphicRaycaster>();
+            if (raycaster != null)
+            {
+                raycaster.enabled = false;
+            }
+        }
+    }
+
+    private static bool ShouldBlockPointer(GameObject target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+
+        Canvas canvas = target.GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            return true;
+        }
+
+        return canvas.renderMode != RenderMode.WorldSpace;
     }
 }

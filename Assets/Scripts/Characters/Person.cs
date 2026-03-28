@@ -58,6 +58,7 @@ public abstract class Person : MonoBehaviour
         person.personalCanvas = personalCanvas;
         personalCanvas.transform.SetParent(person.transform, false);
         personalCanvas.transform.localPosition = Vector3.up * 5f;
+        PointerUiUtility.DisableWorldSpaceCanvasInteraction(personalCanvas);
     }
 
     public virtual void DestroyPersonalCanvas(Person person)

@@ -34,6 +34,7 @@ public class PassengerNeedIconController : MonoBehaviour
     private void Awake()
     {
         iconImage = GetComponent<Image>();
+        PointerUiUtility.DisableRaycastTargets(gameObject);
         baseLocalScale = transform.localScale;
     }
 

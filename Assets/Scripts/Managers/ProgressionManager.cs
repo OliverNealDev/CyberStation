@@ -40,6 +40,16 @@ public class ProgressionManager : MonoBehaviour
         RefreshMaxLevel();
     }
 
+    private void Update()
+    {
+        if (Keyboard.current == null || !Keyboard.current.nKey.wasPressedThisFrame)
+        {
+            return;
+        }
+
+        AdvanceOneTier();
+    }
+
     public int CurrentLevel => currentLevel;
     public int CurrentXp => currentXp;
     public int MaxLevel => maxLevel;
@@ -140,6 +150,22 @@ public class ProgressionManager : MonoBehaviour
     public void RecordExpansionBuilt()
     {
         AddXp(expansionBuiltXp);
+    }
+
+    public void AdvanceOneTier()
+    {
+        if (IsMaxLevel)
+        {
+            return;
+        }
+
+        int previousLevel = currentLevel;
+        int nextLevel = Mathf.Min(currentLevel + 1, maxLevel);
+
+        currentXp = Mathf.Max(currentXp, GetXpRequiredToReachLevel(nextLevel));
+        UpdateLevelFromXp();
+        AwardLevelUpMoney(previousLevel, currentLevel);
+        NotifyProgressChanged();
     }
 
     public int GetXpRequiredForLevel(int level)

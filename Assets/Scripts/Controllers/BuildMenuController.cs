@@ -16,6 +16,8 @@ public class BuildMenuController : MonoBehaviour
     public TextMeshProUGUI detailCost;
     
     public GameObject demolishModeUI; 
+
+    private ObjectBuildable selectedBuildItem;
     
     void Start()
     {
@@ -26,6 +28,10 @@ public class BuildMenuController : MonoBehaviour
     {
         ProgressionManager.OnProgressionChanged += LoadItems;
         LoadItems();
+        if (selectedBuildItem != null)
+        {
+            UpdateDetailView(selectedBuildItem);
+        }
     }
 
     void OnDisable()
@@ -85,6 +91,7 @@ public class BuildMenuController : MonoBehaviour
     
     private void OnItemButtonClicked(ObjectBuildable data)
     {
+        selectedBuildItem = data;
         BuildController.Instance.ChangePreviewObject(data);
         UpdateDetailView(data);
     }

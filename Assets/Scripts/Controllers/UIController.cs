@@ -138,7 +138,7 @@ public class UIController : MonoBehaviour
 
             if (buildController != null) 
             {
-                buildController.isBuildingMode = true;
+                buildController.ResumeBuildMode();
             }
         }
     }

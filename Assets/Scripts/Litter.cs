@@ -144,7 +144,7 @@ public class Litter : MonoBehaviour
             return;
         }
 
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+        if (PointerUiUtility.IsPointerOverBlockingUi())
         {
             return;
         }
