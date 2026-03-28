@@ -275,13 +275,13 @@ public class ProgressionManager : MonoBehaviour
         switch (Mathf.Max(1, level))
         {
             case 2:
-                return 225;
+                return 100;
             case 3:
-                return 250;
+                return 150;
             case 4:
-                return 475;
+                return 200;
             default:
-                return level >= 5 ? 150 * level : 0;
+                return level >= 5 ? 120 + (20 * level) : 0;
         }
     }
 

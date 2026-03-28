@@ -17,6 +17,6 @@ MonoBehaviour:
   description: A simple light standard for easy illumination.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 8dfc82c26e77d3241833d249540522cf, type: 3}
-  cost: 100
+  cost: 125
   size: {x: 1, y: 1}
   decorationStrength: 5

@@ -10,7 +10,7 @@ public class EconomyManager : MonoBehaviour
     public static event Action<int> OnMoneyChanged;
     public static event Action<int, Sprite> OnExpenseRecorded;
 
-    public int money = 1400;
+    public int money = 2050;
     private readonly Dictionary<StaffMember, float> staffBillingDueTimes = new Dictionary<StaffMember, float>();
     private readonly Dictionary<TrainService, float> trainBillingDueTimes = new Dictionary<TrainService, float>();
     private const float RecurringBillingInterval = 60f;

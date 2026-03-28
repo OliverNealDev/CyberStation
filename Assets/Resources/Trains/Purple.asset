@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Purple
   m_EditorClassIdentifier: Assembly-CSharp::Train
   trainName: Afterglow Line
+  requiredTier: 1
   description: A balanced commuter upgrade that charges more per rider without asking
     for luxury-line upkeep.
   icon: {fileID: 21300000, guid: 0acf459aace31dd4da652bde7a2165a2, type: 3}
@@ -22,9 +23,9 @@ MonoBehaviour:
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 36
-  costPerRide: 7
+  costPerRide: 14
   secondsStationary: 30
   trainColor: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
   isWarm: 0
-  upfrontCost: 950
-  costPerMinute: 52
+  upfrontCost: 1450
+  costPerMinute: 225
