@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: WallBlock
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Wall Block
-  requiredTier: 1
+  requiredTier: 4
   description: Useful for walling off sections of the station.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: c44922ccd9bd0c640bbbe92f6d51b1af, type: 3}
