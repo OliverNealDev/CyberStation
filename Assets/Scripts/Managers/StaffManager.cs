@@ -24,6 +24,7 @@ public class StaffManager : MonoBehaviour
         if (!hiredStaff.Contains(staff))
         {
             hiredStaff.Add(staff);
+            SoundEffectController.Play(SoundEffectId.HireAndroid);
 
             if (ProgressionManager.Instance != null)
             {

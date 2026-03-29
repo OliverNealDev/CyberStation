@@ -54,6 +54,7 @@ public class EconomyManager : MonoBehaviour
         if (showBill && amount > 0)
         {
             OnExpenseRecorded?.Invoke(amount, icon);
+            SoundEffectController.Play(SoundEffectId.BillCharged);
         }
     }
     

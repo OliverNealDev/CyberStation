@@ -51,6 +51,7 @@ public class PlatformController : MonoBehaviour
                 
                 TrainController controller = trainInstance.GetComponent<TrainController>();
                 service.physicalTrainInstance = controller;
+                SoundEffectController.Play(SoundEffectId.TrainApproaching);
                 
                 isOccupied = true;
                 

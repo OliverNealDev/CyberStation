@@ -17516,6 +17516,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 861641145}
   m_CullTransparentMesh: 1
+--- !u!1 &866124406
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 866124407}
+  - component: {fileID: 866124408}
+  m_Layer: 0
+  m_Name: SoundEffectController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &866124407
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866124406}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1368748814}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &866124408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866124406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fb6c57e4ca3418e9b01f4bcb633a572, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoundEffectController
+  buttonHoverClip: {fileID: 0}
+  buttonClickClip: {fileID: 8300000, guid: 518e18bac835604429a9d4ba4e7e1c01, type: 3}
+  buildPlacedClip: {fileID: 8300000, guid: 14368dc9367362c4fac500c6bf1ec7ca, type: 3}
+  buildInvalidClip: {fileID: 8300000, guid: 7843eedb28f913442930ac9faaa75afb, type: 3}
+  demolishClip: {fileID: 0}
+  tierUpClip: {fileID: 8300000, guid: 7aa5f7939ae7e504d899e2c0c5f876cb, type: 3}
+  trainApproachingClip: {fileID: 0}
+  billChargedClip: {fileID: 0}
+  hireAndroidClip: {fileID: 0}
 --- !u!1 &866386856
 GameObject:
   m_ObjectHideFlags: 0
@@ -26201,6 +26254,7 @@ Transform:
   - {fileID: 716331333}
   - {fileID: 1272636280}
   - {fileID: 773497994}
+  - {fileID: 866124407}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1378768160
@@ -48410,7 +48464,7 @@ MonoBehaviour:
   thirstNeedStartTier: 2
   energyNeedStartTier: 999
   hygieneNeedStartTier: 5
-  disembarkingFacilityUsageChance: 0.25
+  disembarkingFacilityUsageChance: 0.5
   needIconPrefab: {fileID: 8039886225430953968, guid: d1f4f20af3d8ef348a5a33044a99a4e0, type: 3}
   failedNeedOverlaySprite: {fileID: 21300000, guid: 9ab8c1eeab7c71849b1383b6bc78aac5, type: 3}
   ticketNeedSprite: {fileID: 21300000, guid: 9c8248cdaaccd404a97ef64faa0b111f, type: 3}

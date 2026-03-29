@@ -120,6 +120,7 @@ public class BuildController : MonoBehaviour
                 EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
                 GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
                 Destroy(currentDemolishTarget.gameObject);
+                SoundEffectController.Play(SoundEffectId.Demolish);
                 
                 currentDemolishTarget = null;
                 demolishHighlightBox.SetActive(false);
@@ -167,13 +168,23 @@ public class BuildController : MonoBehaviour
 
     private void TryPlaceCurrentPreview()
     {
+        if (objectBuildable == null)
+        {
+            return;
+        }
+
         if (previewObjectInstance == null ||
             !previewObjectInstance.activeSelf ||
             !hasPreviewPlacement ||
-            !currentPreviewPlacementValid ||
-            objectBuildable == null ||
-            EconomyManager.Instance.money < objectBuildable.cost)
+            !currentPreviewPlacementValid)
         {
+            SoundEffectController.Play(SoundEffectId.BuildInvalid);
+            return;
+        }
+
+        if (EconomyManager.Instance == null || EconomyManager.Instance.money < objectBuildable.cost)
+        {
+            SoundEffectController.Play(SoundEffectId.BuildInvalid);
             return;
         }
 
@@ -190,6 +201,7 @@ public class BuildController : MonoBehaviour
         pb.Initialize(objectBuildable, currentPreviewGridPos, currentPreviewSize);
 
         GridManager.Instance.OccupyArea(currentPreviewGridPos.x, currentPreviewGridPos.y, currentPreviewSize.x, currentPreviewSize.y);
+        SoundEffectController.Play(SoundEffectId.BuildPlaced);
 
         if (ProgressionManager.Instance != null)
         {

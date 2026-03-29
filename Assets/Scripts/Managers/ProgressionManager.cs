@@ -113,8 +113,7 @@ public class ProgressionManager : MonoBehaviour
         int previousLevel = currentLevel;
         currentXp += amount;
         UpdateLevelFromXp();
-        AwardLevelUpMoney(previousLevel, currentLevel);
-        NotifyProgressChanged();
+        FinalizeLevelChange(previousLevel);
     }
 
     public void RecordBuildPlaced()
@@ -164,8 +163,7 @@ public class ProgressionManager : MonoBehaviour
 
         currentXp = Mathf.Max(currentXp, GetXpRequiredToReachLevel(nextLevel));
         UpdateLevelFromXp();
-        AwardLevelUpMoney(previousLevel, currentLevel);
-        NotifyProgressChanged();
+        FinalizeLevelChange(previousLevel);
     }
 
     public int GetXpRequiredForLevel(int level)
@@ -283,6 +281,18 @@ public class ProgressionManager : MonoBehaviour
             default:
                 return level >= 5 ? 120 + (20 * level) : 0;
         }
+    }
+
+    private void FinalizeLevelChange(int previousLevel)
+    {
+        AwardLevelUpMoney(previousLevel, currentLevel);
+
+        if (currentLevel > previousLevel)
+        {
+            SoundEffectController.Play(SoundEffectId.TierUp);
+        }
+
+        NotifyProgressChanged();
     }
 
     private void NotifyProgressChanged()
