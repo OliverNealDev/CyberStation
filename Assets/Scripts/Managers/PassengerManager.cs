@@ -10,14 +10,15 @@ public class PassengerManager : MonoBehaviour
     
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
-    
-    [Range(0f, 1f)] public float spontaneousDematerializationRate = 0.0004f;
-    
+
     private List<Vector3> passengerSpawnPoints = new List<Vector3>();
     
     public List<MaterializerController> materializers = new List<MaterializerController>();
-    
-    public List<GameObject> litterPrefabs = new List<GameObject>();
+
+    [Header("Littering")]
+    [Min(0f)] public float litterCheckInterval = 8f;
+    [Min(1)] public int litterPassengerSampleCount = 3;
+    [Range(0f, 1f)] public float litterDropChancePerSample = 0.2f;
 
     [Header("Need Unlock Tiers")]
     [Min(1)] public int hungerNeedStartTier = 1;
@@ -54,6 +55,7 @@ public class PassengerManager : MonoBehaviour
     private Sprite runtimeTicketNeedSprite;
     private float tickLength = 0.1f; 
     private float tickTimer;
+    private float litterCheckTimer;
     private NavMeshPath facilityRoutePath;
     
     void Awake()
@@ -106,6 +108,8 @@ public class PassengerManager : MonoBehaviour
             LogicUpdate();
             tickTimer = 0f;
         }
+
+        UpdateLitterChecks();
         
         if (Keyboard.current.pKey.wasPressedThisFrame) 
         {
@@ -486,99 +490,217 @@ public class PassengerManager : MonoBehaviour
         }
     }
 
-    public void DropLitter()
+    public void AddPotentialLitterToPassenger(Passenger passenger, IList<GameObject> litterOptions)
     {
-        if (litterPrefabs.Count == 0 || activePassengers.Count == 0) return;
-        
-        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        if (passenger == null || litterOptions == null || litterOptions.Count == 0)
         {
-            if (Random.value <= spontaneousDematerializationRate)
-            {
-                Passenger randomPassenger = activePassengers[i];
-                if (randomPassenger.currentSubState == Passenger.passengerSubStates.InteractingWithSomething)
-                {
-                    continue;
-                }
-                
-                Vector3 rayStart = randomPassenger.transform.position + (Vector3.up * 0.5f);
-                if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 6f))
-                {
-                    if (hit.collider.CompareTag("UnlitterableSurface"))
-                    {
-                        continue; 
-                    }
-                }
+            return;
+        }
 
-                RemovePassengerAsLitter(randomPassenger);
+        for (int i = 0; i < litterOptions.Count; i++)
+        {
+            GameObject litterPrefab = litterOptions[i];
+            if (litterPrefab != null)
+            {
+                passenger.potentialLitterables.Add(litterPrefab);
             }
         }
     }
 
-    private System.Collections.IEnumerator ReplacePassengerWithLitter(Passenger passenger)
+    public bool TrySpawnPlacedLitter(GameObject litterPrefab, Vector3 origin)
     {
-        float duration = 1.0f;
+        return TrySpawnLitter(litterPrefab, origin);
+    }
+
+    private void UpdateLitterChecks()
+    {
+        if (litterCheckInterval <= 0f)
+        {
+            litterCheckTimer = 0f;
+            return;
+        }
+
+        litterCheckTimer += Time.deltaTime;
+        if (litterCheckTimer < litterCheckInterval)
+        {
+            return;
+        }
+
+        litterCheckTimer -= litterCheckInterval;
+        TrySamplePassengersForLitter();
+    }
+
+    private void TrySamplePassengersForLitter()
+    {
+        if (litterPassengerSampleCount <= 0 || litterDropChancePerSample <= 0f)
+        {
+            return;
+        }
+
+        List<Passenger> litterCandidates = GetLitterCandidates();
+        if (litterCandidates.Count == 0)
+        {
+            return;
+        }
+
+        int sampleCount = Mathf.Min(litterPassengerSampleCount, litterCandidates.Count);
+        for (int i = 0; i < sampleCount; i++)
+        {
+            int selectedIndex = Random.Range(0, litterCandidates.Count);
+            Passenger passenger = litterCandidates[selectedIndex];
+            litterCandidates.RemoveAt(selectedIndex);
+
+            if (passenger == null || Random.value > litterDropChancePerSample)
+            {
+                continue;
+            }
+
+            TryDropRandomLitterFromPassenger(passenger);
+        }
+    }
+
+    private List<Passenger> GetLitterCandidates()
+    {
+        List<Passenger> litterCandidates = new List<Passenger>();
+
+        for (int i = 0; i < activePassengers.Count; i++)
+        {
+            Passenger passenger = activePassengers[i];
+            if (passenger == null || !passenger.HasPotentialLitter())
+            {
+                continue;
+            }
+
+            if (passenger.currentSubState == Passenger.passengerSubStates.InteractingWithSomething)
+            {
+                continue;
+            }
+
+            litterCandidates.Add(passenger);
+        }
+
+        return litterCandidates;
+    }
+
+    private bool TryDropRandomLitterFromPassenger(Passenger passenger)
+    {
+        if (passenger == null || !passenger.HasPotentialLitter())
+        {
+            return false;
+        }
+
+        int litterIndex = GetRandomPotentialLitterIndex(passenger.potentialLitterables);
+        if (litterIndex < 0)
+        {
+            return false;
+        }
+
+        GameObject litterPrefab = passenger.potentialLitterables[litterIndex];
+        if (!TrySpawnLitter(litterPrefab, passenger.transform.position))
+        {
+            return false;
+        }
+
+        passenger.potentialLitterables.RemoveAt(litterIndex);
+        return true;
+    }
+
+    private int GetRandomPotentialLitterIndex(List<GameObject> litterOptions)
+    {
+        if (litterOptions == null || litterOptions.Count == 0)
+        {
+            return -1;
+        }
+
+        int attemptsRemaining = litterOptions.Count;
+        while (attemptsRemaining > 0 && litterOptions.Count > 0)
+        {
+            int candidateIndex = Random.Range(0, litterOptions.Count);
+            if (litterOptions[candidateIndex] != null)
+            {
+                return candidateIndex;
+            }
+
+            litterOptions.RemoveAt(candidateIndex);
+            attemptsRemaining--;
+        }
+
+        return -1;
+    }
+
+    private bool TrySpawnLitter(GameObject litterPrefab, Vector3 origin)
+    {
+        if (litterPrefab == null || !TryGetLitterSpawnPosition(origin, out Vector3 litterPosition))
+        {
+            return false;
+        }
+
+        StartCoroutine(SpawnLitterRoutine(litterPrefab, litterPosition));
+        return true;
+    }
+
+    private bool TryGetLitterSpawnPosition(Vector3 origin, out Vector3 litterPosition)
+    {
+        const string buildableFloorTag = "BuildableFlooring";
+        const float litterRayStartHeight = 4f;
+        const float litterRayDistance = 12f;
+
+        int groundLayer = LayerMask.NameToLayer("groundLayer");
+        if (groundLayer < 0)
+        {
+            litterPosition = default;
+            return false;
+        }
+
+        int groundLayerMask = 1 << groundLayer;
+        Vector3 rayStart = origin + (Vector3.up * litterRayStartHeight);
+        if (!Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, litterRayDistance, groundLayerMask))
+        {
+            litterPosition = default;
+            return false;
+        }
+
+        if (hit.collider == null || hit.collider.isTrigger || !hit.collider.CompareTag(buildableFloorTag))
+        {
+            litterPosition = default;
+            return false;
+        }
+
+        litterPosition = hit.point + (Vector3.up * 0.02f);
+        return true;
+    }
+
+    private System.Collections.IEnumerator SpawnLitterRoutine(GameObject litterPrefab, Vector3 litterPosition)
+    {
+        const float spawnDuration = 0.2f;
         float elapsed = 0f;
 
-        Vector3 puddlePos = passenger.transform.position;
-        Color puddleColor = Color.white;
-        
-        if (passenger.visorRenderer != null)
-        {
-            puddleColor = passenger.visorRenderer.material.color;
-        }
-        else if (passenger.transform.childCount > 1)
-        {
-            MeshRenderer renderer = passenger.transform.GetChild(1).GetComponent<MeshRenderer>();
-            if (renderer != null) puddleColor = renderer.material.color;
-        }
+        GameObject litterObject = Instantiate(
+            litterPrefab,
+            litterPosition,
+            Quaternion.Euler(0f, Random.Range(0f, 360f), 0f));
 
-        GameObject litterPrefab = litterPrefabs[Random.Range(0, litterPrefabs.Count)];
-        Vector3 targetLitterScale = litterPrefab.transform.localScale;
+        Vector3 targetScale = litterObject.transform.localScale;
+        litterObject.transform.localScale = Vector3.zero;
 
-        GameObject litterObj = Instantiate(litterPrefab, puddlePos, Quaternion.Euler(0, Random.Range(0, 360), 0));
-        litterObj.transform.localScale = Vector3.zero;
-
-        foreach (Transform child in litterObj.transform)
+        while (elapsed < spawnDuration)
         {
-            MeshRenderer childRenderer = child.GetComponent<MeshRenderer>();
-            if (childRenderer != null && childRenderer.tag != "BaseLitterColour")
+            if (litterObject == null)
             {
-                childRenderer.material.color = puddleColor;
+                yield break;
             }
-        }
 
-        MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
-        if (animator != null)
-        {
-            animator.Dematerialize(null);
-        }
-
-        while (elapsed < duration)
-        {
-            if (litterObj == null) yield break;
-
-            float t = elapsed / duration;
+            float t = elapsed / spawnDuration;
             float smoothT = t * t * (3f - 2f * t);
-
-            litterObj.transform.localScale = Vector3.Lerp(Vector3.zero, targetLitterScale, smoothT);
+            litterObject.transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, smoothT);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        if (litterObj != null)
+        if (litterObject != null)
         {
-            litterObj.transform.localScale = targetLitterScale;
-            Litter litterComp = litterObj.GetComponent<Litter>();
-            if (litterComp != null && JanitorCoordinator.Instance != null)
-            {
-                JanitorCoordinator.Instance.ReportLitter(litterComp);
-            }
-        }
-
-        if (passenger != null)
-        {
-            Destroy(passenger.gameObject);
+            litterObject.transform.localScale = targetScale;
         }
     }
     
@@ -983,31 +1105,6 @@ public class PassengerManager : MonoBehaviour
         passenger.hasFailedNeed = false;
         passenger.hasGivenUpNeed = false;
         RemoveNeedIcon(passenger, fadeIcon);
-    }
-
-    private void RemovePassengerAsLitter(Passenger passenger)
-    {
-        if (!IsActivePassenger(passenger))
-        {
-            return;
-        }
-
-        ClearBlockedNeed(passenger);
-        activePassengers.Remove(passenger);
-        UnassignTarget(passenger);
-
-        if (passenger.navAgent != null && passenger.navAgent.isActiveAndEnabled)
-        {
-            passenger.navAgent.enabled = false;
-        }
-
-        if (litterPrefabs.Count == 0)
-        {
-            Destroy(passenger.gameObject);
-            return;
-        }
-
-        StartCoroutine(ReplacePassengerWithLitter(passenger));
     }
 
     private bool CanUseNavAgent(Passenger passenger)

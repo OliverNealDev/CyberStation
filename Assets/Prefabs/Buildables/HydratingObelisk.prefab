@@ -144,11 +144,11 @@ MonoBehaviour:
   stoppingDistanceStep: 1
   PeopleOnWay: []
   facilityType: 3
+  potentialLitterPrefabs: []
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 2
   facilityIcon: {fileID: 5969262218880966119}
-  idleIconColor: {r: 0.8274511, g: 0.8274511, b: 0.8274511, a: 1}
   activeFacilityColor: {r: 0, g: 1, b: 1, a: 1}
   dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}
   nozzlePoint: {fileID: 8596009513800852768}
@@ -157,6 +157,9 @@ MonoBehaviour:
   dropletCount: 12
   timeBetweenShots: 0.1
   flightDuration: 0.4
+  puddleLitterPrefab: {fileID: 7923471293361742921, guid: 8019f2ee46344ec4cb816cdba221c5ed, type: 3}
+  puddleLitterChance: 0.15
+  puddleSpawnDistance: 1
 --- !u!1 &2040216026780394366
 GameObject:
   m_ObjectHideFlags: 0

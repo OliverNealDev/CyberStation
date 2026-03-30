@@ -48573,10 +48573,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   activePassengers: []
   passengerPrefab: {fileID: 2991288983431714229, guid: d457faba8c381e94dbc79fdd56f74a28, type: 3}
-  spontaneousDematerializationRate: 0
   materializers: []
-  litterPrefabs:
-  - {fileID: 7923471293361742921, guid: 4379854c7f742bc488c569e000d46376, type: 3}
+  litterCheckInterval: 1
+  litterPassengerSampleCount: 10
+  litterDropChancePerSample: 1
   hungerNeedStartTier: 3
   thirstNeedStartTier: 2
   energyNeedStartTier: 999

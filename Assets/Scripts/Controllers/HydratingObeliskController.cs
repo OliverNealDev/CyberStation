@@ -19,7 +19,12 @@ public class HydratingObeliskController : StationFacility
     [Header("Timing & Firing")]
     public int dropletCount = 3;
     public float timeBetweenShots = 0.35f; 
-    public float flightDuration = 0.6f;    
+    public float flightDuration = 0.6f;
+
+    [Header("Litter")]
+    public GameObject puddleLitterPrefab;
+    [Range(0f, 1f)] public float puddleLitterChance = 0.15f;
+    [Min(0f)] public float puddleSpawnDistance = 1f;
 
     protected override void Start()
     {
@@ -110,4 +115,16 @@ public class HydratingObeliskController : StationFacility
 
         SetNeedIconIdle(facilityIcon);
     }
+
+    protected override void HandleCompletedServiceLitter(Passenger passenger)
+    {
+        if (PassengerManager.Instance == null || puddleLitterPrefab == null || Random.value > puddleLitterChance)
+        {
+            return;
+        }
+
+        Vector3 puddleOrigin = transform.position + (transform.forward * puddleSpawnDistance);
+        PassengerManager.Instance.TrySpawnPlacedLitter(puddleLitterPrefab, puddleOrigin);
+    }
+
 }

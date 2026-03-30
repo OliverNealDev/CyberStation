@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Passenger : Person
@@ -32,6 +33,7 @@ public class Passenger : Person
     public bool needsThirst;
     public bool needsEnergy;
     public bool needsHygiene;
+    public List<GameObject> potentialLitterables = new List<GameObject>();
     [HideInInspector] public bool shouldUseFacilitiesBeforeExit = false;
     
     public passengerMasterStates currentMasterState = passengerMasterStates.InStation;
@@ -50,6 +52,7 @@ public class Passenger : Person
     protected override void Awake()
     {
         base.Awake();
+        potentialLitterables.Clear();
     }
 
     public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked, bool requireAtLeastOne = false)
@@ -86,6 +89,11 @@ public class Passenger : Person
     public bool HasAnyNeed()
     {
         return needsHunger || needsThirst || needsEnergy || needsHygiene;
+    }
+
+    public bool HasPotentialLitter()
+    {
+        return potentialLitterables != null && potentialLitterables.Count > 0;
     }
 
     private void EnsureAtLeastOneNeed(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked)

@@ -23,7 +23,10 @@ public abstract class StationFacility : QueuableObject
     [Header("Facility Settings")]
     [Tooltip("Select what kind of machine this is from the dropdown!")]
     public FacilityType facilityType; 
-    
+
+    [Header("Litter")]
+    public List<GameObject> potentialLitterPrefabs = new List<GameObject>();
+
     public Person currentPerson;
     
     public enum MachineState { Idle, Processing }
@@ -67,7 +70,8 @@ public abstract class StationFacility : QueuableObject
         {
             Passenger passenger = (Passenger)currentPerson;
             
-            DeliverService(passenger); 
+            DeliverService(passenger);
+            HandleCompletedServiceLitter(passenger);
             
             currentPerson = null;
         }
@@ -144,6 +148,16 @@ public abstract class StationFacility : QueuableObject
             default:
                 return IdleNeedIconColor;
         }
+    }
+
+    protected virtual void HandleCompletedServiceLitter(Passenger passenger)
+    {
+        if (PassengerManager.Instance == null || passenger == null || potentialLitterPrefabs == null || potentialLitterPrefabs.Count == 0)
+        {
+            return;
+        }
+
+        PassengerManager.Instance.AddPotentialLitterToPassenger(passenger, potentialLitterPrefabs);
     }
 
     protected abstract void DeliverService(Passenger passenger);
