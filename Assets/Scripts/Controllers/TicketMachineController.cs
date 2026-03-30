@@ -9,38 +9,20 @@ public class TicketMachineController : StationFacility
     public SpriteRenderer ticketSprite;
 
     [Header("Colors")]
-    public Color darkGrey = new Color(0.2f, 0.2f, 0.2f);
-    public Color lightGrey = new Color(0.7f, 0.7f, 0.7f);
     public Color screenIdleColor = Color.black;
 
     [Header("Timing")]
     public float processingTime = 1.5f;
     public float holdDuration = 1.0f;
-    public float pulseSpeed = 4f;
     public float transitionDuration = 0.2f;
 
-    private bool isHoldingResult = false;
     public override float EstimatedServiceDuration => processingTime + holdDuration + (transitionDuration * 2f);
 
     protected override void Start()
     {
         base.Start();
-        
-        if (screenRenderer != null) 
-            screenRenderer.material.color = screenIdleColor;
-    }
 
-    void Update()
-    {
-        if (!isHoldingResult)
-        {
-            float t = Mathf.PingPong(Time.time * pulseSpeed, 1f);
-            Color currentPulse = Color.Lerp(darkGrey, lightGrey, t);
-            SetAccentColors(currentPulse);
-            
-            if (ticketSprite != null) 
-                ticketSprite.color = currentPulse;
-        }
+        SetIdleVisuals();
     }
 
     public override void ProcessInteraction(Person person)
@@ -55,8 +37,6 @@ public class TicketMachineController : StationFacility
 
     private IEnumerator TicketRoutine(Passenger passenger)
     {
-        isHoldingResult = true;
-
         if (screenRenderer != null) 
             screenRenderer.material.color = Color.white;
 
@@ -111,14 +91,12 @@ public class TicketMachineController : StationFacility
         {
             elapsed += Time.deltaTime;
             float t = elapsed / transitionDuration;
+            Color idleAccentColor = Color.white;
 
-            float pulseT = Mathf.PingPong(Time.time * pulseSpeed, 1f);
-            Color currentPulse = Color.Lerp(darkGrey, lightGrey, pulseT);
-
-            SetAccentColors(Color.Lerp(passengerColor, currentPulse, t));
+            SetAccentColors(Color.Lerp(passengerColor, idleAccentColor, t));
             
             if (ticketSprite != null) 
-                ticketSprite.color = Color.Lerp(passengerColor, currentPulse, t);
+                ticketSprite.color = Color.Lerp(passengerColor, idleAccentColor, t);
                 
             if (screenRenderer != null) 
                 screenRenderer.material.color = Color.Lerp(passengerColor, screenIdleColor, t);
@@ -126,11 +104,20 @@ public class TicketMachineController : StationFacility
             yield return null;
         }
 
-        if (screenRenderer != null) 
+        SetIdleVisuals();
+
+        state = MachineState.Idle;
+    }
+
+    private void SetIdleVisuals()
+    {
+        if (screenRenderer != null)
             screenRenderer.material.color = screenIdleColor;
 
-        isHoldingResult = false;
-        state = MachineState.Idle;
+        SetAccentColors(Color.white);
+
+        if (ticketSprite != null)
+            ticketSprite.color = Color.white;
     }
 
     private void SetAccentColors(Color color)
