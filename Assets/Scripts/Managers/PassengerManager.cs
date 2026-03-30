@@ -47,9 +47,7 @@ public class PassengerManager : MonoBehaviour
     [Min(0f)] public float blockedNeedWanderIntervalMax = 3.5f;
 
     [Header("Service Queue Tolerance")]
-    [Min(0f)] public float minServiceWaitTime = 10f;
-    [Min(0f)] public float maxServiceWaitTime = 24f;
-    [Min(1)] public int maxFacilityQueueLength = 8;
+    [Min(0f)] public float serviceQueueTolerance = 24f;
 
     private const float BlockedNeedCheckInterval = 1f;
     private const float FallbackPassengerWalkSpeed = 3.5f;
@@ -705,7 +703,7 @@ public class PassengerManager : MonoBehaviour
                 continue;
             }
 
-            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger, passenger.maxServiceWaitTime, out float candidateDelay);
+            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger, serviceQueueTolerance, out float candidateDelay);
             if (candidateFacility != null && candidateDelay < bestWait)
             {
                 bestWait = candidateDelay;
@@ -1311,8 +1309,6 @@ public class PassengerManager : MonoBehaviour
         newPassenger.assignedTrainService = null; 
 
         RegisterPassenger(newPassenger);
-        AssignServiceWaitTime(newPassenger);
-
         newPassenger.hasTicket = true; 
         newPassenger.shouldUseFacilitiesBeforeExit = Random.value < disembarkingFacilityUsageChance;
         if (newPassenger.shouldUseFacilitiesBeforeExit)
@@ -1478,8 +1474,6 @@ public class PassengerManager : MonoBehaviour
         newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
         
         RegisterPassenger(newPassenger);
-        AssignServiceWaitTime(newPassenger);
-        
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
         newPassenger.navAgent.avoidancePriority = Random.Range(50, 100);
         
@@ -1568,11 +1562,6 @@ public class PassengerManager : MonoBehaviour
                 continue;
             }
 
-            if (facility.PeopleOnWay.Count >= Mathf.Max(1, maxFacilityQueueLength))
-            {
-                continue;
-            }
-
             float estimatedWait = facility.GetEstimatedQueueWaitTime();
             float estimatedWalkTime = EstimateWalkTimeToService(passenger, facility);
             float totalEstimatedDelay = estimatedWait + estimatedWalkTime;
@@ -1600,18 +1589,6 @@ public class PassengerManager : MonoBehaviour
         }
 
         return 0.1f;
-    }
-
-    private void AssignServiceWaitTime(Passenger passenger)
-    {
-        if (passenger == null)
-        {
-            return;
-        }
-
-        float minWait = Mathf.Max(0f, minServiceWaitTime);
-        float maxWait = Mathf.Max(minWait, maxServiceWaitTime);
-        passenger.maxServiceWaitTime = Random.Range(minWait, maxWait);
     }
 
     private float EstimateWalkTimeToService(Passenger passenger, QueuableObject target)

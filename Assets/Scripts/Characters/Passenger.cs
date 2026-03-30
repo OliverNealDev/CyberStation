@@ -4,8 +4,6 @@ public class Passenger : Person
 {
     public TrainService assignedTrainService;
     public float TimeToGoToPlatform;
-    [Tooltip("Maximum estimated travel plus queue wait this passenger is willing to accept for an optional service.")]
-    public float maxServiceWaitTime;
     
     [Header("Visuals")]
     [Tooltip("Assign the specific MeshRenderer (e.g. Visor, ID Badge) that should glow with the Hue color.")]

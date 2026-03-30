@@ -96,7 +96,7 @@ public class PrivateLavatoryController : StationFacility
         if (WorldSpacePromptCoordinator.Instance != null)
         {
             WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$" + usePrice, transform.position + Vector3.up * 7f, Color.magenta); 
+                "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green); 
         }
 
         if (facilityIcon != null)

@@ -103,7 +103,7 @@ public class FacilityManager : MonoBehaviour
                 break;
             case Passenger.NeedType.Hunger:
                 validFacilities.Add(FacilityType.NutrientExtruder);
-                validFacilities.Add(FacilityType.CaloricInjectionPort);
+                validFacilities.Add(FacilityType.SnackPrinter);
                 break;
             case Passenger.NeedType.Thirst:
                 validFacilities.Add(FacilityType.HydratingObelisk);

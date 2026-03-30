@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 054f86a4a0a418449892b21e1fb915d1, type: 3}
+  m_Name: SnackPrinter
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
+  objectName: Snack Printer
+  requiredTier: 3
+  description: Generates a variety of delicious snacks on command, providing a comfortable
+    hunger fulfilment.
+  icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
+  prefab: {fileID: 1821913311329546544, guid: 4ea60e4dacd045241ab8e019fe8baaa5, type: 3}
+  cost: 800
+  size: {x: 1, y: 1}
+  decorationStrength: 0
