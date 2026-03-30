@@ -52,13 +52,16 @@ public class PassengerManager : MonoBehaviour
     [Min(1)] public int maxFacilityQueueLength = 8;
 
     private const float BlockedNeedCheckInterval = 1f;
+    private const float FallbackPassengerWalkSpeed = 3.5f;
     private Sprite runtimeTicketNeedSprite;
     private float tickLength = 0.1f; 
     private float tickTimer;
+    private NavMeshPath facilityRoutePath;
     
     void Awake()
     {
         Instance = this;
+        facilityRoutePath = new NavMeshPath();
     }
 
     void OnEnable()
@@ -702,10 +705,10 @@ public class PassengerManager : MonoBehaviour
                 continue;
             }
 
-            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger.maxServiceWaitTime, out float candidateWait);
-            if (candidateFacility != null && candidateWait < bestWait)
+            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger, passenger.maxServiceWaitTime, out float candidateDelay);
+            if (candidateFacility != null && candidateDelay < bestWait)
             {
-                bestWait = candidateWait;
+                bestWait = candidateDelay;
                 bestFacility = candidateFacility;
             }
         }
@@ -1546,10 +1549,10 @@ public class PassengerManager : MonoBehaviour
         }
     }
 
-    private StationFacility GetMostAccessibleFacility(List<StationFacility> facilities, float maxWaitTime, out float bestWait)
+    private StationFacility GetMostAccessibleFacility(List<StationFacility> facilities, Passenger passenger, float maxWaitTime, out float bestWait)
     {
         bestWait = Mathf.Infinity;
-        if (facilities == null || facilities.Count == 0)
+        if (facilities == null || facilities.Count == 0 || passenger == null)
         {
             return null;
         }
@@ -1571,14 +1574,17 @@ public class PassengerManager : MonoBehaviour
             }
 
             float estimatedWait = facility.GetEstimatedQueueWaitTime();
-            if (estimatedWait > clampedMaxWait)
+            float estimatedWalkTime = EstimateWalkTimeToService(passenger, facility);
+            float totalEstimatedDelay = estimatedWait + estimatedWalkTime;
+
+            if (totalEstimatedDelay > clampedMaxWait)
             {
                 continue;
             }
 
-            if (estimatedWait < bestWait)
+            if (totalEstimatedDelay < bestWait)
             {
-                bestWait = estimatedWait;
+                bestWait = totalEstimatedDelay;
                 bestFacility = facility;
             }
         }
@@ -1606,5 +1612,124 @@ public class PassengerManager : MonoBehaviour
         float minWait = Mathf.Max(0f, minServiceWaitTime);
         float maxWait = Mathf.Max(minWait, maxServiceWaitTime);
         passenger.maxServiceWaitTime = Random.Range(minWait, maxWait);
+    }
+
+    private float EstimateWalkTimeToService(Passenger passenger, QueuableObject target)
+    {
+        if (passenger == null || target == null)
+        {
+            return Mathf.Infinity;
+        }
+
+        Vector3 targetPosition = GetEstimatedQueueTargetPosition(target, passenger);
+        Vector3 routeDestination = targetPosition;
+
+        if (NavMesh.SamplePosition(targetPosition, out NavMeshHit targetHit, 4f, NavMesh.AllAreas))
+        {
+            routeDestination = targetHit.position;
+        }
+
+        float routeDistance = EstimateRouteDistance(passenger.transform.position, routeDestination);
+        float walkSpeed = GetEstimatedWalkSpeed(passenger);
+        return routeDistance / walkSpeed;
+    }
+
+    private float EstimateRouteDistance(Vector3 startPosition, Vector3 destination)
+    {
+        if (facilityRoutePath != null &&
+            NavMesh.CalculatePath(startPosition, destination, NavMesh.AllAreas, facilityRoutePath) &&
+            facilityRoutePath.status == NavMeshPathStatus.PathComplete)
+        {
+            return GetPathLength(facilityRoutePath);
+        }
+
+        Vector3 flatOffset = destination - startPosition;
+        flatOffset.y = 0f;
+        return flatOffset.magnitude;
+    }
+
+    private float GetPathLength(NavMeshPath path)
+    {
+        if (path == null || path.corners == null || path.corners.Length < 2)
+        {
+            return 0f;
+        }
+
+        float distance = 0f;
+        for (int i = 1; i < path.corners.Length; i++)
+        {
+            distance += Vector3.Distance(path.corners[i - 1], path.corners[i]);
+        }
+
+        return distance;
+    }
+
+    private float GetEstimatedWalkSpeed(Passenger passenger)
+    {
+        if (passenger != null && passenger.navAgent != null)
+        {
+            return Mathf.Max(0.1f, passenger.navAgent.speed);
+        }
+
+        return FallbackPassengerWalkSpeed;
+    }
+
+    private Vector3 GetEstimatedQueueTargetPosition(QueuableObject target, Passenger passenger)
+    {
+        if (target == null)
+        {
+            return passenger != null ? passenger.transform.position : Vector3.zero;
+        }
+
+        if (target.queueLineMode == QueueLineMode.StoppingDistance)
+        {
+            return target.transform.position + (target.transform.forward * target.stoppingDistanceTargetDistance);
+        }
+
+        int queueIndex = target.PeopleOnWay != null ? target.PeopleOnWay.Count : 0;
+        if (target.queueStyle == QueueStyle.FrontOnly)
+        {
+            float distance = target.baseDistance + (queueIndex * target.queueSpacing);
+            return target.transform.position + (target.transform.forward * distance);
+        }
+
+        int side = passenger != null ? Mathf.Abs(passenger.GetInstanceID()) % 4 : queueIndex % 4;
+        int depth = 0;
+
+        if (target.PeopleOnWay != null && passenger != null)
+        {
+            for (int i = 0; i < target.PeopleOnWay.Count; i++)
+            {
+                Person queuedPerson = target.PeopleOnWay[i];
+                if (queuedPerson != null && Mathf.Abs(queuedPerson.GetInstanceID()) % 4 == side)
+                {
+                    depth++;
+                }
+            }
+        }
+        else
+        {
+            depth = queueIndex / 4;
+        }
+
+        Vector3 direction = target.transform.forward;
+        switch (side)
+        {
+            case 0:
+                direction = target.transform.forward;
+                break;
+            case 1:
+                direction = target.transform.right;
+                break;
+            case 2:
+                direction = -target.transform.forward;
+                break;
+            case 3:
+                direction = -target.transform.right;
+                break;
+        }
+
+        float offsetDistance = target.baseDistance + (depth * target.queueSpacing);
+        return target.transform.position + (direction * offsetDistance);
     }
 }

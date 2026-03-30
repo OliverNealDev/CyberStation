@@ -4,7 +4,7 @@ public class Passenger : Person
 {
     public TrainService assignedTrainService;
     public float TimeToGoToPlatform;
-    [Tooltip("Maximum estimated queue wait this passenger is willing to accept for an optional service.")]
+    [Tooltip("Maximum estimated travel plus queue wait this passenger is willing to accept for an optional service.")]
     public float maxServiceWaitTime;
     
     [Header("Visuals")]
