@@ -8,7 +8,6 @@ public class HydratingObeliskController : StationFacility
 
     [Header("Visuals")]
     public SpriteRenderer facilityIcon;
-    public Color idleIconColor = Color.lightGray;
     public Color activeFacilityColor = Color.cyan;
 
     [Header("Setup & Waypoints")]
@@ -26,10 +25,8 @@ public class HydratingObeliskController : StationFacility
     {
         base.Start();
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        facilityIcon = ResolveNeedIcon(facilityIcon);
+        SetNeedIconIdle(facilityIcon);
     }
 
     public override void ProcessInteraction(Person person)
@@ -44,10 +41,7 @@ public class HydratingObeliskController : StationFacility
 
     private IEnumerator HydrationRoutine(Passenger passenger)
     {
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = activeFacilityColor;
-        }
+        SetNeedIconActive(facilityIcon, Passenger.NeedType.Thirst);
 
         for (int i = 0; i < dropletCount; i++)
         {
@@ -102,20 +96,18 @@ public class HydratingObeliskController : StationFacility
 
     protected override void DeliverService(Passenger passenger)
     {
-        if (passenger == null) return;
-
-        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Thirst, passenger);
-        EconomyManager.Instance.AddMoney(usePrice);
-
-        if (WorldSpacePromptCoordinator.Instance != null)
+        if (passenger != null)
         {
-            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green);
+            PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Thirst, passenger);
+            EconomyManager.Instance.AddMoney(usePrice);
+
+            if (WorldSpacePromptCoordinator.Instance != null)
+            {
+                WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                    "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green);
+            }
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 }

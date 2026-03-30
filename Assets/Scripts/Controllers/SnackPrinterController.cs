@@ -14,6 +14,7 @@ public class SnackPrinterController : StationFacility
     public Transform startPos;
     public Transform endPos;
     public Light printerLight;
+    public SpriteRenderer facilityIcon;
     public float passengerHeadYOffset = 3.172f;
 
     [Header("Visuals")]
@@ -32,6 +33,8 @@ public class SnackPrinterController : StationFacility
     protected override void Start()
     {
         base.Start();
+        facilityIcon = ResolveNeedIcon(facilityIcon);
+        SetNeedIconIdle(facilityIcon);
         SetLightState(false);
     }
 
@@ -68,6 +71,7 @@ public class SnackPrinterController : StationFacility
     private IEnumerator PrintRoutine(Passenger passenger)
     {
         SetLightState(true);
+        SetNeedIconActive(facilityIcon, Passenger.NeedType.Hunger);
         SpawnSnackAtStart();
 
         if (activeSnackInstance == null)
@@ -154,6 +158,7 @@ public class SnackPrinterController : StationFacility
         }
 
         SetLightState(false);
+        SetNeedIconIdle(facilityIcon);
     }
 
     private void SpawnSnackAtStart()
@@ -204,6 +209,7 @@ public class SnackPrinterController : StationFacility
     private void AbortPrint()
     {
         SetLightState(false);
+        SetNeedIconIdle(facilityIcon);
         CleanupSnackInstance();
         currentPerson = null;
         state = MachineState.Idle;

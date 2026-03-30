@@ -9,7 +9,6 @@ public class NutrientDispenserController : StationFacility
     [Header("Visuals")]
     public Transform nutrientCube;
     public SpriteRenderer facilityIcon;
-    public Color idleIconColor = Color.lightGray;
     public Color activeFacilityColor = new Color(1f, 0.64f, 0f); 
 
     [Header("Setup & Waypoints")]
@@ -27,6 +26,7 @@ public class NutrientDispenserController : StationFacility
     protected override void Start()
     {
         base.Start();
+        facilityIcon = ResolveNeedIcon(facilityIcon);
         
         if (nutrientCube != null)
         {
@@ -43,10 +43,7 @@ public class NutrientDispenserController : StationFacility
             }
         }
         
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 
     public override void ProcessInteraction(Person person)
@@ -67,10 +64,7 @@ public class NutrientDispenserController : StationFacility
             cubeRenderer.enabled = true;
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = activeFacilityColor;
-        }
+        SetNeedIconActive(facilityIcon, Passenger.NeedType.Hunger);
 
         if (nutrientCube != null && cubeRestPoint != null && cubeExtrudePoint != null)
         {
@@ -121,15 +115,16 @@ public class NutrientDispenserController : StationFacility
 
     protected override void DeliverService(Passenger passenger)
     {
-        if (passenger == null) return; 
-
-        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Hunger, passenger);
-        EconomyManager.Instance.AddMoney(usePrice);
-        
-        if (WorldSpacePromptCoordinator.Instance != null)
+        if (passenger != null)
         {
-            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green);
+            PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Hunger, passenger);
+            EconomyManager.Instance.AddMoney(usePrice);
+            
+            if (WorldSpacePromptCoordinator.Instance != null)
+            {
+                WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                    "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green);
+            }
         }
 
         if (nutrientCube != null)
@@ -138,9 +133,6 @@ public class NutrientDispenserController : StationFacility
             if (cubeRestPoint != null) nutrientCube.position = cubeRestPoint.position; 
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 }

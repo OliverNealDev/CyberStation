@@ -15,6 +15,11 @@ public enum FacilityType
 
 public abstract class StationFacility : QueuableObject 
 {
+    protected static readonly Color IdleNeedIconColor = Color.white;
+    protected static readonly Color HungerNeedIconColor = new Color(1f, 0.64f, 0f);
+    protected static readonly Color ThirstNeedIconColor = Color.cyan;
+    protected static readonly Color HygieneNeedIconColor = new Color(1f, 0.41f, 0.71f);
+
     [Header("Facility Settings")]
     [Tooltip("Select what kind of machine this is from the dropdown!")]
     public FacilityType facilityType; 
@@ -86,6 +91,59 @@ public abstract class StationFacility : QueuableObject
     {
         int queuedCount = Mathf.Max(PeopleOnWay.Count, currentPerson != null ? 1 : 0);
         return queuedCount * EstimatedServiceDuration;
+    }
+
+    protected void SetNeedIconIdle(SpriteRenderer icon)
+    {
+        if (icon != null)
+        {
+            icon.color = IdleNeedIconColor;
+        }
+    }
+
+    protected void SetNeedIconActive(SpriteRenderer icon, Passenger.NeedType needType)
+    {
+        if (icon != null)
+        {
+            icon.color = GetNeedIconColor(needType);
+        }
+    }
+
+    protected SpriteRenderer ResolveNeedIcon(SpriteRenderer assignedIcon)
+    {
+        if (assignedIcon != null)
+        {
+            return assignedIcon;
+        }
+
+        foreach (Transform child in GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == "NeedIcon")
+            {
+                SpriteRenderer resolvedIcon = child.GetComponentInChildren<SpriteRenderer>(true);
+                if (resolvedIcon != null)
+                {
+                    return resolvedIcon;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected Color GetNeedIconColor(Passenger.NeedType needType)
+    {
+        switch (needType)
+        {
+            case Passenger.NeedType.Hunger:
+                return HungerNeedIconColor;
+            case Passenger.NeedType.Thirst:
+                return ThirstNeedIconColor;
+            case Passenger.NeedType.Hygiene:
+                return HygieneNeedIconColor;
+            default:
+                return IdleNeedIconColor;
+        }
     }
 
     protected abstract void DeliverService(Passenger passenger);

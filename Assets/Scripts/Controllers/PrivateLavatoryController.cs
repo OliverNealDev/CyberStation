@@ -4,11 +4,10 @@ using System.Collections;
 public class PrivateLavatoryController : StationFacility
 {
     public int usePrice = 15; 
-    public override float EstimatedServiceDuration => ((minUsageTime + maxUsageTime) * 0.5f) + (doorMoveDuration * 2f);
+    public override float EstimatedServiceDuration => usageTime + (doorMoveDuration * 2f);
 
     [Header("Visuals")]
     public SpriteRenderer facilityIcon;
-    public Color idleIconColor = new Color(0.2f, 0.2f, 0.2f); 
     public Color activeFacilityColor = Color.magenta; 
 
     [Header("Door Hydraulics")]
@@ -18,22 +17,19 @@ public class PrivateLavatoryController : StationFacility
     public float doorMoveDuration = 0.8f; 
     
     [Header("Timing")]
-    public float minUsageTime = 8.0f;
-    public float maxUsageTime = 16.0f;
+    public float usageTime = 12.0f;
 
     protected override void Start()
     {
         base.Start();
+        facilityIcon = ResolveNeedIcon(facilityIcon);
 
         if (doorTransform != null && doorIdlePosition != null)
         {
             doorTransform.localPosition = doorIdlePosition.localPosition;
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 
     public override void ProcessInteraction(Person person)
@@ -49,18 +45,14 @@ public class PrivateLavatoryController : StationFacility
 
     private IEnumerator LavatoryRoutine(Passenger passenger)
     {
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = activeFacilityColor;
-        }
+        SetNeedIconActive(facilityIcon, Passenger.NeedType.Hygiene);
 
         if (doorTransform != null && doorIdlePosition != null && doorClosedPosition != null)
         {
             yield return StartCoroutine(MoveDoor(doorIdlePosition.localPosition, doorClosedPosition.localPosition));
         }
 
-        float waitTime = Random.Range(minUsageTime, maxUsageTime);
-        yield return new WaitForSeconds(waitTime);
+        yield return new WaitForSeconds(usageTime);
 
         if (doorTransform != null && doorIdlePosition != null && doorClosedPosition != null)
         {
@@ -88,20 +80,18 @@ public class PrivateLavatoryController : StationFacility
 
     protected override void DeliverService(Passenger passenger)
     {
-        if (passenger == null) return;
-
-        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Hygiene, passenger);
-        EconomyManager.Instance.AddMoney(usePrice);
-
-        if (WorldSpacePromptCoordinator.Instance != null)
+        if (passenger != null)
         {
-            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green); 
+            PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Hygiene, passenger);
+            EconomyManager.Instance.AddMoney(usePrice);
+
+            if (WorldSpacePromptCoordinator.Instance != null)
+            {
+                WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                    "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green); 
+            }
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 }

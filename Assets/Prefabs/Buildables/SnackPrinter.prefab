@@ -598,6 +598,7 @@ MonoBehaviour:
   startPos: {fileID: 8720672773387069009}
   endPos: {fileID: 7158532637798314059}
   printerLight: {fileID: 5669752677005930892}
+  facilityIcon: {fileID: 4340323422367248028}
   passengerHeadYOffset: 3.172
   idleLightIntensity: 0
   activeLightIntensity: 4

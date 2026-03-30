@@ -19,7 +19,6 @@ public class CleansingShowerController : StationFacility
     [Header("Visuals")]
     public float idleLightIntensity = 1f;
     public float activeLightIntensity = 3f;
-    public Color idleIconColor = Color.lightGray;
     public Color activeFacilityColor = Color.magenta; // The machine's native color!
 
     [Header("Shower Settings")]
@@ -35,16 +34,15 @@ public class CleansingShowerController : StationFacility
     {
         base.Start();
 
+        facilityIcon = ResolveNeedIcon(facilityIcon);
+
         if (facilityLight != null)
         {
             facilityLight.color = Color.white;
             facilityLight.intensity = idleLightIntensity;
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 
     public override void ProcessInteraction(Person person)
@@ -65,10 +63,7 @@ public class CleansingShowerController : StationFacility
             facilityLight.intensity = activeLightIntensity;
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = activeFacilityColor;
-        }
+        SetNeedIconActive(facilityIcon, Passenger.NeedType.Hygiene);
 
         float elapsed = 0f;
         float spawnTimer = 0f;
@@ -144,15 +139,16 @@ public class CleansingShowerController : StationFacility
 
     protected override void DeliverService(Passenger passenger)
     {
-        if (passenger == null) return;
-
-        PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Hygiene, passenger);
-        EconomyManager.Instance.AddMoney(usePrice);
-
-        if (WorldSpacePromptCoordinator.Instance != null)
+        if (passenger != null)
         {
-            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green); 
+            PassengerManager.Instance.MeetNeedFromTarget(Passenger.NeedType.Hygiene, passenger);
+            EconomyManager.Instance.AddMoney(usePrice);
+
+            if (WorldSpacePromptCoordinator.Instance != null)
+            {
+                WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                    "+$" + usePrice, transform.position + Vector3.up * 7f, Color.green); 
+            }
         }
 
         if (facilityLight != null)
@@ -161,9 +157,6 @@ public class CleansingShowerController : StationFacility
             facilityLight.intensity = idleLightIntensity;
         }
 
-        if (facilityIcon != null)
-        {
-            facilityIcon.color = idleIconColor;
-        }
+        SetNeedIconIdle(facilityIcon);
     }
 }
