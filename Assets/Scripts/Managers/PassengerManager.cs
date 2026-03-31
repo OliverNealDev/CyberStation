@@ -112,6 +112,7 @@ public class PassengerManager : MonoBehaviour
             tickTimer = 0f;
         }
 
+        UpdatePassengerFacing();
         UpdateLitterChecks();
         
         if (Keyboard.current.pKey.wasPressedThisFrame) 
@@ -139,15 +140,6 @@ public class PassengerManager : MonoBehaviour
                     if (!IsActivePassenger(passenger))
                     {
                         continue;
-                    }
-                    
-                    if (passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform)
-                    {
-                        if (passenger.assignedTrainService != null && passenger.assignedTrainService.assignedPlatform != null)
-                        {
-                            Vector3 lookPos = passenger.transform.position + passenger.assignedTrainService.assignedPlatform.transform.forward;
-                            passenger.FaceTarget(lookPos);
-                        }
                     }
                     break;
                 
@@ -254,11 +246,6 @@ public class PassengerManager : MonoBehaviour
                     }
 
                     UpdateQueuePosition(passenger);
-                    
-                    if (passenger.currentTarget != null)
-                    {
-                        passenger.FaceTarget(passenger.currentTarget.transform.position);
-                    }
                     break;
             }
 
@@ -446,6 +433,54 @@ public class PassengerManager : MonoBehaviour
                 SendPassengerToTrainDoor(passenger, passenger.assignedTrainService);
             }
         }
+    }
+
+    private void UpdatePassengerFacing()
+    {
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        {
+            Passenger passenger = activePassengers[i];
+            if (!TryGetFacingTarget(passenger, out Vector3 targetPosition))
+            {
+                continue;
+            }
+
+            passenger.FaceTarget(targetPosition, passenger.InteractionTurnSpeedDegreesPerSecond);
+        }
+    }
+
+    private bool TryGetFacingTarget(Passenger passenger, out Vector3 targetPosition)
+    {
+        targetPosition = default;
+
+        if (!IsActivePassenger(passenger))
+        {
+            return false;
+        }
+
+        if (passenger.currentTarget != null)
+        {
+            bool shouldFaceQueueTarget =
+                passenger.currentSubState == Passenger.passengerSubStates.InteractingWithSomething ||
+                (passenger.currentSubState == Passenger.passengerSubStates.MovingToTarget && CanUseNavAgent(passenger) && HasReachedTarget(passenger));
+
+            if (shouldFaceQueueTarget)
+            {
+                targetPosition = passenger.currentTarget.transform.position;
+                return true;
+            }
+        }
+
+        if (passenger.currentTarget == null &&
+            passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform &&
+            passenger.assignedTrainService != null &&
+            passenger.assignedTrainService.assignedPlatform != null)
+        {
+            targetPosition = passenger.assignedTrainService.assignedPlatform.GetPassengerWaitingLookTarget(passenger.transform.position);
+            return true;
+        }
+
+        return false;
     }
 
     private void HandleDisembarkingPassengerNeeds(Passenger passenger)

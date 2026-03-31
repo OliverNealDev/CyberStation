@@ -103,7 +103,7 @@ public class ExpansionMenuController : MonoBehaviour
         TextMeshProUGUI buyText = buyExpansionButton.GetComponentInChildren<TextMeshProUGUI>();
         if (buyText != null)
         {
-            buyText.text = isBuilt ? "Purchased" : "Buy Expansion";
+            buyText.text = isBuilt ? "Purchased" : $"Buy ${data.upfrontCost}";
         }
     }
     

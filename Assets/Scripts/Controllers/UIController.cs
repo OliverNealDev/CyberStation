@@ -84,18 +84,26 @@ public class UIController : MonoBehaviour
         if (cameraSwitchButton) cameraSwitchButton.onClick.AddListener(OnCameraSwitchClicked);
 
         if (buildMenuButton) buildMenuButton.onClick.AddListener(OnBuildMenuClicked);
+
+        RefreshTopBarButtonVisibility();
     }
 
     void OnEnable()
     {
         EconomyManager.OnMoneyChanged += OnMoneyChanged;
         EconomyManager.OnExpenseRecorded += OnExpenseRecorded;
+        ProgressionManager.OnProgressionChanged += RefreshTopBarButtonVisibility;
+        TrainManager.OnTrainAssignmentsChanged += RefreshTopBarButtonVisibility;
+        ExpansionManager.OnExpansionBuilt += RefreshTopBarButtonVisibility;
     }
     
     void OnDisable()
     {
         EconomyManager.OnMoneyChanged -= OnMoneyChanged;
         EconomyManager.OnExpenseRecorded -= OnExpenseRecorded;
+        ProgressionManager.OnProgressionChanged -= RefreshTopBarButtonVisibility;
+        TrainManager.OnTrainAssignmentsChanged -= RefreshTopBarButtonVisibility;
+        ExpansionManager.OnExpansionBuilt -= RefreshTopBarButtonVisibility;
     }
 
     private void TogglePanel(GameObject panelToToggle)
@@ -145,6 +153,123 @@ public class UIController : MonoBehaviour
 
     private void OnCameraSwitchClicked()
     {
+    }
+
+    private void RefreshTopBarButtonVisibility()
+    {
+        SetButtonVisible(cameraSwitchButton, false);
+        SetButtonVisible(trainMenuButton, HasUnlockedTrains(), trainPanel);
+        SetButtonVisible(buildMenuButton, HasUnlockedBuildItems(), buildPanel);
+        SetButtonVisible(staffMenuButton, HasUnlockedStaff(), staffPanel);
+        SetButtonVisible(expansionMenuButton, HasUnlockedExpansions(), expansionPanel);
+        SetButtonVisible(platformMenuButton, HasPlatformMenuFunctionality(), platformPanel);
+        SetButtonVisible(progressionMenuButton, true, progressionPanel);
+    }
+
+    private void SetButtonVisible(Button button, bool isVisible, GameObject linkedPanel = null)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        if (!isVisible && linkedPanel != null && currentActivePanel == linkedPanel)
+        {
+            CloseAllPanels();
+        }
+
+        if (button.gameObject.activeSelf != isVisible)
+        {
+            button.gameObject.SetActive(isVisible);
+        }
+    }
+
+    private bool HasUnlockedBuildItems()
+    {
+        ObjectBuildable[] buildItems = Resources.LoadAll<ObjectBuildable>("BuildItems");
+        if (buildItems == null || buildItems.Length == 0)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < buildItems.Length; i++)
+        {
+            if (buildItems[i] != null &&
+                (ProgressionManager.Instance == null || ProgressionManager.Instance.IsUnlocked(buildItems[i])))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasUnlockedTrains()
+    {
+        Train[] trains = Resources.LoadAll<Train>("Trains");
+        if (trains == null || trains.Length == 0)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < trains.Length; i++)
+        {
+            if (trains[i] != null &&
+                (ProgressionManager.Instance == null || ProgressionManager.Instance.IsUnlocked(trains[i])))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasUnlockedStaff()
+    {
+        StaffMember[] staffMembers = Resources.LoadAll<StaffMember>("Staff");
+        if (staffMembers == null || staffMembers.Length == 0)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < staffMembers.Length; i++)
+        {
+            if (staffMembers[i] != null &&
+                (ProgressionManager.Instance == null || ProgressionManager.Instance.IsUnlocked(staffMembers[i])))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasUnlockedExpansions()
+    {
+        Expansion[] expansions = Resources.LoadAll<Expansion>("Expansions");
+        if (expansions == null || expansions.Length == 0)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < expansions.Length; i++)
+        {
+            if (expansions[i] != null &&
+                (ProgressionManager.Instance == null || ProgressionManager.Instance.IsUnlocked(expansions[i])))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasPlatformMenuFunctionality()
+    {
+        return HasUnlockedTrains() &&
+               TrainManager.Instance != null &&
+               TrainManager.Instance.activePlatforms != null &&
+               TrainManager.Instance.activePlatforms.Count > 0;
     }
 
     public void CloseAllPanels()

@@ -102,17 +102,17 @@ public abstract class Person : MonoBehaviour
         StartCoroutine(ExecuteAfterDelay(duration, () => DestroyPersonalCanvas(person)));
     }
     
-    public void FaceTarget(Vector3 targetPosition)
+    public void FaceTarget(Vector3 targetPosition, float rotationSpeedDegreesPerSecond = 180f, float deltaTime = -1f)
     {
-        Vector3 direction = (targetPosition - transform.position).normalized;
-        
-        direction.y = 0; 
+        Vector3 direction = targetPosition - transform.position;
+        direction.y = 0f;
 
-        if (direction != Vector3.zero)
+        if (direction.sqrMagnitude > 0.0001f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime);
+            Quaternion targetRotation = Quaternion.LookRotation(direction.normalized);
+            float appliedDeltaTime = deltaTime >= 0f ? deltaTime : Time.deltaTime;
+            float maxDegreesDelta = Mathf.Max(0f, rotationSpeedDegreesPerSecond) * appliedDeltaTime;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, maxDegreesDelta);
         }
     }
     

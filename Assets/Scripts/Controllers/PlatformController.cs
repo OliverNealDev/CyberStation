@@ -85,4 +85,23 @@ public class PlatformController : MonoBehaviour
 
         return new Vector3(randomX, 0, randomZ);
     }
+
+    public Vector3 GetPassengerWaitingLookTarget(Vector3 passengerPosition)
+    {
+        Vector3 facingDirection = transform.forward;
+
+        if (trainStopPoint != null)
+        {
+            facingDirection = trainStopPoint.right;
+        }
+
+        facingDirection.y = 0f;
+
+        if (facingDirection.sqrMagnitude < 0.0001f)
+        {
+            facingDirection = Vector3.forward;
+        }
+
+        return passengerPosition + facingDirection.normalized;
+    }
 }

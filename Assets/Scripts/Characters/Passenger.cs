@@ -5,6 +5,12 @@ public class Passenger : Person
 {
     public TrainService assignedTrainService;
     public float TimeToGoToPlatform;
+
+    [Header("Movement")]
+    [SerializeField] [Min(0.1f)] private float moveSpeed = 3.5f;
+    [Tooltip("NavMeshAgent acceleration controls both speeding up and how firmly passengers brake.")]
+    [SerializeField] [Min(0.1f)] private float movementAcceleration = 18f;
+    [SerializeField] [Min(0f)] private float interactionTurnSpeedDegreesPerSecond = 360f;
     
     [Header("Visuals")]
     [Tooltip("Assign the specific MeshRenderer (e.g. Visor, ID Badge) that should glow with the Hue color.")]
@@ -47,12 +53,21 @@ public class Passenger : Person
     
     public enum NeedType { None, Ticket, Hunger, Thirst, Energy, Hygiene }
 
+    public float InteractionTurnSpeedDegreesPerSecond => interactionTurnSpeedDegreesPerSecond;
+
     protected override void OnTick(float tickLength) { }
 
     protected override void Awake()
     {
         base.Awake();
         potentialLitterables.Clear();
+
+        if (navAgent != null)
+        {
+            navAgent.speed = moveSpeed;
+            navAgent.acceleration = movementAcceleration;
+            navAgent.autoBraking = true;
+        }
     }
 
     public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked, bool requireAtLeastOne = false)

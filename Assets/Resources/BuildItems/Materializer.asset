@@ -19,5 +19,5 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 8727649448683996293, guid: ab3849390d0f01848b09c052b4469ed3, type: 3}
   cost: 300
-  size: {x: 3, y: 3}
+  size: {x: 4, y: 4}
   decorationStrength: 0

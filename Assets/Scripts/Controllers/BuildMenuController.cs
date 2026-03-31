@@ -27,6 +27,7 @@ public class BuildMenuController : MonoBehaviour
     void OnEnable()
     {
         ProgressionManager.OnProgressionChanged += LoadItems;
+        BuildController.OnBuildablesChanged += HandleBuildablesChanged;
         LoadItems();
         if (selectedBuildItem != null)
         {
@@ -37,6 +38,7 @@ public class BuildMenuController : MonoBehaviour
     void OnDisable()
     {
         ProgressionManager.OnProgressionChanged -= LoadItems;
+        BuildController.OnBuildablesChanged -= HandleBuildablesChanged;
     }
 
     void Update()
@@ -62,7 +64,7 @@ public class BuildMenuController : MonoBehaviour
             return;
         }
 
-        System.Array.Sort(buildItems, (a, b) => a.cost.CompareTo(b.cost));
+        System.Array.Sort(buildItems, (a, b) => BuildController.GetBuildCost(a).CompareTo(BuildController.GetBuildCost(b)));
 
         foreach (var item in buildItems)
         {
@@ -101,7 +103,17 @@ public class BuildMenuController : MonoBehaviour
         if (detailIcon) detailIcon.sprite = data.GetIcon();
         if (detailName) detailName.text = data.objectName;
         if (detailDescription) detailDescription.text = data.description;
-        if (detailCost) detailCost.text = "$" + data.cost;
+        if (detailCost) detailCost.text = "$" + BuildController.GetBuildCost(data);
+    }
+
+    private void HandleBuildablesChanged()
+    {
+        LoadItems();
+
+        if (selectedBuildItem != null)
+        {
+            UpdateDetailView(selectedBuildItem);
+        }
     }
 
     public void ActivateDemolishMode()

@@ -9,9 +9,9 @@ public class PlacedBuildable : MonoBehaviour
 
     public bool HasDecoration => decorationStrength > 0f;
 
-    public void Initialize(ObjectBuildable buildable, Vector2Int position, Vector2Int buildSize)
+    public void Initialize(ObjectBuildable buildable, Vector2Int position, Vector2Int buildSize, int placedCost)
     {
-        cost = buildable != null ? buildable.cost : 0;
+        cost = Mathf.Max(0, placedCost);
         gridPos = position;
         size = buildSize;
         decorationStrength = buildable != null ? Mathf.Max(0f, buildable.decorationStrength) : 0f;

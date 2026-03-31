@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -7,6 +8,9 @@ using UnityEngine.UI;
 public class BuildController : MonoBehaviour
 {
     public static BuildController Instance;
+    public static event Action OnBuildablesChanged;
+
+    private const int MaterializerCostMultiplier = 10;
 
     public Material gridMaterial;
     public Material plainMaterial;
@@ -76,6 +80,7 @@ public class BuildController : MonoBehaviour
     private GameObject demolishHighlightBox;
 
     private int objectRotation = 0; 
+    private int placedMaterializerCount;
     private float defaultHighlightHeight = 5f;
     private Vector2Int currentPreviewGridPos;
     private Vector2Int currentPreviewSize = Vector2Int.one;
@@ -91,6 +96,7 @@ public class BuildController : MonoBehaviour
     {
         UpdateFlooringMaterials(_isBuildingMode || _isDemolishMode);
         CreateDemolishHighlightBox();
+        RefreshPlacedMaterializerCount();
     }
 
     void Update()
@@ -117,10 +123,17 @@ public class BuildController : MonoBehaviour
 
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOverUI() && currentDemolishTarget != null)
             {
+                bool removedMaterializer = IsPlacedMaterializer(currentDemolishTarget);
                 EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
                 GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
                 Destroy(currentDemolishTarget.gameObject);
                 SoundEffectController.Play(SoundEffectId.Demolish);
+
+                if (removedMaterializer)
+                {
+                    placedMaterializerCount = Mathf.Max(0, placedMaterializerCount - 1);
+                    NotifyBuildablesChanged();
+                }
                 
                 currentDemolishTarget = null;
                 demolishHighlightBox.SetActive(false);
@@ -182,26 +195,33 @@ public class BuildController : MonoBehaviour
             return;
         }
 
-        if (EconomyManager.Instance == null || EconomyManager.Instance.money < objectBuildable.cost)
+        int buildCost = GetBuildCost(objectBuildable);
+        if (EconomyManager.Instance == null || EconomyManager.Instance.money < buildCost)
         {
             SoundEffectController.Play(SoundEffectId.BuildInvalid);
             return;
         }
 
-        EconomyManager.Instance.SpendMoney(objectBuildable.cost);
+        EconomyManager.Instance.SpendMoney(buildCost);
         
         GameObject placedObject = Instantiate(selectedPreviewObject, previewObjectInstance.transform.position, previewObjectInstance.transform.rotation);
         PreviewableObject previewableObject = placedObject.GetComponent<PreviewableObject>();
         if (previewableObject != null)
         {
-            previewableObject.ExitPreviewMode(objectBuildable.cost);
+            previewableObject.ExitPreviewMode(buildCost);
         }
         
         PlacedBuildable pb = placedObject.AddComponent<PlacedBuildable>();
-        pb.Initialize(objectBuildable, currentPreviewGridPos, currentPreviewSize);
+        pb.Initialize(objectBuildable, currentPreviewGridPos, currentPreviewSize, buildCost);
 
         GridManager.Instance.OccupyArea(currentPreviewGridPos.x, currentPreviewGridPos.y, currentPreviewSize.x, currentPreviewSize.y);
         SoundEffectController.Play(SoundEffectId.BuildPlaced);
+
+        if (IsMaterializerBuildable(objectBuildable))
+        {
+            placedMaterializerCount++;
+            NotifyBuildablesChanged();
+        }
 
         if (ProgressionManager.Instance != null)
         {
@@ -478,6 +498,49 @@ public class BuildController : MonoBehaviour
         public Vector2Int size;
         public float surfaceY;
         public bool isValid;
+    }
+
+    public static int GetBuildCost(ObjectBuildable buildable)
+    {
+        if (buildable == null)
+        {
+            return 0;
+        }
+
+        int baseCost = Mathf.Max(0, buildable.cost);
+        if (!IsMaterializerBuildable(buildable))
+        {
+            return baseCost;
+        }
+
+        return HasPlacedMaterializer() ? baseCost * MaterializerCostMultiplier : baseCost;
+    }
+
+    private static bool IsMaterializerBuildable(ObjectBuildable buildable)
+    {
+        return buildable != null &&
+               buildable.prefab != null &&
+               buildable.prefab.GetComponent<MaterializerController>() != null;
+    }
+
+    private static bool HasPlacedMaterializer()
+    {
+        return Instance != null && Instance.placedMaterializerCount > 0;
+    }
+
+    private static bool IsPlacedMaterializer(PlacedBuildable buildable)
+    {
+        return buildable != null && buildable.GetComponent<MaterializerController>() != null;
+    }
+
+    private void RefreshPlacedMaterializerCount()
+    {
+        placedMaterializerCount = FindObjectsByType<MaterializerController>(FindObjectsSortMode.None).Length;
+    }
+
+    private void NotifyBuildablesChanged()
+    {
+        OnBuildablesChanged?.Invoke();
     }
 }
 
