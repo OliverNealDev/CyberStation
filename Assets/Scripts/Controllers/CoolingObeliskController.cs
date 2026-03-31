@@ -4,9 +4,9 @@ public class CoolingObeliskController : StationFacility
 {
     public int usePrice = 2;
     
-    void Start()
+    protected override void Start()
     {
-        FacilityManager.Instance.RegisterFacility(this);
+        base.Start();
     }
 
     protected override void DeliverService(Passenger passenger)

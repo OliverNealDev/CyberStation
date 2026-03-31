@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ public enum FacilityType
 
 public abstract class StationFacility : QueuableObject 
 {
+    private const float QueueReshuffleIntervalSeconds = 5f;
+
     protected static readonly Color IdleNeedIconColor = Color.white;
     protected static readonly Color HungerNeedIconColor = new Color(1f, 0.64f, 0f);
     protected static readonly Color ThirstNeedIconColor = Color.cyan;
@@ -45,6 +48,8 @@ public abstract class StationFacility : QueuableObject
         {
             FacilityManager.Instance.RegisterFacility(this);
         }
+
+        StartCoroutine(QueueReshuffleLoop());
     }
 
     protected virtual void OnDestroy()
@@ -104,6 +109,74 @@ public abstract class StationFacility : QueuableObject
     {
         int queuedCount = Mathf.Max(PeopleOnWay.Count, currentPerson != null ? 1 : 0);
         return queuedCount * EstimatedServiceDuration;
+    }
+
+    private IEnumerator QueueReshuffleLoop()
+    {
+        WaitForSeconds delay = new WaitForSeconds(QueueReshuffleIntervalSeconds);
+
+        while (true)
+        {
+            yield return delay;
+            ReshuffleQueue();
+        }
+    }
+
+    private void ReshuffleQueue()
+    {
+        if (PeopleOnWay == null || PeopleOnWay.Count < 2)
+        {
+            return;
+        }
+
+        PeopleOnWay.RemoveAll(person => person == null);
+        if (PeopleOnWay.Count < 2)
+        {
+            return;
+        }
+
+        Person processingPerson = currentPerson;
+        bool keepProcessingPersonAtFront = processingPerson != null && PeopleOnWay.Remove(processingPerson);
+        Vector3 queueFrontPosition = GetQueueFrontPosition();
+
+        PeopleOnWay.Sort((left, right) =>
+        {
+            float leftDistance = GetFlatDistanceSqr(left, queueFrontPosition);
+            float rightDistance = GetFlatDistanceSqr(right, queueFrontPosition);
+            return leftDistance.CompareTo(rightDistance);
+        });
+
+        if (keepProcessingPersonAtFront)
+        {
+            PeopleOnWay.Insert(0, processingPerson);
+        }
+    }
+
+    private Vector3 GetQueueFrontPosition()
+    {
+        if (queueLineMode == QueueLineMode.StoppingDistance)
+        {
+            return transform.position + (transform.forward * stoppingDistanceTargetDistance);
+        }
+
+        if (queueStyle == QueueStyle.FrontOnly)
+        {
+            return transform.position + (transform.forward * baseDistance);
+        }
+
+        return transform.position;
+    }
+
+    private float GetFlatDistanceSqr(Person person, Vector3 targetPosition)
+    {
+        if (person == null)
+        {
+            return Mathf.Infinity;
+        }
+
+        Vector3 offset = person.transform.position - targetPosition;
+        offset.y = 0f;
+        return offset.sqrMagnitude;
     }
 
     protected void SetNeedIconIdle(SpriteRenderer icon)

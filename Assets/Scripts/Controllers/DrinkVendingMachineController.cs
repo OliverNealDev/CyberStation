@@ -4,9 +4,9 @@ public class DrinkVendingMachineController : StationFacility
 {
     public int drinkPrice = 1;
     
-    void Start()
+    protected override void Start()
     {
-        FacilityManager.Instance.RegisterFacility(this);
+        base.Start();
     }
 
     protected override void DeliverService(Passenger passenger)
