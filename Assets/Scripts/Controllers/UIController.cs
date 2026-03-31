@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
@@ -104,6 +105,25 @@ public class UIController : MonoBehaviour
         ProgressionManager.OnProgressionChanged -= RefreshTopBarButtonVisibility;
         TrainManager.OnTrainAssignmentsChanged -= RefreshTopBarButtonVisibility;
         ExpansionManager.OnExpansionBuilt -= RefreshTopBarButtonVisibility;
+    }
+
+    void Update()
+    {
+        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            return;
+        }
+
+        if (trainSelectionPopup != null && trainSelectionPopup.activeSelf)
+        {
+            CloseTrainSelectionPopup();
+            return;
+        }
+
+        if (currentActivePanel != null)
+        {
+            CloseAllPanels();
+        }
     }
 
     private void TogglePanel(GameObject panelToToggle)
@@ -299,6 +319,12 @@ public class UIController : MonoBehaviour
     public void CloseTrainSelectionPopup()
     {
         if (trainSelectionPopup) trainSelectionPopup.SetActive(false);
+
+        if (TrainManager.Instance != null)
+        {
+            TrainManager.Instance.pendingPlatform = null;
+            TrainManager.Instance.pendingSlot = -1;
+        }
     }
 
     private void OnDestroy()
