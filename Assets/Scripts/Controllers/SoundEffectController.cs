@@ -27,20 +27,29 @@ public class SoundEffectController : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private AudioClip buttonHoverClip;
+    [SerializeField, Range(0f, 1f)] private float buttonHoverVolume = 0.45f;
     [SerializeField] private AudioClip buttonClickClip;
+    [SerializeField, Range(0f, 1f)] private float buttonClickVolume = 0.7f;
 
     [Header("Build")]
     [SerializeField] private AudioClip buildPlacedClip;
+    [SerializeField, Range(0f, 1f)] private float buildPlacedVolume = 1f;
     [SerializeField] private AudioClip buildInvalidClip;
+    [SerializeField, Range(0f, 1f)] private float buildInvalidVolume = 1f;
     [SerializeField] private AudioClip demolishClip;
+    [SerializeField, Range(0f, 1f)] private float demolishVolume = 1f;
 
     [Header("Progression")]
     [SerializeField] private AudioClip tierUpClip;
+    [SerializeField, Range(0f, 1f)] private float tierUpVolume = 1f;
 
     [Header("Station")]
     [SerializeField] private AudioClip trainApproachingClip;
+    [SerializeField, Range(0f, 1f)] private float trainApproachingVolume = 1f;
     [SerializeField] private AudioClip billChargedClip;
+    [SerializeField, Range(0f, 1f)] private float billChargedVolume = 0.85f;
     [SerializeField] private AudioClip hireAndroidClip;
+    [SerializeField, Range(0f, 1f)] private float hireAndroidVolume = 1f;
 
     private AudioSource audioSource;
     private Coroutine buttonScanCoroutine;
@@ -182,11 +191,23 @@ public class SoundEffectController : MonoBehaviour
         switch (effectId)
         {
             case SoundEffectId.ButtonHover:
-                return 0.45f;
+                return Mathf.Clamp01(buttonHoverVolume);
             case SoundEffectId.ButtonClick:
-                return 0.7f;
+                return Mathf.Clamp01(buttonClickVolume);
+            case SoundEffectId.BuildPlaced:
+                return Mathf.Clamp01(buildPlacedVolume);
+            case SoundEffectId.BuildInvalid:
+                return Mathf.Clamp01(buildInvalidVolume);
+            case SoundEffectId.Demolish:
+                return Mathf.Clamp01(demolishVolume);
+            case SoundEffectId.TierUp:
+                return Mathf.Clamp01(tierUpVolume);
+            case SoundEffectId.TrainApproaching:
+                return Mathf.Clamp01(trainApproachingVolume);
             case SoundEffectId.BillCharged:
-                return 0.85f;
+                return Mathf.Clamp01(billChargedVolume);
+            case SoundEffectId.HireAndroid:
+                return Mathf.Clamp01(hireAndroidVolume);
             default:
                 return 1f;
         }

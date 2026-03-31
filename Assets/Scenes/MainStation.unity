@@ -1374,8 +1374,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 513557810}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.24833333}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -2406,9 +2406,9 @@ RectTransform:
   m_Father: {fileID: 507087906}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: -17}
+  m_SizeDelta: {x: 20, y: 0}
   m_Pivot: {x: 1, y: 1}
 --- !u!114 &165958941
 MonoBehaviour:
@@ -7805,7 +7805,7 @@ RectTransform:
   m_Father: {fileID: 1157928042}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -8861,7 +8861,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &509636527
 RectTransform:
   m_ObjectHideFlags: 0
@@ -17675,14 +17675,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundEffectController
   buttonHoverClip: {fileID: 0}
+  buttonHoverVolume: 0.45
   buttonClickClip: {fileID: 8300000, guid: 518e18bac835604429a9d4ba4e7e1c01, type: 3}
+  buttonClickVolume: 0.7
   buildPlacedClip: {fileID: 8300000, guid: 14368dc9367362c4fac500c6bf1ec7ca, type: 3}
+  buildPlacedVolume: 1
   buildInvalidClip: {fileID: 8300000, guid: 7843eedb28f913442930ac9faaa75afb, type: 3}
-  demolishClip: {fileID: 0}
-  tierUpClip: {fileID: 0}
+  buildInvalidVolume: 1
+  demolishClip: {fileID: 8300000, guid: 458e8e86d61d9904da1516394947df16, type: 3}
+  demolishVolume: 0.5
+  tierUpClip: {fileID: 8300000, guid: acad10ed01619244490e9fec24a456cc, type: 3}
+  tierUpVolume: 0.5
   trainApproachingClip: {fileID: 0}
-  billChargedClip: {fileID: 0}
-  hireAndroidClip: {fileID: 0}
+  trainApproachingVolume: 1
+  billChargedClip: {fileID: 8300000, guid: c402172e3698da149b53a9ba7a7feaab, type: 3}
+  billChargedVolume: 0.5
+  hireAndroidClip: {fileID: 8300000, guid: c59445ce897d7ad438db261f84d3f530, type: 3}
+  hireAndroidVolume: 0.5
 --- !u!1 &866386856
 GameObject:
   m_ObjectHideFlags: 0
@@ -19625,9 +19634,9 @@ RectTransform:
   m_Father: {fileID: 507087906}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: 20}
+  m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &969794615
 MonoBehaviour:
@@ -24310,7 +24319,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1230264478
 RectTransform:
   m_ObjectHideFlags: 0
@@ -48960,9 +48969,9 @@ RectTransform:
   m_Father: {fileID: 507087906}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -17, y: -17}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2147477613
 MonoBehaviour:
