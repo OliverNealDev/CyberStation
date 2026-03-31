@@ -27,6 +27,9 @@ public abstract class StationFacility : QueuableObject
     [Header("Litter")]
     public List<GameObject> potentialLitterPrefabs = new List<GameObject>();
 
+    [Header("Queue Capacity")]
+    [SerializeField] private int passengerQueueCapacity = 6;
+
     public Person currentPerson;
     
     public enum MachineState { Idle, Processing }
@@ -34,6 +37,7 @@ public abstract class StationFacility : QueuableObject
     
     public override bool IsAvailable => state == MachineState.Idle;
     public virtual float EstimatedServiceDuration => 3f;
+    public int PassengerQueueCapacity => Mathf.Max(1, passengerQueueCapacity);
 
     protected virtual void Start()
     {
@@ -51,6 +55,11 @@ public abstract class StationFacility : QueuableObject
         {
             FacilityManager.Instance.DeregisterFacility(this);
         }
+    }
+
+    public override bool CanAcceptPerson(Person person)
+    {
+        return person != null && (PeopleOnWay.Contains(person) || PeopleOnWay.Count < PassengerQueueCapacity);
     }
 
     public override void ProcessInteraction(Person person)

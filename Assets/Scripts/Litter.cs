@@ -11,12 +11,14 @@ public class Litter : MonoBehaviour
     [SerializeField] private GameObject interactablePromptPrefab;
     [SerializeField] private float manualCleanHoldDuration = 3f;
     [SerializeField] private float manualCleanShrinkDuration = 0.2f;
+    [SerializeField] private float manualCleanMaxCursorDistance = 4f;
     [SerializeField] private string hoverPromptText = "Hold LMB to Clean";
     [SerializeField] private float hoverPromptHeight = 1.1f;
     [SerializeField] private float fallbackColliderRadius = 0.7f;
 
     private static Litter hoveredLitter;
     private static int hoveredLitterFrame = -1;
+    private static Litter heldLitter;
 
     private float heldCleanTime;
     private bool isCleaning;
@@ -40,8 +42,16 @@ public class Litter : MonoBehaviour
 
     private void Update()
     {
+        bool isHeldByPlayer = !isCleaning && IsHeldByPlayer();
         bool isHovered = !isCleaning && IsHoveredByPlayer();
-        bool canShowPrompt = isHovered && UpdatePromptScreenPosition();
+
+        if (!isHeldByPlayer && isHovered && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            heldLitter = this;
+            isHeldByPlayer = true;
+        }
+
+        bool canShowPrompt = (isHovered || isHeldByPlayer) && UpdatePromptScreenPosition();
         SetPromptVisible(canShowPrompt);
 
         if (!canShowPrompt)
@@ -51,7 +61,7 @@ public class Litter : MonoBehaviour
             return;
         }
 
-        if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+        if (isHeldByPlayer && Mouse.current != null && Mouse.current.leftButton.isPressed)
         {
             heldCleanTime += Time.deltaTime;
             UpdatePromptText(GetCountdownPromptText());
@@ -69,6 +79,11 @@ public class Litter : MonoBehaviour
 
     private void OnDisable()
     {
+        if (heldLitter == this)
+        {
+            heldLitter = null;
+        }
+
         SetPromptVisible(false);
     }
 
@@ -82,6 +97,11 @@ public class Litter : MonoBehaviour
         if (hoveredLitter == this)
         {
             hoveredLitter = null;
+        }
+
+        if (heldLitter == this)
+        {
+            heldLitter = null;
         }
     }
 
@@ -100,6 +120,10 @@ public class Litter : MonoBehaviour
     {
         isCleaning = true;
         heldCleanTime = 0f;
+        if (heldLitter == this)
+        {
+            heldLitter = null;
+        }
         SetPromptVisible(false);
         SetCollidersEnabled(false);
 
@@ -127,6 +151,60 @@ public class Litter : MonoBehaviour
     {
         RefreshHoveredLitter();
         return hoveredLitter == this;
+    }
+
+    private bool IsHeldByPlayer()
+    {
+        if (heldLitter != this)
+        {
+            return false;
+        }
+
+        if (Mouse.current == null || !Mouse.current.leftButton.isPressed || !IsCursorWithinManualCleanDistance())
+        {
+            heldLitter = null;
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsCursorWithinManualCleanDistance()
+    {
+        if (Camera.main == null || Mouse.current == null)
+        {
+            return false;
+        }
+
+        float maxCursorDistance = Mathf.Max(0f, manualCleanMaxCursorDistance);
+        if (maxCursorDistance <= 0f)
+        {
+            return true;
+        }
+
+        Ray cursorRay = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Vector3 litterPoint = GetManualCleanAnchorPoint();
+        Vector3 rayToPoint = litterPoint - cursorRay.origin;
+        float projectedDistance = Mathf.Max(0f, Vector3.Dot(rayToPoint, cursorRay.direction));
+        Vector3 closestPointOnRay = cursorRay.origin + (cursorRay.direction * projectedDistance);
+        return Vector3.Distance(litterPoint, closestPointOnRay) <= maxCursorDistance;
+    }
+
+    private Vector3 GetManualCleanAnchorPoint()
+    {
+        Collider[] colliders = GetComponentsInChildren<Collider>(true);
+        if (colliders.Length > 0)
+        {
+            Bounds combinedBounds = colliders[0].bounds;
+            for (int i = 1; i < colliders.Length; i++)
+            {
+                combinedBounds.Encapsulate(colliders[i].bounds);
+            }
+
+            return combinedBounds.center;
+        }
+
+        return transform.position;
     }
 
     private static void RefreshHoveredLitter()

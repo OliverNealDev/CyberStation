@@ -17,14 +17,17 @@ public class PassengerManager : MonoBehaviour
 
     [Header("Littering")]
     [Min(0f)] public float litterCheckInterval = 8f;
-    [Min(1)] public int litterPassengerSampleCount = 3;
+    public int litterPassengerSampleCount = 3;
     [Range(0f, 1f)] public float litterDropChancePerSample = 0.2f;
 
+    [Header("Litter Placement")]
+    [Min(0f)] public float litterOverlapDistance = 0.8f;
+
     [Header("Need Unlock Tiers")]
-    [Min(1)] public int hungerNeedStartTier = 1;
-    [Min(1)] public int thirstNeedStartTier = 1;
-    [Min(1)] public int energyNeedStartTier = 999;
-    [Min(1)] public int hygieneNeedStartTier = 1;
+    public int hungerNeedStartTier = 1;
+    public int thirstNeedStartTier = 1;
+    public int energyNeedStartTier = 999;
+    public int hygieneNeedStartTier = 1;
     [Range(0f, 1f)] public float disembarkingFacilityUsageChance = 0.5f;
 
     [Header("Need Warning UI")]
@@ -666,7 +669,44 @@ public class PassengerManager : MonoBehaviour
             return false;
         }
 
-        litterPosition = hit.point + (Vector3.up * 0.02f);
+        Vector3 candidatePosition = hit.point + (Vector3.up * 0.02f);
+        if (!IsLitterPositionAvailable(candidatePosition))
+        {
+            litterPosition = default;
+            return false;
+        }
+
+        litterPosition = candidatePosition;
+        return true;
+    }
+
+    private bool IsLitterPositionAvailable(Vector3 candidatePosition)
+    {
+        float overlapDistance = Mathf.Max(0f, litterOverlapDistance);
+        if (overlapDistance <= 0f)
+        {
+            return true;
+        }
+
+        float overlapDistanceSqr = overlapDistance * overlapDistance;
+        Litter[] activeLitter = FindObjectsByType<Litter>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        for (int i = 0; i < activeLitter.Length; i++)
+        {
+            Litter litter = activeLitter[i];
+            if (litter == null)
+            {
+                continue;
+            }
+
+            Vector3 flatOffset = litter.transform.position - candidatePosition;
+            flatOffset.y = 0f;
+            if (flatOffset.sqrMagnitude < overlapDistanceSqr)
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -1119,9 +1159,13 @@ public class PassengerManager : MonoBehaviour
     {
         if (bestMachine != null)
         {
+            if (!bestMachine.AssignPerson(passenger))
+            {
+                return false;
+            }
+
             passenger.currentTarget = bestMachine;
             passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
-            passenger.currentTarget.AssignPerson(passenger);
                             
             Vector3 targetPosition = bestMachine.GetQueuePositionFor(passenger);
                             
@@ -1654,7 +1698,7 @@ public class PassengerManager : MonoBehaviour
         for (int i = 0; i < facilities.Count; i++)
         {
             StationFacility facility = facilities[i];
-            if (facility == null)
+            if (facility == null || !facility.CanAcceptPerson(passenger))
             {
                 continue;
             }

@@ -48575,8 +48575,9 @@ MonoBehaviour:
   passengerPrefab: {fileID: 2991288983431714229, guid: d457faba8c381e94dbc79fdd56f74a28, type: 3}
   materializers: []
   litterCheckInterval: 1
-  litterPassengerSampleCount: 10
-  litterDropChancePerSample: 1
+  litterPassengerSampleCount: 5
+  litterDropChancePerSample: 0.05
+  litterOverlapDistance: 0.8
   hungerNeedStartTier: 3
   thirstNeedStartTier: 2
   energyNeedStartTier: 999

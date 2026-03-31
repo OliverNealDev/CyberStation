@@ -40,9 +40,30 @@ public abstract class QueuableObject : MonoBehaviour
 
     public List<Person> PeopleOnWay = new List<Person>();
 
-    public virtual void AssignPerson(Person person)
+    public virtual bool CanAcceptPerson(Person person)
     {
-        if (!PeopleOnWay.Contains(person)) PeopleOnWay.Add(person);
+        return person != null && !PeopleOnWay.Contains(person);
+    }
+
+    public virtual bool AssignPerson(Person person)
+    {
+        if (person == null)
+        {
+            return false;
+        }
+
+        if (PeopleOnWay.Contains(person))
+        {
+            return true;
+        }
+
+        if (!CanAcceptPerson(person))
+        {
+            return false;
+        }
+
+        PeopleOnWay.Add(person);
+        return true;
     }
 
     public virtual void RemovePerson(Person person)
