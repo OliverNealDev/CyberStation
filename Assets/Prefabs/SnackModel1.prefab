@@ -124,10 +124,9 @@ GameObject:
   - component: {fileID: 4719036473438750661}
   - component: {fileID: 5744533230320278787}
   - component: {fileID: 4507869466565563284}
-  - component: {fileID: 3877405062491057218}
   m_Layer: 0
-  m_Name: SnackLitter
-  m_TagString: Litter
+  m_Name: SnackModel1
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -141,7 +140,7 @@ Transform:
   m_GameObject: {fileID: 2787784830846119071}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.034620285, y: 1.025, z: 0.3446617}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.75, y: 0.05, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -226,22 +225,3 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3877405062491057218
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2787784830846119071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9061b416d9943e745be13cb64ca77682, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Litter
-  timeToClean: 2
-  interactablePromptPrefab: {fileID: 610401586093004303, guid: 44b00c41e02feb342ac63da0521aaeda, type: 3}
-  manualCleanHoldDuration: 3
-  manualCleanShrinkDuration: 0.2
-  hoverPromptText: Hold LMB to Clean
-  hoverPromptHeight: 1.1
-  fallbackColliderRadius: 0.7

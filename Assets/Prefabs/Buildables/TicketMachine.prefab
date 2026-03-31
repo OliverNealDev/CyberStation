@@ -841,6 +841,8 @@ MonoBehaviour:
   stoppingDistanceStep: 1
   PeopleOnWay: []
   facilityType: 0
+  potentialLitterPrefabs: []
+  passengerQueueCapacity: 6
   currentPerson: {fileID: 0}
   state: 0
   accentRenderers:

@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 054f86a4a0a418449892b21e1fb915d1, type: 3}
-  m_Name: LightStandard
+  m_Name: SquareBillboard
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
-  objectName: Light Standard
+  objectName: Square Billboard
   requiredTier: 4
-  description: A simple light standard for easy illumination. 5 Decoration strength.
+  description: Advertises local businesses. 10 Decoration strength.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
-  prefab: {fileID: 1821913311329546544, guid: 8dfc82c26e77d3241833d249540522cf, type: 3}
-  cost: 125
-  size: {x: 1, y: 1}
-  decorationStrength: 5
+  prefab: {fileID: 1821913311329546544, guid: 3e825999f9dc76f4a9b4e18cb209e8b1, type: 3}
+  cost: 275
+  size: {x: 3, y: 1}
+  decorationStrength: 10

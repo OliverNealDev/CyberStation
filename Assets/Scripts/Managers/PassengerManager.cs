@@ -20,6 +20,7 @@ public class PassengerManager : MonoBehaviour
     [Header("Littering")]
     [Min(0f)] public float litterCheckInterval = 8f;
     public int litterPassengerSampleCount = 3;
+    [Tooltip("Chance that one passenger from the sampled group drops litter this check.")]
     [Range(0f, 1f)] public float litterDropChancePerSample = 0.2f;
 
     [Header("Litter Placement")]
@@ -539,13 +540,10 @@ public class PassengerManager : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < litterOptions.Count; i++)
+        GameObject litterPrefab = GetRandomLitterPrefabOption(litterOptions);
+        if (litterPrefab != null)
         {
-            GameObject litterPrefab = litterOptions[i];
-            if (litterPrefab != null)
-            {
-                passenger.potentialLitterables.Add(litterPrefab);
-            }
+            passenger.potentialLitterables.Add(litterPrefab);
         }
     }
 
@@ -586,19 +584,57 @@ public class PassengerManager : MonoBehaviour
         }
 
         int sampleCount = Mathf.Min(litterPassengerSampleCount, litterCandidates.Count);
+        List<Passenger> sampledPassengers = new List<Passenger>(sampleCount);
         for (int i = 0; i < sampleCount; i++)
         {
             int selectedIndex = Random.Range(0, litterCandidates.Count);
             Passenger passenger = litterCandidates[selectedIndex];
             litterCandidates.RemoveAt(selectedIndex);
-
-            if (passenger == null || Random.value > litterDropChancePerSample)
+            if (passenger != null)
             {
-                continue;
+                sampledPassengers.Add(passenger);
             }
-
-            TryDropRandomLitterFromPassenger(passenger);
         }
+
+        if (sampledPassengers.Count == 0 || Random.value > litterDropChancePerSample)
+        {
+            return;
+        }
+
+        // Sample count widens the pool of eligible passengers without multiplying the total
+        // number of litter drops the station can generate in a single check.
+        while (sampledPassengers.Count > 0)
+        {
+            int selectedIndex = Random.Range(0, sampledPassengers.Count);
+            Passenger passenger = sampledPassengers[selectedIndex];
+            sampledPassengers.RemoveAt(selectedIndex);
+
+            if (TryDropRandomLitterFromPassenger(passenger))
+            {
+                return;
+            }
+        }
+    }
+
+    private GameObject GetRandomLitterPrefabOption(IList<GameObject> litterOptions)
+    {
+        if (litterOptions == null || litterOptions.Count == 0)
+        {
+            return null;
+        }
+
+        int startIndex = Random.Range(0, litterOptions.Count);
+        for (int offset = 0; offset < litterOptions.Count; offset++)
+        {
+            int candidateIndex = (startIndex + offset) % litterOptions.Count;
+            GameObject litterPrefab = litterOptions[candidateIndex];
+            if (litterPrefab != null)
+            {
+                return litterPrefab;
+            }
+        }
+
+        return null;
     }
 
     private List<Passenger> GetLitterCandidates()
