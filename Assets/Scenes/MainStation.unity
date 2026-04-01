@@ -49330,7 +49330,7 @@ MonoBehaviour:
   materializers: []
   litterCheckInterval: 1
   litterPassengerSampleCount: 5
-  litterDropChancePerSample: 0.05
+  litterDropChancePerSample: 0.025
   litterOverlapDistance: 0.8
   hungerNeedStartTier: 3
   thirstNeedStartTier: 2

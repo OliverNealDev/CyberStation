@@ -107,6 +107,7 @@ public class FacilityManager : MonoBehaviour
                 break;
             case Passenger.NeedType.Thirst:
                 validFacilities.Add(FacilityType.HydratingObelisk);
+                validFacilities.Add(FacilityType.BottleDispenser);
                 break;
             case Passenger.NeedType.Energy:
                 validFacilities.Add(FacilityType.RestPad);

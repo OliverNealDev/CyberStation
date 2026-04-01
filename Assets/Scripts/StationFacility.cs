@@ -8,6 +8,7 @@ public enum FacilityType
     NutrientExtruder,
     SnackPrinter,
     HydratingObelisk,
+    BottleDispenser,
     CleansingShower,
     PrivateLavatory,
     RestPad,
