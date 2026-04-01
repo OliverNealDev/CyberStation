@@ -842,7 +842,7 @@ MonoBehaviour:
   PeopleOnWay: []
   facilityType: 0
   potentialLitterPrefabs: []
-  passengerQueueCapacity: 6
+  passengerQueueCapacity: 10
   currentPerson: {fileID: 0}
   state: 0
   accentRenderers:
@@ -851,9 +851,9 @@ MonoBehaviour:
   screenRenderer: {fileID: 1452070661766650140}
   ticketSprite: {fileID: 4340323422367248028}
   screenIdleColor: {r: 0, g: 0, b: 0, a: 1}
-  processingTime: 1.5
-  holdDuration: 1
-  transitionDuration: 0.2
+  processingTime: 4
+  holdDuration: 2
+  transitionDuration: 0.1
 --- !u!114 &9216194286789144486
 MonoBehaviour:
   m_ObjectHideFlags: 0

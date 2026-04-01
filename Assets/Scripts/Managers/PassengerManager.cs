@@ -27,11 +27,17 @@ public class PassengerManager : MonoBehaviour
     [Min(0f)] public float litterOverlapDistance = 0.8f;
 
     [Header("Need Unlock Tiers")]
-    public int hungerNeedStartTier = 1;
-    public int thirstNeedStartTier = 1;
+    public int hungerNeedStartTier = 3;
+    public int thirstNeedStartTier = 2;
     public int energyNeedStartTier = 999;
-    public int hygieneNeedStartTier = 1;
-    [Range(0f, 1f)] public float disembarkingFacilityUsageChance = 0.5f;
+    public int hygieneNeedStartTier = 4;
+    [Range(0f, 1f)] public float disembarkingFacilityUsageChance = 0.2f;
+
+    [Header("Need Roll Chances")]
+    [Range(0f, 1f)] public float hungerNeedChance = 0.4f;
+    [Range(0f, 1f)] public float thirstNeedChance = 0.4f;
+    [Range(0f, 1f)] public float energyNeedChance = 0.15f;
+    [Range(0f, 1f)] public float hygieneNeedChance = 0.2f;
 
     [Header("Need Warning UI")]
     [SerializeField] private GameObject needIconPrefab;
@@ -44,8 +50,8 @@ public class PassengerManager : MonoBehaviour
     [SerializeField] private Color thirstNeedColor = new Color(0.22f, 0.67f, 1f);
     [SerializeField] private Color hungerNeedColor = new Color(0.88f, 0.53f, 0.2f);
     [SerializeField] private Color hygieneNeedColor = new Color(0.54f, 0.87f, 0.64f);
-    [Min(0f)] public float blockedNeedPassiveDuration = 10f;
-    [Min(0f)] public float blockedNeedUrgentDuration = 10f;
+    [Min(0f)] public float blockedNeedPassiveDuration = 20f;
+    [Min(0f)] public float blockedNeedUrgentDuration = 20f;
     public Vector3 needIconWorldOffset = new Vector3(0f, 5.5f, 0f);
 
     [Header("Blocked Need Movement")]
@@ -54,7 +60,7 @@ public class PassengerManager : MonoBehaviour
     [Min(0f)] public float blockedNeedWanderIntervalMax = 3.5f;
 
     [Header("Service Queue Tolerance")]
-    [Min(0f)] public float serviceQueueTolerance = 24f;
+    [Min(0f)] public float serviceQueueTolerance = 45f;
 
     private const float BlockedNeedCheckInterval = 1f;
     private const float FallbackPassengerWalkSpeed = 3.5f;

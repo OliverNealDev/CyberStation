@@ -3,8 +3,8 @@ using System.Collections;
 
 public class CleansingShowerController : StationFacility
 {
-    public int usePrice = 1;
-    public override float EstimatedServiceDuration => showerDuration + dropletFallDuration;
+    public int usePrice = 4;
+    public override float EstimatedServiceDuration => showerDuration + dropletFallDuration + (doorMoveDuration * 2f);
 
     [Header("Waypoints & Targeting")]
     public Transform showerHeadPoint;
@@ -21,9 +21,15 @@ public class CleansingShowerController : StationFacility
     public float activeLightIntensity = 3f;
     public Color activeFacilityColor = Color.magenta; // The machine's native color!
 
+    [Header("Door Hydraulics")]
+    public Transform doorTransform;
+    public Transform doorIdlePosition;
+    public Transform doorClosedPosition;
+    public float doorMoveDuration = 1.25f;
+
     [Header("Shower Settings")]
-    public float showerDuration = 4.0f;
-    public float dropletSpawnRate = 0.05f;
+    public float showerDuration = 9.1f;
+    public float dropletSpawnRate = 0.12f;
     public float dropletFallDuration = 0.4f;
 
     [Header("Droplet Shape (Cuboid)")]
@@ -32,9 +38,15 @@ public class CleansingShowerController : StationFacility
 
     protected override void Start()
     {
+        facilityType = FacilityType.CleansingShower;
         base.Start();
 
         facilityIcon = ResolveNeedIcon(facilityIcon);
+
+        if (doorTransform != null && doorIdlePosition != null)
+        {
+            doorTransform.localPosition = doorIdlePosition.localPosition;
+        }
 
         if (facilityLight != null)
         {
@@ -65,6 +77,11 @@ public class CleansingShowerController : StationFacility
 
         SetNeedIconActive(facilityIcon, Passenger.NeedType.Hygiene);
 
+        if (HasDoorHydraulics())
+        {
+            yield return StartCoroutine(MoveDoor(doorIdlePosition.localPosition, doorClosedPosition.localPosition));
+        }
+
         float elapsed = 0f;
         float spawnTimer = 0f;
 
@@ -86,6 +103,11 @@ public class CleansingShowerController : StationFacility
 
         yield return new WaitForSeconds(dropletFallDuration);
 
+        if (HasDoorHydraulics())
+        {
+            yield return StartCoroutine(MoveDoor(doorClosedPosition.localPosition, doorIdlePosition.localPosition));
+        }
+
         Invoke("FinishProcessing", 0f);
     }
 
@@ -99,7 +121,7 @@ public class CleansingShowerController : StationFacility
             Random.Range(-showerSpread, showerSpread)
         );
         
-        Vector3 spawnPos = showerHeadPoint.position + randomOffset;
+        Vector3 spawnPos = GetShowerHeadOrigin(passenger, randomOffset);
 
         GameObject droplet = Instantiate(dropletPrefab, spawnPos, Quaternion.identity);
         droplet.transform.SetParent(transform, true);
@@ -135,6 +157,45 @@ public class CleansingShowerController : StationFacility
         {
             Destroy(droplet);
         }
+    }
+
+    private bool HasDoorHydraulics()
+    {
+        return doorTransform != null && doorIdlePosition != null && doorClosedPosition != null;
+    }
+
+    private Vector3 GetShowerHeadOrigin(Passenger passenger, Vector3 randomOffset)
+    {
+        if (showerHeadPoint != null)
+        {
+            return showerHeadPoint.position + randomOffset;
+        }
+
+        float fallbackHeight = transform.position.y + 3.75f;
+        Vector3 basePosition = transform.position + (Vector3.up * 3.75f);
+
+        if (passenger != null)
+        {
+            basePosition = new Vector3(passenger.transform.position.x, fallbackHeight, passenger.transform.position.z);
+        }
+
+        return basePosition + randomOffset;
+    }
+
+    private IEnumerator MoveDoor(Vector3 startPos, Vector3 endPos)
+    {
+        float elapsed = 0f;
+        while (elapsed < doorMoveDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / doorMoveDuration;
+            float smoothT = t * t * (3f - 2f * t);
+
+            doorTransform.localPosition = Vector3.Lerp(startPos, endPos, smoothT);
+            yield return null;
+        }
+
+        doorTransform.localPosition = endPos;
     }
 
     protected override void DeliverService(Passenger passenger)

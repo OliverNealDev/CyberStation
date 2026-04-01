@@ -17,5 +17,6 @@ MonoBehaviour:
   description: Provides tickets to passengers in an automated fasion.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: b8d0066b2ee5d6e498ddf2346b4232d7, type: 3}
-  cost: 300
+  cost: 120
   size: {x: 1, y: 1}
+  decorationStrength: 0

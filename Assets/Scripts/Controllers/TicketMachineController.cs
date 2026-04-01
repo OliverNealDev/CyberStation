@@ -12,14 +12,15 @@ public class TicketMachineController : StationFacility
     public Color screenIdleColor = Color.black;
 
     [Header("Timing")]
-    public float processingTime = 1.5f;
-    public float holdDuration = 1.0f;
-    public float transitionDuration = 0.2f;
+    public float processingTime = 4.0f;
+    public float holdDuration = 2.0f;
+    public float transitionDuration = 0.1f;
 
     public override float EstimatedServiceDuration => processingTime + holdDuration + (transitionDuration * 2f);
 
     protected override void Start()
     {
+        facilityType = FacilityType.TicketMachine;
         base.Start();
 
         SetIdleVisuals();

@@ -3,7 +3,7 @@ using System.Collections;
 
 public class HydratingObeliskController : StationFacility
 {
-    public int usePrice = 1;
+    public int usePrice = 2;
     public override float EstimatedServiceDuration => (dropletCount * timeBetweenShots) + flightDuration;
 
     [Header("Visuals")]
@@ -14,20 +14,21 @@ public class HydratingObeliskController : StationFacility
     public GameObject dropletPrefab;
     public Transform nozzlePoint;          
     public float passengerHeadYOffset = 3.172f; 
-    public float arcHeight = 1.5f;
+    public float arcHeight = 0.4f;
 
     [Header("Timing & Firing")]
-    public int dropletCount = 3;
-    public float timeBetweenShots = 0.35f; 
-    public float flightDuration = 0.6f;
+    public int dropletCount = 28;
+    public float timeBetweenShots = 0.12f; 
+    public float flightDuration = 0.65f;
 
     [Header("Litter")]
     public GameObject puddleLitterPrefab;
-    [Range(0f, 1f)] public float puddleLitterChance = 0.15f;
+    [Range(0f, 1f)] public float puddleLitterChance = 0.05f;
     [Min(0f)] public float puddleSpawnDistance = 1f;
 
     protected override void Start()
     {
+        facilityType = FacilityType.HydratingObelisk;
         base.Start();
 
         facilityIcon = ResolveNeedIcon(facilityIcon);

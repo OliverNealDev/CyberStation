@@ -448,20 +448,20 @@ MonoBehaviour:
   facilityType: 4
   potentialLitterPrefabs:
   - {fileID: 1329183700229444931, guid: f9f024c41ea5ccf4ba3388e62abeb48c, type: 3}
-  passengerQueueCapacity: 6
+  passengerQueueCapacity: 8
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 5
+  usePrice: 8
   bottlePrefab: {fileID: 1329183700229444931, guid: 70c33ec913fddde40891202574c1038d, type: 3}
   startPos: {fileID: 5256804110273632904}
   endPos: {fileID: 8609906337860488024}
   machineLight: {fileID: 905206158880049428}
   facilityIcon: {fileID: 5969262218880966119}
   passengerHeadYOffset: 3.172
-  waitDelay: 2
+  waitDelay: 4.5
   dispenseDuration: 0.5
-  endPositionDelay: 0.5
-  magnetizeDuration: 0.75
+  endPositionDelay: 2.5
+  magnetizeDuration: 0.5
   activeLightIntensity: 4
   activeLightColor: {r: 0, g: 0.6787319, b: 1, a: 1}
 --- !u!1 &2040216026780394366

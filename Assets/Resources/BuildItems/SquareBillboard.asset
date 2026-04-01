@@ -17,6 +17,6 @@ MonoBehaviour:
   description: Advertises local businesses. 10 Decoration strength.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 3e825999f9dc76f4a9b4e18cb209e8b1, type: 3}
-  cost: 275
+  cost: 110
   size: {x: 3, y: 1}
   decorationStrength: 10

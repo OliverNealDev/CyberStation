@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class BottleDispenserController : StationFacility
 {
-    public int usePrice = 1;
+    public int usePrice = 8;
     public override float EstimatedServiceDuration => waitDelay + endPositionDelay + dispenseDuration + magnetizeDuration;
 
     [Header("Setup & Waypoints")]
@@ -15,10 +15,10 @@ public class BottleDispenserController : StationFacility
     public float passengerHeadYOffset = 3.172f;
 
     [Header("Timing")]
-    public float waitDelay = 2f;
+    public float waitDelay = 4.5f;
     public float dispenseDuration = 0.5f;
-    public float endPositionDelay = 0.5f;
-    public float magnetizeDuration = 0.75f;
+    public float endPositionDelay = 2.5f;
+    public float magnetizeDuration = 0.5f;
 
     [Header("Light")]
     public float activeLightIntensity = 4f;
@@ -29,7 +29,7 @@ public class BottleDispenserController : StationFacility
 
     protected override void Start()
     {
-        facilityType = FacilityType.HydratingObelisk;
+        facilityType = FacilityType.BottleDispenser;
         base.Start();
 
         facilityIcon = ResolveNeedIcon(facilityIcon);

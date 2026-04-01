@@ -479,7 +479,7 @@ MonoBehaviour:
   PeopleOnWay: []
   facilityType: 1
   potentialLitterPrefabs: []
-  passengerQueueCapacity: 6
+  passengerQueueCapacity: 8
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 3
@@ -489,8 +489,8 @@ MonoBehaviour:
   cubeRestPoint: {fileID: 3747216850802039661}
   cubeExtrudePoint: {fileID: 1035859554179908143}
   passengerHeadYOffset: 3.172
-  arcHeight: 1
-  extrudeDuration: 3
+  arcHeight: 1.125
+  extrudeDuration: 7.5
   arcDuration: 0.75
 --- !u!1 &1861435115874483206
 GameObject:

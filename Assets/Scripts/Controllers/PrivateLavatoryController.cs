@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PrivateLavatoryController : StationFacility
 {
-    public int usePrice = 15; 
+    public int usePrice = 12; 
     public override float EstimatedServiceDuration => usageTime + (doorMoveDuration * 2f);
 
     [Header("Visuals")]
@@ -14,13 +14,14 @@ public class PrivateLavatoryController : StationFacility
     public Transform doorTransform;
     public Transform doorIdlePosition;
     public Transform doorClosedPosition;
-    public float doorMoveDuration = 0.8f; 
+    public float doorMoveDuration = 1.25f; 
     
     [Header("Timing")]
-    public float usageTime = 12.0f;
+    public float usageTime = 18.0f;
 
     protected override void Start()
     {
+        facilityType = FacilityType.PrivateLavatory;
         base.Start();
         facilityIcon = ResolveNeedIcon(facilityIcon);
 

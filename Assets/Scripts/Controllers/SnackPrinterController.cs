@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class SnackPrinterController : StationFacility
 {
-    private const float NutrientDispenserDefaultDuration = 3.75f;
-
-    public int usePrice = 8;
+    public int usePrice = 12;
     public override float EstimatedServiceDuration => printDuration + consumeDuration;
 
     [Header("Setup & Waypoints")]
@@ -24,14 +22,15 @@ public class SnackPrinterController : StationFacility
     public Color activeLightColor = new Color(1f, 0.64f, 0f);
 
     [Header("Timing")]
-    public float printDuration = NutrientDispenserDefaultDuration * 2f;
-    public float consumeDuration = 0.75f;
+    public float printDuration = 14.5f;
+    public float consumeDuration = 0.5f;
 
     private GameObject activeSnackInstance;
     private Vector3 activeSnackFullScale;
 
     protected override void Start()
     {
+        facilityType = FacilityType.SnackPrinter;
         base.Start();
         facilityIcon = ResolveNeedIcon(facilityIcon);
         SetNeedIconIdle(facilityIcon);

@@ -59,7 +59,7 @@ public class RatingManager : MonoBehaviour
 
         if (passengerCount == 0 || totalLitter == 0) return 5f;
 
-        float maxLitterLimit = passengerCount / 5f;
+        float maxLitterLimit = passengerCount / 4f;
 
         if (totalLitter >= maxLitterLimit) return 0f;
         
@@ -93,11 +93,11 @@ public class RatingManager : MonoBehaviour
 
         float density = (float)totalNearby / sampleSize;
 
-        if (density <= 1.5f) return 5f;
-        if (density <= 3.5f) return 4f;
-        if (density <= 6.0f) return 3f;
-        if (density <= 9.0f) return 2f;
-        if (density <= 13.0f) return 1f;
+        if (density <= 2.0f) return 5f;
+        if (density <= 4.5f) return 4f;
+        if (density <= 7.0f) return 3f;
+        if (density <= 10.0f) return 2f;
+        if (density <= 14.0f) return 1f;
         return 0f;
     }
 
@@ -110,24 +110,29 @@ public class RatingManager : MonoBehaviour
         int totalQueued = FacilityManager.Instance.GetTotalQueuedPassengers();
         float avgQueue = (float)totalQueued / totalFacilities;
 
-        if (avgQueue <= 1.0f) return 5f;
-        if (avgQueue <= 2.5f) return 4f;
-        if (avgQueue <= 4.0f) return 3f;
-        if (avgQueue <= 6.0f) return 2f;
-        if (avgQueue <= 8.0f) return 1f;
+        if (avgQueue <= 1.5f) return 5f;
+        if (avgQueue <= 3.0f) return 4f;
+        if (avgQueue <= 5.0f) return 3f;
+        if (avgQueue <= 7.0f) return 2f;
+        if (avgQueue <= 9.0f) return 1f;
         return 0f;
     }
 
     float GetStationSizeTarget()
     {
-        if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null) return 1f;
+        if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null)
+        {
+            return 1f;
+        }
 
         int totalExpansions = ExpansionManager.Instance.allExpansions.Length;
-        if (totalExpansions == 0) return 1f;
+        if (totalExpansions == 0)
+        {
+            return 1f;
+        }
 
         int builtCount = ExpansionManager.Instance.builtExpansions.Count;
         float ratio = (float)builtCount / totalExpansions;
-
         return 1f + (ratio * 4f);
     }
 
@@ -167,6 +172,7 @@ public class RatingManager : MonoBehaviour
         int validSampleCount = 0;
         float totalDecorationScore = 0f;
         float sqrSampleRadius = DecorationSampleRadius * DecorationSampleRadius;
+        bool foundDecor = false;
 
         for (int i = 0; i < sampleSize; i++)
         {
@@ -185,6 +191,8 @@ public class RatingManager : MonoBehaviour
                     continue;
                 }
 
+                foundDecor = true;
+
                 Vector3 offset = buildable.transform.position - passengerPosition;
                 offset.y = 0f;
 
@@ -200,6 +208,11 @@ public class RatingManager : MonoBehaviour
             }
 
             totalDecorationScore += Mathf.Clamp(localDecorationScore, 0f, MaxDecorationScorePerPassenger);
+        }
+
+        if (!foundDecor)
+        {
+            return 0f;
         }
 
         if (validSampleCount == 0) return 5f;

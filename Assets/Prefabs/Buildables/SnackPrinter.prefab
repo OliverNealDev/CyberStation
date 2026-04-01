@@ -583,7 +583,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   queueLineMode: 0
   queueStyle: 0
-  baseDistance: 1.5
+  baseDistance: 2
   queueSpacing: 1.5
   stoppingDistanceTargetDistance: 1.1
   stoppingDistanceBase: 0.35
@@ -592,10 +592,10 @@ MonoBehaviour:
   facilityType: 2
   potentialLitterPrefabs:
   - {fileID: 2787784830846119071, guid: d48559ca98518f44da91fff4d5a9fe3c, type: 3}
-  passengerQueueCapacity: 6
+  passengerQueueCapacity: 8
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 8
+  usePrice: 12
   snackPrefabs:
   - {fileID: 2787784830846119071, guid: e2b452ff94a93dc4bafd7f220f7d6eaa, type: 3}
   startPos: {fileID: 8720672773387069009}
@@ -607,8 +607,8 @@ MonoBehaviour:
   activeLightIntensity: 4
   idleLightColor: {r: 1, g: 1, b: 1, a: 1}
   activeLightColor: {r: 1, g: 0.64, b: 0, a: 1}
-  printDuration: 7.5
-  consumeDuration: 0.75
+  printDuration: 14.5
+  consumeDuration: 0.5
 --- !u!1 &2547920770302478061
 GameObject:
   m_ObjectHideFlags: 0

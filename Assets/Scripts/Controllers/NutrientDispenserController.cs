@@ -3,7 +3,7 @@ using System.Collections;
 
 public class NutrientDispenserController : StationFacility
 {
-    public int usePrice = 1;
+    public int usePrice = 3;
     public override float EstimatedServiceDuration => extrudeDuration + arcDuration;
     
     [Header("Visuals")]
@@ -15,16 +15,17 @@ public class NutrientDispenserController : StationFacility
     public Transform cubeRestPoint;      
     public Transform cubeExtrudePoint;   
     public float passengerHeadYOffset = 3.172f; 
-    public float arcHeight = 2.5f;
+    public float arcHeight = 1.25f;
 
     [Header("Timing")]
-    public float extrudeDuration = 3.5f; 
-    public float arcDuration = 1.0f;     
+    public float extrudeDuration = 7.5f; 
+    public float arcDuration = 0.75f;     
     
     private MeshRenderer cubeRenderer;
 
     protected override void Start()
     {
+        facilityType = FacilityType.NutrientExtruder;
         base.Start();
         facilityIcon = ResolveNeedIcon(facilityIcon);
         

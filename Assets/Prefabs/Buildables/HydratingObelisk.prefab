@@ -146,7 +146,7 @@ MonoBehaviour:
   PeopleOnWay: []
   facilityType: 3
   potentialLitterPrefabs: []
-  passengerQueueCapacity: 6
+  passengerQueueCapacity: 8
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 2
@@ -155,10 +155,10 @@ MonoBehaviour:
   dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}
   nozzlePoint: {fileID: 8596009513800852768}
   passengerHeadYOffset: 3.172
-  arcHeight: 0.25
-  dropletCount: 12
-  timeBetweenShots: 0.1
-  flightDuration: 0.4
+  arcHeight: 0.4
+  dropletCount: 28
+  timeBetweenShots: 0.12
+  flightDuration: 0.65
   puddleLitterPrefab: {fileID: 7923471293361742921, guid: 8019f2ee46344ec4cb816cdba221c5ed, type: 3}
   puddleLitterChance: 0.05
   puddleSpawnDistance: 1
