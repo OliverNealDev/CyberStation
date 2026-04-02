@@ -3,7 +3,7 @@ using UnityEngine;
 public class PassengerSpawner : MonoBehaviour
 {
     private const float ServiceCycleDurationSeconds = 240f;
-    private const float MinDemandOccupancy = 0.25f;
+    private const float MinDemandOccupancy = 0.35f;
     private const float MaxDemandOccupancy = 0.85f;
     private const float DemandCurveExponent = 1.6f;
     private float tickRate = 20f; 

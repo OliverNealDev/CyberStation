@@ -22,10 +22,10 @@ MonoBehaviour:
   speed: 120
   carriageCount: 4
   carriageLength: 34
-  capacityPerCarriage: 36
-  costPerRide: 14
+  capacityPerCarriage: 24
+  costPerRide: 15
   secondsStationary: 30
   trainColor: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
   isWarm: 0
-  upfrontCost: 1400
-  costPerMinute: 225
+  upfrontCost: 1100
+  costPerMinute: 110

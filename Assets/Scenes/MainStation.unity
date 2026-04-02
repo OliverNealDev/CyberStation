@@ -25716,7 +25716,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressionManager
   baseXpPerLevel: 100
-  xpIncreasePerLevel: 150
+  xpIncreasePerLevel: 125
   buildPlacedXp: 0
   ticketSoldXp: 5
   passengerBoardedXp: 0
@@ -49731,10 +49731,6 @@ MonoBehaviour:
   blockedNeedWanderIntervalMin: 3
   blockedNeedWanderIntervalMax: 5
   serviceQueueTolerance: 60
-  premiumTiePrefab: {fileID: 4923860035583830215, guid: 12029c1c6942baf48a0bf9def3900d13, type: 3}
-  maxPrestigeSpawnChance: 0.1
-  prestigeChanceStartsAtRating: 3
-  prestigeChanceMaxesAtRating: 5
 --- !u!114 &2131610380
 MonoBehaviour:
   m_ObjectHideFlags: 0
