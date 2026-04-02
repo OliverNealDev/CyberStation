@@ -94,26 +94,88 @@ public class TrainManager : MonoBehaviour
 
     public void AssignTrainToPlatformSlot(Train train, PlatformController platform, int slotIndex)
     {
-        RemoveTrainFromService(train);
+        if (platform == null || !IsValidSlotIndex(slotIndex))
+        {
+            return;
+        }
 
-        if (slotIndex == 1) platform.trainInSlot1 = train;
-        else if (slotIndex == 2) platform.trainInSlot2 = train;
+        Train occupyingTrain = GetTrainInSlot(platform, slotIndex);
+        if (occupyingTrain == train)
+        {
+            return;
+        }
 
-        TrainService newService = new TrainService(train, platform);
-        activeTrainServices.Add(newService);
+        if (occupyingTrain != null)
+        {
+            TrainService movingService = GetServiceByTrain(train);
+            TrainService occupyingService = GetServiceByTrain(occupyingTrain);
+
+            if (movingService != null &&
+                occupyingService != null &&
+                TryFindTrainAssignment(train, out PlatformController sourcePlatform, out int sourceSlotIndex))
+            {
+                SwapTrainAssignments(
+                    train,
+                    movingService,
+                    sourcePlatform,
+                    sourceSlotIndex,
+                    occupyingTrain,
+                    occupyingService,
+                    platform,
+                    slotIndex);
+
+                OnTrainAssignmentsChanged?.Invoke();
+                return;
+            }
+
+            RemoveTrainFromService(occupyingTrain);
+        }
+
+        if (train == null)
+        {
+            return;
+        }
+
+        TrainService service = GetServiceByTrain(train);
+        PlatformController previousPlatform = service != null ? service.assignedPlatform : null;
+        bool platformChanged = service != null && previousPlatform != platform;
+
+        ClearTrainAssignments(train);
+
+        if (service == null)
+        {
+            service = new TrainService(train, platform);
+            activeTrainServices.Add(service);
+        }
+        else
+        {
+            service.assignedPlatform = platform;
+        }
+
+        SetTrainInSlot(platform, slotIndex, train);
+
+        if (platformChanged)
+        {
+            if (PassengerManager.Instance != null)
+            {
+                PassengerManager.Instance.OnTrainServiceReassigned(service, previousPlatform, platform);
+            }
+
+            DespawnPhysicalTrain(service);
+        }
 
         platform.OnTrainAssigned(slotIndex);
-
         OnTrainAssignmentsChanged?.Invoke();
     }
     
     public void RemoveTrainFromService(Train train)
     {
-        foreach (var platform in activePlatforms)
+        if (train == null)
         {
-            if (platform.trainInSlot1 == train) platform.trainInSlot1 = null;
-            if (platform.trainInSlot2 == train) platform.trainInSlot2 = null;
+            return;
         }
+
+        ClearTrainAssignments(train);
 
         for (int i = activeTrainServices.Count - 1; i >= 0; i--)
         {
@@ -125,5 +187,171 @@ public class TrainManager : MonoBehaviour
         }
 
         OnTrainAssignmentsChanged?.Invoke();
+    }
+
+    private bool IsValidSlotIndex(int slotIndex)
+    {
+        return slotIndex == 1 || slotIndex == 2;
+    }
+
+    private Train GetTrainInSlot(PlatformController platform, int slotIndex)
+    {
+        if (platform == null)
+        {
+            return null;
+        }
+
+        if (slotIndex == 1)
+        {
+            return platform.trainInSlot1;
+        }
+
+        if (slotIndex == 2)
+        {
+            return platform.trainInSlot2;
+        }
+
+        return null;
+    }
+
+    private void SetTrainInSlot(PlatformController platform, int slotIndex, Train train)
+    {
+        if (platform == null)
+        {
+            return;
+        }
+
+        if (slotIndex == 1)
+        {
+            platform.trainInSlot1 = train;
+        }
+        else if (slotIndex == 2)
+        {
+            platform.trainInSlot2 = train;
+        }
+    }
+
+    private void ClearTrainAssignments(Train train)
+    {
+        foreach (var platform in activePlatforms)
+        {
+            if (platform.trainInSlot1 == train) platform.trainInSlot1 = null;
+            if (platform.trainInSlot2 == train) platform.trainInSlot2 = null;
+        }
+    }
+
+    private void DespawnPhysicalTrain(TrainService service)
+    {
+        if (service == null || service.physicalTrainInstance == null)
+        {
+            return;
+        }
+
+        FreePlatform(service.physicalTrainInstance.platformNumber);
+        GameObject.Destroy(service.physicalTrainInstance.gameObject);
+        service.physicalTrainInstance = null;
+    }
+
+    private bool TryFindTrainAssignment(Train train, out PlatformController platform, out int slotIndex)
+    {
+        platform = null;
+        slotIndex = -1;
+
+        if (train == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < activePlatforms.Count; i++)
+        {
+            PlatformController candidatePlatform = activePlatforms[i];
+            if (candidatePlatform == null)
+            {
+                continue;
+            }
+
+            if (candidatePlatform.trainInSlot1 == train)
+            {
+                platform = candidatePlatform;
+                slotIndex = 1;
+                return true;
+            }
+
+            if (candidatePlatform.trainInSlot2 == train)
+            {
+                platform = candidatePlatform;
+                slotIndex = 2;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SwapTrainAssignments(
+        Train movingTrain,
+        TrainService movingService,
+        PlatformController sourcePlatform,
+        int sourceSlotIndex,
+        Train occupyingTrain,
+        TrainService occupyingService,
+        PlatformController targetPlatform,
+        int targetSlotIndex)
+    {
+        if (movingTrain == null ||
+            movingService == null ||
+            sourcePlatform == null ||
+            !IsValidSlotIndex(sourceSlotIndex) ||
+            occupyingTrain == null ||
+            occupyingService == null ||
+            targetPlatform == null ||
+            !IsValidSlotIndex(targetSlotIndex))
+        {
+            return;
+        }
+
+        PlatformController movingPreviousPlatform = movingService.assignedPlatform;
+        PlatformController occupyingPreviousPlatform = occupyingService.assignedPlatform;
+        bool movingPlatformChanged = movingPreviousPlatform != targetPlatform;
+        bool occupyingPlatformChanged = occupyingPreviousPlatform != sourcePlatform;
+
+        ClearTrainAssignments(movingTrain);
+        ClearTrainAssignments(occupyingTrain);
+
+        SetTrainInSlot(targetPlatform, targetSlotIndex, movingTrain);
+        SetTrainInSlot(sourcePlatform, sourceSlotIndex, occupyingTrain);
+
+        movingService.assignedPlatform = targetPlatform;
+        occupyingService.assignedPlatform = sourcePlatform;
+
+        if (movingPlatformChanged)
+        {
+            NotifyPassengersOfPlatformChange(movingService, movingPreviousPlatform, targetPlatform);
+            DespawnPhysicalTrain(movingService);
+        }
+
+        if (occupyingPlatformChanged)
+        {
+            NotifyPassengersOfPlatformChange(occupyingService, occupyingPreviousPlatform, sourcePlatform);
+            DespawnPhysicalTrain(occupyingService);
+        }
+
+        if (sourcePlatform == targetPlatform)
+        {
+            targetPlatform.SetNextSlotToSpawn(targetSlotIndex);
+        }
+        else
+        {
+            sourcePlatform.SetNextSlotToSpawn(sourceSlotIndex);
+            targetPlatform.SetNextSlotToSpawn(targetSlotIndex);
+        }
+    }
+
+    private void NotifyPassengersOfPlatformChange(TrainService service, PlatformController previousPlatform, PlatformController newPlatform)
+    {
+        if (PassengerManager.Instance != null)
+        {
+            PassengerManager.Instance.OnTrainServiceReassigned(service, previousPlatform, newPlatform);
+        }
     }
 }

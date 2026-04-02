@@ -37,8 +37,21 @@ public class PlatformController : MonoBehaviour
 
     void SpawnNextTrain()
     {
-        Train trainToSpawn = nextSlotToSpawn == 1 ? trainInSlot1 : trainInSlot2;
-        nextSlotToSpawn = nextSlotToSpawn == 1 ? 2 : 1;
+        int slotToSpawn = nextSlotToSpawn;
+        Train trainToSpawn = GetTrainInSlot(slotToSpawn);
+
+        if (trainToSpawn == null)
+        {
+            slotToSpawn = GetFallbackSlot(slotToSpawn);
+            trainToSpawn = GetTrainInSlot(slotToSpawn);
+        }
+
+        if (trainToSpawn == null)
+        {
+            return;
+        }
+
+        nextSlotToSpawn = GetNextSlotAfter(slotToSpawn);
 
         if (trainToSpawn != null && TrainManager.Instance != null)
         {
@@ -62,6 +75,29 @@ public class PlatformController : MonoBehaviour
             }
         }
     }
+
+    private Train GetTrainInSlot(int slotIndex)
+    {
+        return slotIndex == 1 ? trainInSlot1 : trainInSlot2;
+    }
+
+    private int GetFallbackSlot(int preferredSlot)
+    {
+        int alternateSlot = preferredSlot == 1 ? 2 : 1;
+
+        if (GetTrainInSlot(alternateSlot) != null)
+        {
+            return alternateSlot;
+        }
+
+        return preferredSlot;
+    }
+
+    private int GetNextSlotAfter(int spawnedSlot)
+    {
+        int alternateSlot = spawnedSlot == 1 ? 2 : 1;
+        return GetTrainInSlot(alternateSlot) != null ? alternateSlot : spawnedSlot;
+    }
     
     public void OnTrainAssigned(int slotIndex)
     {
@@ -72,6 +108,14 @@ public class PlatformController : MonoBehaviour
         if (isOnlyTrain && !isOccupied) 
         {
             spawnTimer = 0f;
+        }
+    }
+
+    public void SetNextSlotToSpawn(int slotIndex)
+    {
+        if (slotIndex == 1 || slotIndex == 2)
+        {
+            nextSlotToSpawn = slotIndex;
         }
     }
 

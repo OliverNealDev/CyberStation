@@ -64,8 +64,7 @@ public class PlatformMenuController : MonoBehaviour
         }
         else
         {
-            slotImage.sprite = null;
-            slotImage.color = new Color(1f, 1f, 1f, 0.5f);
+            slotImage.color = new Color(1f, 1f, 1f, 0.35f);
         }
     }
 

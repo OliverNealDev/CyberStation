@@ -484,6 +484,8 @@ public class PassengerManager : MonoBehaviour
 
         if (passenger.currentTarget == null &&
             passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform &&
+            passenger.currentSubState != Passenger.passengerSubStates.MovingToTarget &&
+            passenger.currentSpecialTarget != Passenger.passengerSpecialTargets.Platform &&
             passenger.assignedTrainService != null &&
             passenger.assignedTrainService.assignedPlatform != null)
         {
@@ -869,6 +871,31 @@ public class PassengerManager : MonoBehaviour
         {
             passenger.navAgent.ResetPath();
         }
+    }
+
+    private bool PreparePassengerForPlatformRedirect(Passenger passenger)
+    {
+        if (passenger == null || passenger.navAgent == null)
+        {
+            return false;
+        }
+
+        if (!passenger.navAgent.enabled)
+        {
+            passenger.navAgent.enabled = true;
+        }
+
+        if (!passenger.navAgent.isOnNavMesh)
+        {
+            if (!NavMesh.SamplePosition(passenger.transform.position, out NavMeshHit hit, 4f, NavMesh.AllAreas))
+            {
+                return false;
+            }
+
+            passenger.navAgent.Warp(hit.position);
+        }
+
+        return CanUseNavAgent(passenger);
     }
 
     public void HandleDestroyedQueueTarget(QueuableObject destroyedTarget)
@@ -1282,6 +1309,11 @@ public class PassengerManager : MonoBehaviour
             LeaveStation(passenger, preserveNeedFailureState);
             return;
         }
+
+        if (!CanUseNavAgent(passenger))
+        {
+            return;
+        }
         
         bool foundValidPosition = false;
         NavMeshHit hit = new NavMeshHit();
@@ -1505,6 +1537,36 @@ public class PassengerManager : MonoBehaviour
             {
                 SendPassengerToTrainDoor(passenger, service);
             }
+        }
+    }
+
+    public void OnTrainServiceReassigned(TrainService service, PlatformController previousPlatform, PlatformController newPlatform)
+    {
+        if (service == null || previousPlatform == null || newPlatform == null || previousPlatform == newPlatform)
+        {
+            return;
+        }
+
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        {
+            Passenger passenger = activePassengers[i];
+            if (passenger == null || passenger.assignedTrainService != service)
+            {
+                continue;
+            }
+
+            bool shouldRedirectImmediately =
+                passenger.currentTarget is TrainDoorController ||
+                passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.Platform ||
+                passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform;
+
+            if (!shouldRedirectImmediately || !PreparePassengerForPlatformRedirect(passenger))
+            {
+                continue;
+            }
+
+            UnassignTarget(passenger);
+            MoveToPlatformPosition(passenger, passenger.hasFailedNeed);
         }
     }
 
