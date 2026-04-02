@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TicketBarrierController : MonoBehaviour
+public class TicketBarrierController : MonoBehaviour, IPreviewInitializable
 {
     private BoxCollider triggerBox;
     [SerializeField] private GameObject floorIndicator;
@@ -21,8 +21,21 @@ public class TicketBarrierController : MonoBehaviour
 
     void Start()
     {
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
+        if (floorIndicator == null)
+        {
+            return;
+        }
+
         floorIndicatorRenderer = floorIndicator.GetComponent<MeshRenderer>();
-        floorIndicatorRenderer.material = neutral;
+        if (floorIndicatorRenderer != null && neutral != null)
+        {
+            floorIndicatorRenderer.material = neutral;
+        }
     }
 
     void OnTriggerEnter(Collider other)

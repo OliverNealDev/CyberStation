@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class PrivateLavatoryController : StationFacility
+public class PrivateLavatoryController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 12; 
     public override float EstimatedServiceDuration => usageTime + (doorMoveDuration * 2f);
@@ -23,6 +23,11 @@ public class PrivateLavatoryController : StationFacility
     {
         facilityType = FacilityType.PrivateLavatory;
         base.Start();
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         facilityIcon = ResolveNeedIcon(facilityIcon);
 
         if (doorTransform != null && doorIdlePosition != null)

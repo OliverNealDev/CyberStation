@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class CleansingShowerController : StationFacility
+public class CleansingShowerController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 4;
     public override float EstimatedServiceDuration => showerDuration + dropletFallDuration + (doorMoveDuration * 2f);
@@ -41,6 +41,11 @@ public class CleansingShowerController : StationFacility
         facilityType = FacilityType.CleansingShower;
         base.Start();
 
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         facilityIcon = ResolveNeedIcon(facilityIcon);
 
         if (doorTransform != null && doorIdlePosition != null)

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class TicketMachineController : StationFacility
+public class TicketMachineController : StationFacility, IPreviewInitializable
 {
     [Header("Visuals")]
     public MeshRenderer[] accentRenderers;
@@ -23,6 +23,11 @@ public class TicketMachineController : StationFacility
         facilityType = FacilityType.TicketMachine;
         base.Start();
 
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         SetIdleVisuals();
     }
 

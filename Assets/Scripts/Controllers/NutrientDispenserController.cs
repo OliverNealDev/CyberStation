@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class NutrientDispenserController : StationFacility
+public class NutrientDispenserController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 3;
     public override float EstimatedServiceDuration => extrudeDuration + arcDuration;
@@ -27,23 +27,28 @@ public class NutrientDispenserController : StationFacility
     {
         facilityType = FacilityType.NutrientExtruder;
         base.Start();
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         facilityIcon = ResolveNeedIcon(facilityIcon);
-        
+
         if (nutrientCube != null)
         {
             cubeRenderer = nutrientCube.GetComponent<MeshRenderer>();
-            
+
             if (cubeRenderer != null)
             {
                 cubeRenderer.enabled = false;
             }
-            
+
             if (cubeRestPoint != null)
             {
                 nutrientCube.position = cubeRestPoint.position;
             }
         }
-        
+
         SetNeedIconIdle(facilityIcon);
     }
 

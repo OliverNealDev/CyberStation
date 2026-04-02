@@ -37,6 +37,11 @@ public enum PrefabIconView
     TrainFront
 }
 
+public interface IPreviewInitializable
+{
+    void InitializePreviewVisuals();
+}
+
 public static class PrefabIconRenderer
 {
     private const int PreviewLayer = 31;
@@ -153,7 +158,7 @@ public static class PrefabIconRenderer
 
         Renderer[] renderers = previewInstance.GetComponentsInChildren<Renderer>(true);
         Bounds bounds;
-        if (!TryGetRenderableBounds(renderers, out bounds))
+        if (HasInvalidPreviewMaterials(renderers) || !TryGetRenderableBounds(renderers, out bounds))
         {
             previewInstance.SetActive(false);
             Object.Destroy(previewInstance);
@@ -275,6 +280,14 @@ public static class PrefabIconRenderer
         Behaviour[] behaviours = previewInstance.GetComponentsInChildren<Behaviour>(true);
         for (int i = 0; i < behaviours.Length; i++)
         {
+            if (behaviours[i] is IPreviewInitializable previewInitializable)
+            {
+                previewInitializable.InitializePreviewVisuals();
+            }
+        }
+
+        for (int i = 0; i < behaviours.Length; i++)
+        {
             if (behaviours[i] == null || ShouldKeepBehaviourEnabled(behaviours[i]))
             {
                 continue;
@@ -366,6 +379,36 @@ public static class PrefabIconRenderer
         }
 
         return foundBounds;
+    }
+
+    private static bool HasInvalidPreviewMaterials(Renderer[] renderers)
+    {
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null)
+            {
+                continue;
+            }
+
+            Material[] materials = renderer.sharedMaterials;
+            for (int j = 0; j < materials.Length; j++)
+            {
+                Material material = materials[j];
+                if (material == null)
+                {
+                    continue;
+                }
+
+                Shader shader = material.shader;
+                if (shader == null || !shader.isSupported || shader.name == "Hidden/InternalErrorShader")
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static void ConfigureCamera(Bounds bounds, PrefabIconRenderSettings settings)

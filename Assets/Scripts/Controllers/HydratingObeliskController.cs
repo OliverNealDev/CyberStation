@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class HydratingObeliskController : StationFacility
+public class HydratingObeliskController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 2;
     public override float EstimatedServiceDuration => (dropletCount * timeBetweenShots) + flightDuration;
@@ -31,6 +31,11 @@ public class HydratingObeliskController : StationFacility
         facilityType = FacilityType.HydratingObelisk;
         base.Start();
 
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         facilityIcon = ResolveNeedIcon(facilityIcon);
         SetNeedIconIdle(facilityIcon);
     }

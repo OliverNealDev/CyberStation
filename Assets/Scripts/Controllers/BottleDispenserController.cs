@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class BottleDispenserController : StationFacility
+public class BottleDispenserController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 8;
     public override float EstimatedServiceDuration => waitDelay + endPositionDelay + dispenseDuration + magnetizeDuration;
@@ -32,6 +32,11 @@ public class BottleDispenserController : StationFacility
         facilityType = FacilityType.BottleDispenser;
         base.Start();
 
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         facilityIcon = ResolveNeedIcon(facilityIcon);
         SetNeedIconIdle(facilityIcon);
         SetLightState(false);

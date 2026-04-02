@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SnackPrinterController : StationFacility
+public class SnackPrinterController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 12;
     public override float EstimatedServiceDuration => printDuration + consumeDuration;
@@ -32,6 +32,11 @@ public class SnackPrinterController : StationFacility
     {
         facilityType = FacilityType.SnackPrinter;
         base.Start();
+        InitializePreviewVisuals();
+    }
+
+    public void InitializePreviewVisuals()
+    {
         facilityIcon = ResolveNeedIcon(facilityIcon);
         SetNeedIconIdle(facilityIcon);
         SetLightState(false);
