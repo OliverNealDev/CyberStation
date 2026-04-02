@@ -12,8 +12,8 @@ public class RatingManager : MonoBehaviour
     public float stationSizeRating = 5f;
     public float decorationRating = 5f;
 
-    private const float DecorationSampleRadius = 8f;
-    private const float MaxDecorationScorePerPassenger = 5f;
+    public const float DecorationSampleRadius = 8f;
+    public const float MaxDecorationScorePerPassenger = 5f;
 
     private float tickTimer;
 
@@ -158,6 +158,41 @@ public class RatingManager : MonoBehaviour
         return Mathf.Clamp((1f - (failRatio / 0.5f)) * 5f, 0f, 5f);
     }
 
+    public static float GetDecorationScoreAtPosition(Vector3 position, PlacedBuildable[] placedBuildables)
+    {
+        if (placedBuildables == null || placedBuildables.Length == 0)
+        {
+            return 0f;
+        }
+
+        float localDecorationScore = 0f;
+        float sqrSampleRadius = DecorationSampleRadius * DecorationSampleRadius;
+
+        for (int i = 0; i < placedBuildables.Length; i++)
+        {
+            PlacedBuildable buildable = placedBuildables[i];
+            if (buildable == null || !buildable.HasDecoration)
+            {
+                continue;
+            }
+
+            Vector3 offset = buildable.transform.position - position;
+            offset.y = 0f;
+
+            float sqrDistance = offset.sqrMagnitude;
+            if (sqrDistance > sqrSampleRadius)
+            {
+                continue;
+            }
+
+            float distance = Mathf.Sqrt(sqrDistance);
+            float falloff = 1f - (distance / DecorationSampleRadius);
+            localDecorationScore += buildable.decorationStrength * falloff;
+        }
+
+        return Mathf.Clamp(localDecorationScore, 0f, MaxDecorationScorePerPassenger);
+    }
+
     float GetDecorationTarget()
     {
         var passengers = PassengerManager.Instance.activePassengers;
@@ -168,51 +203,32 @@ public class RatingManager : MonoBehaviour
         PlacedBuildable[] placedBuildables = FindObjectsByType<PlacedBuildable>(FindObjectsSortMode.None);
         if (placedBuildables.Length == 0) return 0f;
 
+        bool foundDecor = false;
+        for (int i = 0; i < placedBuildables.Length; i++)
+        {
+            if (placedBuildables[i] != null && placedBuildables[i].HasDecoration)
+            {
+                foundDecor = true;
+                break;
+            }
+        }
+
+        if (!foundDecor)
+        {
+            return 0f;
+        }
+
         int sampleSize = Mathf.Min(count, 20);
         int validSampleCount = 0;
         float totalDecorationScore = 0f;
-        float sqrSampleRadius = DecorationSampleRadius * DecorationSampleRadius;
-        bool foundDecor = false;
 
         for (int i = 0; i < sampleSize; i++)
         {
             Passenger passenger = passengers[Random.Range(0, count)];
             if (passenger == null) continue;
 
-            float localDecorationScore = 0f;
-            Vector3 passengerPosition = passenger.transform.position;
             validSampleCount++;
-
-            for (int j = 0; j < placedBuildables.Length; j++)
-            {
-                PlacedBuildable buildable = placedBuildables[j];
-                if (buildable == null || !buildable.HasDecoration)
-                {
-                    continue;
-                }
-
-                foundDecor = true;
-
-                Vector3 offset = buildable.transform.position - passengerPosition;
-                offset.y = 0f;
-
-                float sqrDistance = offset.sqrMagnitude;
-                if (sqrDistance > sqrSampleRadius)
-                {
-                    continue;
-                }
-
-                float distance = Mathf.Sqrt(sqrDistance);
-                float falloff = 1f - (distance / DecorationSampleRadius);
-                localDecorationScore += buildable.decorationStrength * falloff;
-            }
-
-            totalDecorationScore += Mathf.Clamp(localDecorationScore, 0f, MaxDecorationScorePerPassenger);
-        }
-
-        if (!foundDecor)
-        {
-            return 0f;
+            totalDecorationScore += GetDecorationScoreAtPosition(passenger.transform.position, placedBuildables);
         }
 
         if (validSampleCount == 0) return 5f;

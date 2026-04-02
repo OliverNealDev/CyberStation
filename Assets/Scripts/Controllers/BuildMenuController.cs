@@ -120,4 +120,14 @@ public class BuildMenuController : MonoBehaviour
     {
         BuildController.Instance.isDemolishMode = true;
     }
+
+    public void ToggleDecorationOverlay()
+    {
+        if (BuildController.Instance == null)
+        {
+            return;
+        }
+
+        BuildController.Instance.ToggleDecorationOverlay();
+    }
 }

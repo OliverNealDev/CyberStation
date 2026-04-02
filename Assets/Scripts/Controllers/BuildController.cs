@@ -15,11 +15,16 @@ public class BuildController : MonoBehaviour
     public Material gridMaterial;
     public Material plainMaterial;
     public Material demolishHighlightMaterial; 
+    [SerializeField] private GameObject decorationPlanePrefab;
+    [SerializeField] private float decorationPlaneSurfaceOffset = 0.05f;
 
     public LayerMask buildFloorLayerMask; 
     public LayerMask demolishLayerMask;
 
     public float highlightPadding = 0.1f;
+
+    private static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
+    private static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
 
     [SerializeField] private bool _isBuildingMode = false;
     public bool isBuildingMode
@@ -40,6 +45,8 @@ public class BuildController : MonoBehaviour
                     RemovePreviewObject();
                     if (!isDemolishMode) UpdateFlooringMaterials(false);
                 }
+
+                UpdateDecorationOverlayVisibility();
             }
         }
     }
@@ -55,6 +62,7 @@ public class BuildController : MonoBehaviour
                 _isDemolishMode = value;
                 if (_isDemolishMode)
                 {
+                    HideDecorationOverlay();
                     isBuildingMode = false;
                     UpdateFlooringMaterials(true);
                 }
@@ -67,6 +75,8 @@ public class BuildController : MonoBehaviour
                     }
                     if (!isBuildingMode) UpdateFlooringMaterials(false);
                 }
+
+                UpdateDecorationOverlayVisibility();
             }
         }
     }
@@ -86,6 +96,9 @@ public class BuildController : MonoBehaviour
     private Vector2Int currentPreviewSize = Vector2Int.one;
     private bool hasPreviewPlacement;
     private bool currentPreviewPlacementValid;
+    private bool showDecorationOverlay;
+    private Transform decorationPlaneContainer;
+    private MaterialPropertyBlock decorationPlanePropertyBlock;
 
     private void Awake()
     {
@@ -97,6 +110,7 @@ public class BuildController : MonoBehaviour
         UpdateFlooringMaterials(_isBuildingMode || _isDemolishMode);
         CreateDemolishHighlightBox();
         RefreshPlacedMaterializerCount();
+        UpdateDecorationOverlayVisibility();
     }
 
     void Update()
@@ -227,6 +241,8 @@ public class BuildController : MonoBehaviour
         {
             ProgressionManager.Instance.RecordBuildPlaced();
         }
+
+        UpdateDecorationOverlayVisibility();
     }
 
     private void UpdateDemolishTarget()
@@ -350,6 +366,7 @@ public class BuildController : MonoBehaviour
 
     public void ExitBuildModes()
     {
+        HideDecorationOverlay();
         isBuildingMode = false;
         isDemolishMode = false;
     }
@@ -359,12 +376,26 @@ public class BuildController : MonoBehaviour
         isBuildingMode = HasBuildSelection;
     }
 
+    public void ToggleDecorationOverlay()
+    {
+        if (showDecorationOverlay)
+        {
+            HideDecorationOverlay();
+            return;
+        }
+
+        showDecorationOverlay = true;
+        UpdateDecorationOverlayVisibility();
+    }
+
     public void ChangePreviewObject(ObjectBuildable objectBuildable)
     {
         if (objectBuildable == null || objectBuildable.prefab == null)
         {
             return;
         }
+
+        bool wasBuildingMode = isBuildingMode;
         
         if (previewObjectInstance != null)
         {
@@ -376,6 +407,11 @@ public class BuildController : MonoBehaviour
         this.objectBuildable = objectBuildable;
         ClearPreviewPlacement();
         isBuildingMode = true;
+
+        if (wasBuildingMode)
+        {
+            UpdateDecorationOverlayVisibility();
+        }
     }
 
     private void ClearPreviewPlacement()
@@ -490,6 +526,103 @@ public class BuildController : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void UpdateDecorationOverlayVisibility()
+    {
+        ClearDecorationOverlay();
+
+        if (!ShouldShowDecorationOverlay())
+        {
+            return;
+        }
+
+        decorationPlaneContainer = new GameObject("DecorationPlaneOverlay").transform;
+
+        PlacedBuildable[] placedBuildables = FindObjectsByType<PlacedBuildable>(FindObjectsSortMode.None);
+        for (int x = 0; x < GridManager.Instance.width; x++)
+        {
+            for (int z = 0; z < GridManager.Instance.height; z++)
+            {
+                if (!GridManager.Instance.IsTileFree(x, z) ||
+                    !TryGetAnyBuildSurfaceHit(new Vector2Int(x, z), out RaycastHit tileHit))
+                {
+                    continue;
+                }
+
+                Vector3 planePosition = GridManager.Instance.GetWorldPositionCenter(
+                    x,
+                    z,
+                    tileHit.point.y + decorationPlaneSurfaceOffset);
+
+                GameObject plane = Instantiate(decorationPlanePrefab, planePosition, Quaternion.identity, decorationPlaneContainer);
+                ApplyDecorationOverlayColor(
+                    plane.GetComponent<Renderer>(),
+                    RatingManager.GetDecorationScoreAtPosition(planePosition, placedBuildables));
+            }
+        }
+    }
+
+    private bool ShouldShowDecorationOverlay()
+    {
+        return showDecorationOverlay &&
+               !isDemolishMode &&
+               decorationPlanePrefab != null &&
+               GridManager.Instance != null;
+    }
+
+    private bool TryGetAnyBuildSurfaceHit(Vector2Int gridPos, out RaycastHit hitInfo)
+    {
+        hitInfo = default;
+
+        if (GridManager.Instance == null)
+        {
+            return false;
+        }
+
+        Vector3 tileCenter = GridManager.Instance.GetWorldPositionCenter(gridPos.x, gridPos.y, 0f);
+        Ray ray = new Ray(tileCenter + Vector3.up * 100f, Vector3.down);
+        return Physics.Raycast(ray, out hitInfo, 200f, buildFloorLayerMask, QueryTriggerInteraction.Ignore) &&
+               IsBuildSurface(hitInfo);
+    }
+
+    private void ApplyDecorationOverlayColor(Renderer planeRenderer, float decorationScore)
+    {
+        if (planeRenderer == null)
+        {
+            return;
+        }
+
+        if (decorationPlanePropertyBlock == null)
+        {
+            decorationPlanePropertyBlock = new MaterialPropertyBlock();
+        }
+
+        float normalizedScore = Mathf.Clamp01(decorationScore / RatingManager.MaxDecorationScorePerPassenger);
+        Color overlayColor = Color.Lerp(Color.black, Color.green, normalizedScore);
+
+        decorationPlanePropertyBlock.Clear();
+        decorationPlanePropertyBlock.SetColor(BaseColorPropertyId, overlayColor);
+        decorationPlanePropertyBlock.SetColor(ColorPropertyId, overlayColor);
+        planeRenderer.SetPropertyBlock(decorationPlanePropertyBlock);
+    }
+
+    private void ClearDecorationOverlay()
+    {
+        if (decorationPlaneContainer == null)
+        {
+            return;
+        }
+
+        decorationPlaneContainer.gameObject.SetActive(false);
+        Destroy(decorationPlaneContainer.gameObject);
+        decorationPlaneContainer = null;
+    }
+
+    private void HideDecorationOverlay()
+    {
+        showDecorationOverlay = false;
+        ClearDecorationOverlay();
     }
 
     private struct BuildPreviewPlacement

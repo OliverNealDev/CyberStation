@@ -4625,6 +4625,8 @@ MonoBehaviour:
   gridMaterial: {fileID: 2100000, guid: 0f8931946eadf0f499e947a1bd46078f, type: 2}
   plainMaterial: {fileID: 2100000, guid: b89f76cb600b73e4ea64ecd7771b37d6, type: 2}
   demolishHighlightMaterial: {fileID: 2100000, guid: 8a8fb1976107016488bbb34b83eede74, type: 2}
+  decorationPlanePrefab: {fileID: 1821913311329546544, guid: 938282b263d9ab1469b2df7ed32c548e, type: 3}
+  decorationPlaneSurfaceOffset: 0.05
   buildFloorLayerMask:
     serializedVersion: 2
     m_Bits: 2048
