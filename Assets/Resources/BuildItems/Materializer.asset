@@ -15,7 +15,8 @@ MonoBehaviour:
   objectName: Materializer
   requiredTier: 1
   description: Allows passengers to materialise into the station while also allowing
-    dematerialisation for exiting passengers.
+    dematerialisation for exiting passengers. Multiple materialisers will evenly
+    divide passenger spawns between them.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 8727649448683996293, guid: ab3849390d0f01848b09c052b4469ed3, type: 3}
   cost: 300
