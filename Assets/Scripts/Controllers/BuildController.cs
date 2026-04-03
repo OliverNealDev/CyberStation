@@ -304,7 +304,7 @@ public class BuildController : MonoBehaviour
         }
 
         bool removedMaterializer = IsPlacedMaterializer(currentDemolishTarget);
-        EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
+        EconomyManager.Instance.AddMoney(currentDemolishTarget.cost, false);
         GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
         Destroy(currentDemolishTarget.gameObject);
         SoundEffectController.Play(SoundEffectId.Demolish);

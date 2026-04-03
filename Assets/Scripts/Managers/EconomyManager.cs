@@ -10,12 +10,26 @@ public class EconomyManager : MonoBehaviour
     public static EconomyManager Instance;
     
     public static event Action<int> OnMoneyChanged;
+    public static event Action<int> OnIncomePerMinuteChanged;
     public static event Action<int, Sprite> OnExpenseRecorded;
 
     public int money = 2050;
     private readonly Dictionary<StaffMember, float> staffBillingDueTimes = new Dictionary<StaffMember, float>();
     private readonly Dictionary<TrainService, float> trainBillingDueTimes = new Dictionary<TrainService, float>();
     private const float RecurringBillingInterval = 60f;
+    private const float IncomeAverageWindowSeconds = 60f;
+
+    private readonly Queue<MoneyChangeSample> recentMoneyChanges = new Queue<MoneyChangeSample>();
+    private int recentMoneyWindowTotal;
+    private int currentIncomePerMinute;
+
+    public int CurrentIncomePerMinute => currentIncomePerMinute;
+
+    private struct MoneyChangeSample
+    {
+        public float timestamp;
+        public int delta;
+    }
     
     private void Awake()
     {
@@ -25,6 +39,7 @@ public class EconomyManager : MonoBehaviour
     void Start()
     {
         OnMoneyChanged?.Invoke(money);
+        OnIncomePerMinuteChanged?.Invoke(currentIncomePerMinute);
     }
 
     void Update()
@@ -32,28 +47,27 @@ public class EconomyManager : MonoBehaviour
 #if UNITY_EDITOR
         if (Keyboard.current != null && Keyboard.current.mKey.wasPressedThisFrame)
         {
-            AddMoney(money);
+            AddMoney(money, false);
         }
 #endif
 
         UpdateRecurringCharges();
+        UpdateIncomeAverage(Time.time);
     }
     
-    public void AddMoney(int amount)
+    public void AddMoney(int amount, bool includeInIncomeAverage = true)
     {
-        money += amount; 
-        OnMoneyChanged?.Invoke(money);
+        ChangeMoney(amount, includeInIncomeAverage);
     }
     
-    public void SpendMoney(int amount)
+    public void SpendMoney(int amount, bool includeInIncomeAverage = false)
     {
-        SpendMoney(amount, null, false);
+        SpendMoney(amount, null, false, includeInIncomeAverage);
     }
 
-    public void SpendMoney(int amount, Sprite icon, bool showBill)
+    public void SpendMoney(int amount, Sprite icon, bool showBill, bool includeInIncomeAverage = false)
     {
-        money -= amount;
-        OnMoneyChanged?.Invoke(money);
+        ChangeMoney(-amount, includeInIncomeAverage);
 
         if (showBill && amount > 0)
         {
@@ -75,6 +89,53 @@ public class EconomyManager : MonoBehaviour
         float now = Time.time;
         UpdateStaffRecurringCharges(now);
         UpdateTrainRecurringCharges(now);
+    }
+
+    private void ChangeMoney(int delta, bool includeInIncomeAverage)
+    {
+        money += delta;
+        if (includeInIncomeAverage)
+        {
+            RecordMoneyChange(delta);
+        }
+
+        OnMoneyChanged?.Invoke(money);
+    }
+
+    private void RecordMoneyChange(int delta)
+    {
+        if (delta == 0)
+        {
+            return;
+        }
+
+        recentMoneyChanges.Enqueue(new MoneyChangeSample
+        {
+            timestamp = Time.time,
+            delta = delta
+        });
+
+        recentMoneyWindowTotal += delta;
+        UpdateIncomeAverage(Time.time);
+    }
+
+    private void UpdateIncomeAverage(float now)
+    {
+        float cutoff = now - IncomeAverageWindowSeconds;
+        while (recentMoneyChanges.Count > 0 && recentMoneyChanges.Peek().timestamp < cutoff)
+        {
+            MoneyChangeSample expiredChange = recentMoneyChanges.Dequeue();
+            recentMoneyWindowTotal -= expiredChange.delta;
+        }
+
+        int updatedIncomePerMinute = Mathf.RoundToInt(recentMoneyWindowTotal * (60f / IncomeAverageWindowSeconds));
+        if (updatedIncomePerMinute == currentIncomePerMinute)
+        {
+            return;
+        }
+
+        currentIncomePerMinute = updatedIncomePerMinute;
+        OnIncomePerMinuteChanged?.Invoke(currentIncomePerMinute);
     }
 
     private void UpdateStaffRecurringCharges(float now)
@@ -121,7 +182,7 @@ public class EconomyManager : MonoBehaviour
                 int amount = staffType.salaryPerMinute * staffCount;
                 if (amount > 0)
                 {
-                    SpendMoney(amount, staffType.GetIcon(), true);
+                    SpendMoney(amount, staffType.GetIcon(), true, true);
                 }
 
                 dueTime += RecurringBillingInterval;
@@ -166,7 +227,7 @@ public class EconomyManager : MonoBehaviour
                 int amount = service.trainData.costPerMinute;
                 if (amount > 0)
                 {
-                    SpendMoney(amount, service.trainData.GetIcon(), true);
+                    SpendMoney(amount, service.trainData.GetIcon(), true, true);
                 }
 
                 dueTime += RecurringBillingInterval;

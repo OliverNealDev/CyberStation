@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -39,6 +40,7 @@ public class UIController : MonoBehaviour
     
     [Header("UI References")]
     public TextMeshProUGUI moneyText;
+    public TextMeshProUGUI incomeText;
     public Color positiveMoneyColor = new Color(6, 159, 0);
     public Color negativeMoneyColor = new Color(188, 0, 0);
     
@@ -87,11 +89,18 @@ public class UIController : MonoBehaviour
         if (buildMenuButton) buildMenuButton.onClick.AddListener(OnBuildMenuClicked);
 
         RefreshTopBarButtonVisibility();
+
+        if (EconomyManager.Instance != null)
+        {
+            OnMoneyChanged(EconomyManager.Instance.money);
+            OnIncomePerMinuteChanged(EconomyManager.Instance.CurrentIncomePerMinute);
+        }
     }
 
     void OnEnable()
     {
         EconomyManager.OnMoneyChanged += OnMoneyChanged;
+        EconomyManager.OnIncomePerMinuteChanged += OnIncomePerMinuteChanged;
         EconomyManager.OnExpenseRecorded += OnExpenseRecorded;
         ProgressionManager.OnProgressionChanged += RefreshTopBarButtonVisibility;
         TrainManager.OnTrainAssignmentsChanged += RefreshTopBarButtonVisibility;
@@ -101,6 +110,7 @@ public class UIController : MonoBehaviour
     void OnDisable()
     {
         EconomyManager.OnMoneyChanged -= OnMoneyChanged;
+        EconomyManager.OnIncomePerMinuteChanged -= OnIncomePerMinuteChanged;
         EconomyManager.OnExpenseRecorded -= OnExpenseRecorded;
         ProgressionManager.OnProgressionChanged -= RefreshTopBarButtonVisibility;
         TrainManager.OnTrainAssignmentsChanged -= RefreshTopBarButtonVisibility;
@@ -379,10 +389,13 @@ public class UIController : MonoBehaviour
         }
     }
 
+    private void OnIncomePerMinuteChanged(int amountPerMinute)
+    {
+        UpdateIncomeText(amountPerMinute);
+    }
+
     void UpdateMoneyText(int amount)
     {
-        string abbreviatedAmount = AbbreviateNumber(amount);
-        
         if (moneyText != null)
         {
             if (amount >= 0 && moneyText.color != positiveMoneyColor)
@@ -393,8 +406,28 @@ public class UIController : MonoBehaviour
             {
                 moneyText.color = negativeMoneyColor;
             }
-            moneyText.text = "$" + abbreviatedAmount;
+            moneyText.text = FormatMoney(amount);
         }
+    }
+
+    private void UpdateIncomeText(int amountPerMinute)
+    {
+        if (incomeText == null)
+        {
+            return;
+        }
+
+        if (amountPerMinute < 0)
+        {
+            incomeText.color = negativeMoneyColor;
+            incomeText.text = "-$" + FormatWholeNumber(Mathf.Abs(amountPerMinute)) + "/m";
+            return;
+        }
+
+        incomeText.color = positiveMoneyColor;
+        incomeText.text = amountPerMinute > 0
+            ? "+$" + FormatWholeNumber(amountPerMinute) + "/m"
+            : "$0/m";
     }
 
     private void EnsureBillContainer()
@@ -432,7 +465,7 @@ public class UIController : MonoBehaviour
 
         if (entry.text != null)
         {
-            entry.text.text = $"-${amount}";
+            entry.text.text = "-$" + FormatWholeNumber(amount);
             entry.text.color = negativeMoneyColor;
         }
 
@@ -513,29 +546,15 @@ public class UIController : MonoBehaviour
         rectTransform.anchoredPosition = targetPosition;
     }
     
-    public string AbbreviateNumber(int number)
+    private string FormatMoney(int amount)
     {
-        if (number < 10000) return number.ToString();
+        string formattedNumber = FormatWholeNumber(Mathf.Abs(amount));
+        return amount < 0 ? "-$" + formattedNumber : "$" + formattedNumber;
+    }
 
-        string[] suffixes = { "", "k", "M", "B", "T", "Qa", "Qi" };
-        int suffixIndex = 0;
-        double abbreviatedNumber = number;
-
-        while (abbreviatedNumber >= 1000 && suffixIndex < suffixes.Length - 1)
-        {
-            abbreviatedNumber /= 1000;
-            suffixIndex++;
-        }
-
-        string format;
-        if (abbreviatedNumber >= 100)
-            format = "0";
-        else if (abbreviatedNumber >= 10)
-            format = "0.#";
-        else
-            format = "0.##";
-
-        return $"{abbreviatedNumber.ToString(format)}{suffixes[suffixIndex]}";
+    private string FormatWholeNumber(int number)
+    {
+        return number.ToString("N0", CultureInfo.InvariantCulture);
     }
 }
 

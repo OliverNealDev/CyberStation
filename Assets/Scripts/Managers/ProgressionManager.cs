@@ -266,7 +266,7 @@ public class ProgressionManager : MonoBehaviour
 
         if (totalReward > 0)
         {
-            EconomyManager.Instance.AddMoney(totalReward);
+            EconomyManager.Instance.AddMoney(totalReward, false);
         }
     }
 
