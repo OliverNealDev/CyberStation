@@ -16,7 +16,7 @@ public class BuildController : MonoBehaviour
     public Material plainMaterial;
     public Material demolishHighlightMaterial; 
     [SerializeField] private GameObject decorationPlanePrefab;
-    [SerializeField] private float decorationPlaneSurfaceOffset = 0.05f;
+    [SerializeField] private float decorationPlaneSurfaceOffset = 0.001f;
 
     public LayerMask buildFloorLayerMask; 
     public LayerMask demolishLayerMask;
@@ -32,22 +32,24 @@ public class BuildController : MonoBehaviour
         get { return _isBuildingMode; }
         set
         {
-            if (_isBuildingMode != value)
+            if (_isBuildingMode == value)
             {
-                _isBuildingMode = value;
-                if (_isBuildingMode)
-                {
-                    isDemolishMode = false;
-                    UpdateFlooringMaterials(true);
-                }
-                else
-                {
-                    RemovePreviewObject();
-                    if (!isDemolishMode) UpdateFlooringMaterials(false);
-                }
-
-                UpdateDecorationOverlayVisibility();
+                return;
             }
+
+            _isBuildingMode = value;
+            if (_isBuildingMode && HasBuildSelection && _isDemolishMode)
+            {
+                _isDemolishMode = false;
+                ClearDemolishTarget();
+            }
+
+            if (!_isBuildingMode)
+            {
+                RemovePreviewObject();
+            }
+
+            RefreshModeState();
         }
     }
 
@@ -57,29 +59,29 @@ public class BuildController : MonoBehaviour
         get { return _isDemolishMode; }
         set
         {
-            if (_isDemolishMode != value)
+            if (value && HasActiveBuildPreview)
             {
-                _isDemolishMode = value;
-                if (_isDemolishMode)
-                {
-                    HideDecorationOverlay();
-                    isBuildingMode = false;
-                    UpdateFlooringMaterials(true);
-                }
-                else
-                {
-                    if (currentDemolishTarget != null)
-                    {
-                        currentDemolishTarget = null;
-                        demolishHighlightBox.SetActive(false);
-                    }
-                    if (!isBuildingMode) UpdateFlooringMaterials(false);
-                }
-
-                UpdateDecorationOverlayVisibility();
+                return;
             }
+
+            if (_isDemolishMode == value)
+            {
+                return;
+            }
+
+            _isDemolishMode = value;
+            if (!_isDemolishMode)
+            {
+                ClearDemolishTarget();
+            }
+
+            RefreshModeState();
         }
     }
+
+    public bool IsDecorationOverlayEnabled => showDecorationOverlay;
+    public bool IsAnyBuildModeActive => isBuildContextActive || isBuildingMode || isDemolishMode || showDecorationOverlay;
+    public bool HasActiveBuildPreview => isBuildingMode && HasBuildSelection;
 
     public GameObject selectedPreviewObject;
     public bool HasBuildSelection => objectBuildable != null && selectedPreviewObject != null;
@@ -97,6 +99,7 @@ public class BuildController : MonoBehaviour
     private bool hasPreviewPlacement;
     private bool currentPreviewPlacementValid;
     private bool showDecorationOverlay;
+    private bool isBuildContextActive;
     private Transform decorationPlaneContainer;
     private MaterialPropertyBlock decorationPlanePropertyBlock;
 
@@ -107,10 +110,9 @@ public class BuildController : MonoBehaviour
 
     private void Start()
     {
-        UpdateFlooringMaterials(_isBuildingMode || _isDemolishMode);
         CreateDemolishHighlightBox();
         RefreshPlacedMaterializerCount();
-        UpdateDecorationOverlayVisibility();
+        RefreshModeState();
     }
 
     void Update()
@@ -126,32 +128,33 @@ public class BuildController : MonoBehaviour
                 HandleBuildPreview();
             }
 
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOverUI()) 
-            {
-                TryPlaceCurrentPreview();
-            }
         }
-        else if (isDemolishMode)
+
+        if (isDemolishMode)
         {
             UpdateDemolishTarget();
+        }
+        else
+        {
+            ClearDemolishTarget();
+        }
 
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOverUI() && currentDemolishTarget != null)
-            {
-                bool removedMaterializer = IsPlacedMaterializer(currentDemolishTarget);
-                EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
-                GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
-                Destroy(currentDemolishTarget.gameObject);
-                SoundEffectController.Play(SoundEffectId.Demolish);
+        if (Mouse.current == null ||
+            !Mouse.current.leftButton.wasPressedThisFrame ||
+            IsPointerOverUI())
+        {
+            return;
+        }
 
-                if (removedMaterializer)
-                {
-                    placedMaterializerCount = Mathf.Max(0, placedMaterializerCount - 1);
-                    NotifyBuildablesChanged();
-                }
-                
-                currentDemolishTarget = null;
-                demolishHighlightBox.SetActive(false);
-            }
+        if (isDemolishMode && currentDemolishTarget != null)
+        {
+            DemolishCurrentTarget();
+            return;
+        }
+
+        if (isBuildingMode)
+        {
+            TryPlaceCurrentPreview();
         }
     }
 
@@ -293,6 +296,30 @@ public class BuildController : MonoBehaviour
         demolishHighlightBox.SetActive(false);
     }
 
+    private void DemolishCurrentTarget()
+    {
+        if (currentDemolishTarget == null)
+        {
+            return;
+        }
+
+        bool removedMaterializer = IsPlacedMaterializer(currentDemolishTarget);
+        EconomyManager.Instance.AddMoney(currentDemolishTarget.cost);
+        GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
+        Destroy(currentDemolishTarget.gameObject);
+        SoundEffectController.Play(SoundEffectId.Demolish);
+
+        if (removedMaterializer)
+        {
+            placedMaterializerCount = Mathf.Max(0, placedMaterializerCount - 1);
+            NotifyBuildablesChanged();
+        }
+
+        currentDemolishTarget = null;
+        demolishHighlightBox.SetActive(false);
+        UpdateDecorationOverlayVisibility();
+    }
+
     private void UpdateDemolishHighlight()
     {
         if (currentDemolishTarget == null) return;
@@ -366,6 +393,7 @@ public class BuildController : MonoBehaviour
 
     public void ExitBuildModes()
     {
+        SetBuildContextActive(false);
         HideDecorationOverlay();
         isBuildingMode = false;
         isDemolishMode = false;
@@ -373,19 +401,14 @@ public class BuildController : MonoBehaviour
 
     public void ResumeBuildMode()
     {
+        SetBuildContextActive(true);
         isBuildingMode = HasBuildSelection;
     }
 
     public void ToggleDecorationOverlay()
     {
-        if (showDecorationOverlay)
-        {
-            HideDecorationOverlay();
-            return;
-        }
-
-        showDecorationOverlay = true;
-        UpdateDecorationOverlayVisibility();
+        showDecorationOverlay = !showDecorationOverlay;
+        RefreshModeState();
     }
 
     public void ChangePreviewObject(ObjectBuildable objectBuildable)
@@ -406,6 +429,8 @@ public class BuildController : MonoBehaviour
         selectedPreviewObject = objectBuildable.prefab;
         this.objectBuildable = objectBuildable;
         ClearPreviewPlacement();
+        SetBuildContextActive(true);
+        isDemolishMode = false;
         isBuildingMode = true;
 
         if (wasBuildingMode)
@@ -566,9 +591,25 @@ public class BuildController : MonoBehaviour
     private bool ShouldShowDecorationOverlay()
     {
         return showDecorationOverlay &&
-               !isDemolishMode &&
                decorationPlanePrefab != null &&
                GridManager.Instance != null;
+    }
+
+    private void RefreshModeState()
+    {
+        UpdateFlooringMaterials(IsAnyBuildModeActive);
+        UpdateDecorationOverlayVisibility();
+    }
+
+    private void SetBuildContextActive(bool isActive)
+    {
+        if (isBuildContextActive == isActive)
+        {
+            return;
+        }
+
+        isBuildContextActive = isActive;
+        RefreshModeState();
     }
 
     private bool TryGetAnyBuildSurfaceHit(Vector2Int gridPos, out RaycastHit hitInfo)
@@ -622,7 +663,7 @@ public class BuildController : MonoBehaviour
     private void HideDecorationOverlay()
     {
         showDecorationOverlay = false;
-        ClearDecorationOverlay();
+        RefreshModeState();
     }
 
     private struct BuildPreviewPlacement

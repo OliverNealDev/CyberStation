@@ -227,7 +227,7 @@ public class Litter : MonoBehaviour
             return;
         }
 
-        if (BuildController.Instance != null && (BuildController.Instance.isBuildingMode || BuildController.Instance.isDemolishMode))
+        if (BuildController.Instance != null && BuildController.Instance.IsAnyBuildModeActive)
         {
             return;
         }

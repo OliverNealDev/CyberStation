@@ -118,6 +118,10 @@ MonoBehaviour:
   idleLightIntensity: 0
   activeLightIntensity: 5
   activeFacilityColor: {r: 1, g: 0, b: 1, a: 1}
+  doorTransform: {fileID: 0}
+  doorIdlePosition: {fileID: 0}
+  doorClosedPosition: {fileID: 0}
+  doorMoveDuration: 1.25
   showerDuration: 9.1
   dropletSpawnRate: 0.12
   dropletFallDuration: 0.4
@@ -1780,7 +1784,7 @@ Transform:
   m_GameObject: {fileID: 7855873875766772949}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.435, z: 0}
+  m_LocalPosition: {x: 0, y: 4.444, z: 0}
   m_LocalScale: {x: 1.0014164, y: 0.125, z: 1.0197705}
   m_ConstrainProportionsScale: 0
   m_Children: []
