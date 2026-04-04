@@ -790,17 +790,22 @@ public static class PointerUiUtility
 
     public static bool IsPointerOverBlockingUi()
     {
+        return IsPointerOverUi(ShouldBlockPointer);
+    }
+
+    public static bool IsPointerOverScrollableUi()
+    {
+        return IsPointerOverUi(ShouldCaptureScroll);
+    }
+
+    private static bool IsPointerOverUi(Predicate<GameObject> shouldCapturePointer)
+    {
         if (EventSystem.current == null || Mouse.current == null)
         {
             return false;
         }
 
-        if (pointerEventData == null || cachedEventSystem != EventSystem.current)
-        {
-            cachedEventSystem = EventSystem.current;
-            pointerEventData = new PointerEventData(EventSystem.current);
-        }
-
+        EnsurePointerEventData();
         pointerEventData.position = Mouse.current.position.ReadValue();
 
         RaycastResults.Clear();
@@ -808,13 +813,22 @@ public static class PointerUiUtility
 
         for (int i = 0; i < RaycastResults.Count; i++)
         {
-            if (ShouldBlockPointer(RaycastResults[i].gameObject))
+            if (shouldCapturePointer(RaycastResults[i].gameObject))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private static void EnsurePointerEventData()
+    {
+        if (pointerEventData == null || cachedEventSystem != EventSystem.current)
+        {
+            cachedEventSystem = EventSystem.current;
+            pointerEventData = new PointerEventData(EventSystem.current);
+        }
     }
 
     public static void DisableRaycastTargets(GameObject root)
@@ -868,6 +882,28 @@ public static class PointerUiUtility
         }
 
         Canvas canvas = target.GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            return true;
+        }
+
+        return canvas.renderMode != RenderMode.WorldSpace;
+    }
+
+    private static bool ShouldCaptureScroll(GameObject target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+
+        GameObject scrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(target);
+        if (scrollHandler == null)
+        {
+            return false;
+        }
+
+        Canvas canvas = scrollHandler.GetComponentInParent<Canvas>();
         if (canvas == null)
         {
             return true;
