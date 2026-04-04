@@ -126,8 +126,9 @@ public class PlatformController : MonoBehaviour
         Bounds bounds = passengerWaitArea.bounds;
         float randomX = Random.Range(bounds.min.x, bounds.max.x);
         float randomZ = Random.Range(bounds.min.z, bounds.max.z);
+        float waitY = bounds.center.y;
 
-        return new Vector3(randomX, 0, randomZ);
+        return new Vector3(randomX, waitY, randomZ);
     }
 
     public Vector3 GetPassengerWaitingLookTarget(Vector3 passengerPosition)

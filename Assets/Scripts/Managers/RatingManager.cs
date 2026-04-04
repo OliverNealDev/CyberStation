@@ -1,7 +1,20 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RatingManager : MonoBehaviour
 {
+    private const string BuildableFloorTag = "BuildableFlooring";
+    private const float PassengerFloorRaycastHeight = 32f;
+    private const float PassengerFloorRaycastDistance = 64f;
+    private const float PassengerFloorTolerance = 0.5f;
+    private const float DecorationPresenceThreshold = 0.15f;
+    private const float DecorationCoverageTarget = 0.6f;
+    private const float DecorationIntensityWeight = 0.7f;
+    private const float DecorationCoverageWeight = 0.3f;
+    private const float DecorationFiveStarStrengthMultiplier = 0.4f;
+    private const float DecorationMinFiveStarScore = 1.25f;
+    private const float DecorationMaxFiveStarScore = 2.5f;
+
     public static RatingManager Instance;
 
     public float stationRating = 5f;
@@ -16,10 +29,16 @@ public class RatingManager : MonoBehaviour
     public const float MaxDecorationScorePerPassenger = 5f;
 
     private float tickTimer;
+    private int groundLayerMask;
+    private readonly List<Passenger> floorRatingPassengers = new();
+    private readonly RaycastHit[] passengerFloorHits = new RaycastHit[32];
 
     void Awake()
     {
         Instance = this;
+
+        int groundLayer = LayerMask.NameToLayer("groundLayer");
+        groundLayerMask = groundLayer >= 0 ? 1 << groundLayer : 0;
     }
 
     void Update()
@@ -35,12 +54,13 @@ public class RatingManager : MonoBehaviour
 
     void CalculateTargetsAndApply()
     {
+        List<Passenger> floorEligiblePassengers = GetFloorEligiblePassengers();
         float targetCleanliness = GetCleanlinessTarget();
-        float targetCrowdedness = GetCrowdednessTarget();
+        float targetCrowdedness = GetCrowdednessTarget(floorEligiblePassengers);
         float targetQueueTimes = GetQueueTimesTarget();
         float targetStationSize = GetStationSizeTarget();
         float targetPassengerNeeds = GetPassengerNeedsTarget();
-        float targetDecoration = GetDecorationTarget();
+        float targetDecoration = GetDecorationTarget(floorEligiblePassengers);
 
         cleanlinessRating = Mathf.Lerp(cleanlinessRating, targetCleanliness, 0.2f);
         crowdednessRating = Mathf.Lerp(crowdednessRating, targetCrowdedness, 0.2f);
@@ -66,20 +86,21 @@ public class RatingManager : MonoBehaviour
         return (1f - (totalLitter / maxLitterLimit)) * 5f;
     }
 
-    float GetCrowdednessTarget()
+    float GetCrowdednessTarget(List<Passenger> passengers)
     {
-        var passengers = PassengerManager.Instance.activePassengers;
         int count = passengers.Count;
 
         if (count == 0) return 5f;
 
         int sampleSize = Mathf.Min(count, 20);
         int totalNearby = 0;
+        int validSampleCount = 0;
 
         for (int i = 0; i < sampleSize; i++)
         {
             Passenger sampleTarget = passengers[Random.Range(0, count)];
             if (sampleTarget == null) continue;
+            validSampleCount++;
 
             for (int j = 0; j < count; j++)
             {
@@ -91,7 +112,9 @@ public class RatingManager : MonoBehaviour
             }
         }
 
-        float density = (float)totalNearby / sampleSize;
+        if (validSampleCount == 0) return 5f;
+
+        float density = (float)totalNearby / validSampleCount;
 
         if (density <= 2.0f) return 5f;
         if (density <= 4.5f) return 4f;
@@ -158,6 +181,79 @@ public class RatingManager : MonoBehaviour
         return Mathf.Clamp((1f - (failRatio / 0.5f)) * 5f, 0f, 5f);
     }
 
+    List<Passenger> GetFloorEligiblePassengers()
+    {
+        floorRatingPassengers.Clear();
+
+        var passengers = PassengerManager.Instance.activePassengers;
+        for (int i = 0; i < passengers.Count; i++)
+        {
+            Passenger passenger = passengers[i];
+            if (IsPassengerOnOrAboveBuildableFloor(passenger))
+            {
+                floorRatingPassengers.Add(passenger);
+            }
+        }
+
+        return floorRatingPassengers;
+    }
+
+    bool IsPassengerOnOrAboveBuildableFloor(Passenger passenger)
+    {
+        if (passenger == null)
+        {
+            return false;
+        }
+
+        return TryGetSupportingBuildableFloorHeight(passenger.transform.position, out _);
+    }
+
+    bool TryGetSupportingBuildableFloorHeight(Vector3 position, out float floorHeight)
+    {
+        floorHeight = 0f;
+
+        if (groundLayerMask == 0)
+        {
+            return false;
+        }
+
+        Vector3 rayStart = position + (Vector3.up * PassengerFloorRaycastHeight);
+        int hitCount = Physics.RaycastNonAlloc(
+            rayStart,
+            Vector3.down,
+            passengerFloorHits,
+            PassengerFloorRaycastDistance,
+            groundLayerMask,
+            QueryTriggerInteraction.Ignore);
+
+        if (hitCount == 0)
+        {
+            return false;
+        }
+
+        float highestSupportedFloor = float.MinValue;
+        float maxSupportedHeight = position.y + PassengerFloorTolerance;
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = passengerFloorHits[i];
+            if (hit.collider == null || hit.collider.isTrigger || !hit.collider.CompareTag(BuildableFloorTag))
+            {
+                continue;
+            }
+
+            float hitHeight = hit.point.y;
+            if (hitHeight > maxSupportedHeight || hitHeight <= highestSupportedFloor)
+            {
+                continue;
+            }
+
+            highestSupportedFloor = hitHeight;
+            floorHeight = hitHeight;
+        }
+
+        return highestSupportedFloor > float.MinValue;
+    }
+
     public static float GetDecorationScoreAtPosition(Vector3 position, PlacedBuildable[] placedBuildables)
     {
         if (placedBuildables == null || placedBuildables.Length == 0)
@@ -193,9 +289,8 @@ public class RatingManager : MonoBehaviour
         return Mathf.Clamp(localDecorationScore, 0f, MaxDecorationScorePerPassenger);
     }
 
-    float GetDecorationTarget()
+    float GetDecorationTarget(List<Passenger> passengers)
     {
-        var passengers = PassengerManager.Instance.activePassengers;
         int count = passengers.Count;
 
         if (count == 0) return 5f;
@@ -203,36 +298,53 @@ public class RatingManager : MonoBehaviour
         PlacedBuildable[] placedBuildables = FindObjectsByType<PlacedBuildable>(FindObjectsSortMode.None);
         if (placedBuildables.Length == 0) return 0f;
 
-        bool foundDecor = false;
+        int decorativeBuildableCount = 0;
+        float totalPlacedDecorationStrength = 0f;
         for (int i = 0; i < placedBuildables.Length; i++)
         {
-            if (placedBuildables[i] != null && placedBuildables[i].HasDecoration)
+            PlacedBuildable buildable = placedBuildables[i];
+            if (buildable != null && buildable.HasDecoration)
             {
-                foundDecor = true;
-                break;
+                decorativeBuildableCount++;
+                totalPlacedDecorationStrength += buildable.decorationStrength;
             }
         }
 
-        if (!foundDecor)
+        if (decorativeBuildableCount == 0)
         {
             return 0f;
         }
 
-        int sampleSize = Mathf.Min(count, 20);
-        int validSampleCount = 0;
         float totalDecorationScore = 0f;
+        int decoratedPassengerCount = 0;
 
-        for (int i = 0; i < sampleSize; i++)
+        for (int i = 0; i < count; i++)
         {
-            Passenger passenger = passengers[Random.Range(0, count)];
+            Passenger passenger = passengers[i];
             if (passenger == null) continue;
 
-            validSampleCount++;
-            totalDecorationScore += GetDecorationScoreAtPosition(passenger.transform.position, placedBuildables);
+            float localDecorationScore = GetDecorationScoreAtPosition(passenger.transform.position, placedBuildables);
+            totalDecorationScore += localDecorationScore;
+
+            if (localDecorationScore >= DecorationPresenceThreshold)
+            {
+                decoratedPassengerCount++;
+            }
         }
 
-        if (validSampleCount == 0) return 5f;
+        float averageDecorationScore = totalDecorationScore / count;
+        float averageDecorationStrength = totalPlacedDecorationStrength / decorativeBuildableCount;
+        float fiveStarScore = Mathf.Clamp(
+            averageDecorationStrength * DecorationFiveStarStrengthMultiplier,
+            DecorationMinFiveStarScore,
+            DecorationMaxFiveStarScore);
 
-        return totalDecorationScore / validSampleCount;
+        float normalizedIntensity = Mathf.Clamp01(averageDecorationScore / fiveStarScore);
+        float normalizedCoverage = Mathf.Clamp01(((float)decoratedPassengerCount / count) / DecorationCoverageTarget);
+        float normalizedDecorationRating =
+            (normalizedIntensity * DecorationIntensityWeight) +
+            (normalizedCoverage * DecorationCoverageWeight);
+
+        return normalizedDecorationRating * 5f;
     }
 }

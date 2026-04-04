@@ -25,6 +25,8 @@ public class BuildController : MonoBehaviour
 
     private static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
+    private static readonly Color DecorationOverlayMinColor = new Color32(32, 32, 32, 255);
+    private static readonly Color DecorationOverlayMaxColor = Color.green;
 
     [SerializeField] private bool _isBuildingMode = false;
     public bool isBuildingMode
@@ -702,7 +704,7 @@ public class BuildController : MonoBehaviour
         }
 
         float normalizedScore = Mathf.Clamp01(decorationScore / RatingManager.MaxDecorationScorePerPassenger);
-        Color overlayColor = Color.Lerp(Color.black, Color.green, normalizedScore);
+        Color overlayColor = Color.Lerp(DecorationOverlayMinColor, DecorationOverlayMaxColor, normalizedScore);
 
         decorationPlanePropertyBlock.Clear();
         decorationPlanePropertyBlock.SetColor(BaseColorPropertyId, overlayColor);
