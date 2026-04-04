@@ -102,6 +102,9 @@ public class BuildController : MonoBehaviour
     private bool isBuildContextActive;
     private Transform decorationPlaneContainer;
     private MaterialPropertyBlock decorationPlanePropertyBlock;
+    private Vector2 rightClickPressPosition;
+    private bool isTrackingRightClickRotate;
+    private bool didRightClickDrag;
 
     private void Awake()
     {
@@ -120,14 +123,11 @@ public class BuildController : MonoBehaviour
         if (isBuildingMode)
         {
             HandleBuildPreview();
-
-            if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
-            {
-                objectRotation += 90;
-                if (objectRotation >= 360) objectRotation = 0;
-                HandleBuildPreview();
-            }
-
+            HandleBuildRotationInput();
+        }
+        else
+        {
+            ResetRightClickRotateState();
         }
 
         if (isDemolishMode)
@@ -155,6 +155,50 @@ public class BuildController : MonoBehaviour
         if (isBuildingMode)
         {
             TryPlaceCurrentPreview();
+        }
+    }
+
+    private void HandleBuildRotationInput()
+    {
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            RotatePreviewClockwise();
+        }
+
+        if (Mouse.current == null)
+        {
+            return;
+        }
+
+        if (Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            isTrackingRightClickRotate = !IsPointerOverUI();
+            didRightClickDrag = false;
+            rightClickPressPosition = Mouse.current.position.ReadValue();
+        }
+
+        if (isTrackingRightClickRotate &&
+            !didRightClickDrag &&
+            Mouse.current.rightButton.isPressed &&
+            PointerDragUtility.HasExceededDragThreshold(rightClickPressPosition, Mouse.current.position.ReadValue()))
+        {
+            didRightClickDrag = true;
+        }
+
+        if (!Mouse.current.rightButton.wasReleasedThisFrame)
+        {
+            return;
+        }
+
+        bool shouldRotate = isTrackingRightClickRotate &&
+                            !didRightClickDrag &&
+                            !IsPointerOverUI();
+
+        ResetRightClickRotateState();
+
+        if (shouldRotate)
+        {
+            RotatePreviewClockwise();
         }
     }
 
@@ -389,6 +433,7 @@ public class BuildController : MonoBehaviour
         }
 
         ClearPreviewPlacement();
+        ResetRightClickRotateState();
     }
 
     public void ExitBuildModes()
@@ -551,6 +596,23 @@ public class BuildController : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void RotatePreviewClockwise()
+    {
+        objectRotation += 90;
+        if (objectRotation >= 360)
+        {
+            objectRotation = 0;
+        }
+
+        HandleBuildPreview();
+    }
+
+    private void ResetRightClickRotateState()
+    {
+        isTrackingRightClickRotate = false;
+        didRightClickDrag = false;
     }
 
     private void UpdateDecorationOverlayVisibility()
@@ -810,5 +872,36 @@ public static class PointerUiUtility
         }
 
         return canvas.renderMode != RenderMode.WorldSpace;
+    }
+}
+
+public static class PointerDragUtility
+{
+    public const float RightClickDragThresholdPixels = 8f;
+
+    public static bool HasExceededDragThreshold(Vector2 startPosition, Vector2 currentPosition, float dragThresholdPixels = RightClickDragThresholdPixels)
+    {
+        float threshold = Mathf.Max(0f, dragThresholdPixels);
+        return (currentPosition - startPosition).sqrMagnitude >= threshold * threshold;
+    }
+
+    public static bool TryGetGroundPlanePoint(Camera camera, Vector2 screenPosition, out Vector3 worldPoint, float planeHeight = 0f)
+    {
+        worldPoint = default;
+
+        if (camera == null)
+        {
+            return false;
+        }
+
+        Plane groundPlane = new Plane(Vector3.up, new Vector3(0f, planeHeight, 0f));
+        Ray ray = camera.ScreenPointToRay(screenPosition);
+        if (!groundPlane.Raycast(ray, out float distance))
+        {
+            return false;
+        }
+
+        worldPoint = ray.GetPoint(distance);
+        return true;
     }
 }

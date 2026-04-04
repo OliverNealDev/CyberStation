@@ -5,17 +5,36 @@ public class CameraController : MonoBehaviour
 {
     public float moveSpeed = 20f;
     public float rotationSpeed = 100f;
-    public float mouseDragSensitivity = 0.5f;
     public float zoomSpeed = 2f;
     public float minHeight = 5f;
     public float maxHeight = 50f;
+
+    private Camera controlledCamera;
+    private Vector2 rightDragStartScreenPosition;
+    private Vector2 lastRightDragScreenPosition;
+    private float rightDragPlaneHeight;
+    private bool isTrackingRightDrag;
+    private bool isRightDragPanning;
+
+    private void Awake()
+    {
+        controlledCamera = GetComponent<Camera>();
+        if (controlledCamera == null)
+        {
+            controlledCamera = Camera.main;
+        }
+    }
 
     private void Update()
     {
         if (Keyboard.current == null || Mouse.current == null) return;
 
         HandleMovement();
-        HandleRotation();
+        HandleMousePan();
+        if (!isRightDragPanning)
+        {
+            HandleRotation();
+        }
         HandleZoom();
     }
 
@@ -48,12 +67,74 @@ public class CameraController : MonoBehaviour
         if (Keyboard.current.qKey.isPressed) rotateDir = -1f;
         if (Keyboard.current.eKey.isPressed) rotateDir = 1f;
 
-        if (Mouse.current.rightButton.isPressed)
+        transform.Rotate(Vector3.up, rotateDir * rotationSpeed * Time.deltaTime, Space.World);
+    }
+
+    private void HandleMousePan()
+    {
+        if (Mouse.current.rightButton.wasPressedThisFrame)
         {
-            rotateDir += Mouse.current.delta.x.ReadValue() * mouseDragSensitivity;
+            BeginRightDragTracking();
         }
 
-        transform.Rotate(Vector3.up, rotateDir * rotationSpeed * Time.deltaTime, Space.World);
+        if (Mouse.current.rightButton.wasReleasedThisFrame)
+        {
+            EndRightDragTracking();
+            return;
+        }
+
+        if (!isTrackingRightDrag)
+        {
+            return;
+        }
+
+        Vector2 currentMousePosition = Mouse.current.position.ReadValue();
+        if (!isRightDragPanning &&
+            !PointerDragUtility.HasExceededDragThreshold(rightDragStartScreenPosition, currentMousePosition))
+        {
+            return;
+        }
+
+        Camera activeCamera = controlledCamera != null ? controlledCamera : Camera.main;
+        if (activeCamera == null ||
+            !PointerDragUtility.TryGetGroundPlanePoint(activeCamera, lastRightDragScreenPosition, out Vector3 previousWorldPosition, rightDragPlaneHeight) ||
+            !PointerDragUtility.TryGetGroundPlanePoint(activeCamera, currentMousePosition, out Vector3 currentWorldPosition, rightDragPlaneHeight))
+        {
+            return;
+        }
+
+        isRightDragPanning = true;
+        Vector3 panOffset = previousWorldPosition - currentWorldPosition;
+        transform.position += panOffset;
+        lastRightDragScreenPosition = currentMousePosition;
+    }
+
+    private void BeginRightDragTracking()
+    {
+        if (PointerUiUtility.IsPointerOverBlockingUi())
+        {
+            EndRightDragTracking();
+            return;
+        }
+
+        Camera activeCamera = controlledCamera != null ? controlledCamera : Camera.main;
+        if (!PointerDragUtility.TryGetGroundPlanePoint(activeCamera, Mouse.current.position.ReadValue(), out Vector3 startWorldPosition))
+        {
+            EndRightDragTracking();
+            return;
+        }
+
+        isTrackingRightDrag = true;
+        isRightDragPanning = false;
+        rightDragStartScreenPosition = Mouse.current.position.ReadValue();
+        lastRightDragScreenPosition = rightDragStartScreenPosition;
+        rightDragPlaneHeight = startWorldPosition.y;
+    }
+
+    private void EndRightDragTracking()
+    {
+        isTrackingRightDrag = false;
+        isRightDragPanning = false;
     }
 
     private void HandleZoom()
