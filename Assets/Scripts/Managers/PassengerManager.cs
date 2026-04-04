@@ -1560,13 +1560,33 @@ public class PassengerManager : MonoBehaviour
                 passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.Platform ||
                 passenger.currentMasterState == Passenger.passengerMasterStates.OnPlatform;
 
-            if (!shouldRedirectImmediately || !PreparePassengerForPlatformRedirect(passenger))
+            if (!shouldRedirectImmediately)
             {
                 continue;
             }
 
-            UnassignTarget(passenger);
-            MoveToPlatformPosition(passenger, passenger.hasFailedNeed);
+            RedirectPassengerToPlatformWait(passenger, passenger.hasFailedNeed);
+        }
+    }
+
+    public void ResetWaitingPassengersForNextTrain(TrainService service)
+    {
+        if (service == null)
+        {
+            return;
+        }
+
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        {
+            Passenger passenger = activePassengers[i];
+            if (passenger == null ||
+                passenger.assignedTrainService != service ||
+                passenger.currentMasterState != Passenger.passengerMasterStates.OnPlatform)
+            {
+                continue;
+            }
+
+            RedirectPassengerToPlatformWait(passenger, passenger.hasFailedNeed);
         }
     }
 
@@ -1653,6 +1673,19 @@ public class PassengerManager : MonoBehaviour
         }
 
         UnregisterPassenger(passenger);
+    }
+
+    private void RedirectPassengerToPlatformWait(Passenger passenger, bool preserveNeedFailureState = false)
+    {
+        if (passenger == null || !PreparePassengerForPlatformRedirect(passenger))
+        {
+            return;
+        }
+
+        UnassignTarget(passenger);
+        passenger.currentSubState = Passenger.passengerSubStates.Idle;
+        passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+        MoveToPlatformPosition(passenger, preserveNeedFailureState);
     }
 
     private Sprite GetTicketNeedSprite()

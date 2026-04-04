@@ -88,6 +88,11 @@ public class TrainController : MonoBehaviour
                         {
                             door.CloseDoors();
                         }
+
+                        if (PassengerManager.Instance != null)
+                        {
+                            PassengerManager.Instance.ResetWaitingPassengersForNextTrain(trainService);
+                        }
                         
                         currentState = trainStates.Departing;
                     }
