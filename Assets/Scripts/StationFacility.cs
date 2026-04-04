@@ -17,8 +17,6 @@ public enum FacilityType
 
 public abstract class StationFacility : QueuableObject 
 {
-    private const float QueueReshuffleIntervalSeconds = 5f;
-
     protected static readonly Color IdleNeedIconColor = Color.white;
     protected static readonly Color HungerNeedIconColor = new Color(1f, 0.64f, 0f);
     protected static readonly Color ThirstNeedIconColor = Color.cyan;
@@ -33,6 +31,9 @@ public abstract class StationFacility : QueuableObject
 
     [Header("Queue Capacity")]
     [SerializeField] private int passengerQueueCapacity = 6;
+    [SerializeField] [Min(0.1f)]
+    [Tooltip("How often this facility re-orders its queue so closer passengers can move forward.")]
+    private float queueReshuffleIntervalSeconds = 1f;
 
     public Person currentPerson;
     
@@ -48,6 +49,11 @@ public abstract class StationFacility : QueuableObject
         if (FacilityManager.Instance != null)
         {
             FacilityManager.Instance.RegisterFacility(this);
+        }
+
+        if (PassengerManager.Instance != null)
+        {
+            PassengerManager.Instance.HandleFacilityRegistered(this);
         }
 
         StartCoroutine(QueueReshuffleLoop());
@@ -114,11 +120,9 @@ public abstract class StationFacility : QueuableObject
 
     private IEnumerator QueueReshuffleLoop()
     {
-        WaitForSeconds delay = new WaitForSeconds(QueueReshuffleIntervalSeconds);
-
         while (true)
         {
-            yield return delay;
+            yield return new WaitForSeconds(Mathf.Max(0.1f, queueReshuffleIntervalSeconds));
             ReshuffleQueue();
         }
     }

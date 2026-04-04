@@ -106,6 +106,7 @@ MonoBehaviour:
   facilityType: 5
   potentialLitterPrefabs: []
   passengerQueueCapacity: 6
+  queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 4

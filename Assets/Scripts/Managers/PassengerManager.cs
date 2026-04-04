@@ -62,6 +62,9 @@ public class PassengerManager : MonoBehaviour
     [Header("Service Queue Tolerance")]
     [Min(0f)] public float serviceQueueTolerance = 45f;
 
+    [Header("Service Queue Retargeting")]
+    [Min(0f)] public float serviceTransferMinimumTimeSavings = 4f;
+
     private const float BlockedNeedCheckInterval = 1f;
     private const float FallbackPassengerWalkSpeed = 3.5f;
     private Sprite runtimeTicketNeedSprite;
@@ -919,6 +922,25 @@ public class PassengerManager : MonoBehaviour
         }
     }
 
+    public void HandleFacilityRegistered(StationFacility facility)
+    {
+        if (facility == null || activePassengers.Count == 0)
+        {
+            return;
+        }
+
+        for (int i = activePassengers.Count - 1; i >= 0; i--)
+        {
+            Passenger passenger = activePassengers[i];
+            if (!TryGetRetargetableFacility(passenger, out StationFacility currentFacility))
+            {
+                continue;
+            }
+
+            TryTransferPassengerIfBeneficial(passenger, currentFacility, facility);
+        }
+    }
+
     private bool IsActivePassenger(Passenger passenger)
     {
         return passenger != null && activePassengers.Contains(passenger);
@@ -953,6 +975,26 @@ public class PassengerManager : MonoBehaviour
         return GetCurrentNeedTier() >= GetNeedStartTier(needType);
     }
 
+    private bool TryGetRetargetableFacility(Passenger passenger, out StationFacility currentFacility)
+    {
+        currentFacility = passenger != null ? passenger.currentTarget as StationFacility : null;
+
+        return passenger != null &&
+               currentFacility != null &&
+               passenger.currentSubState == Passenger.passengerSubStates.MovingToTarget &&
+               passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.None &&
+               currentFacility.currentPerson != passenger &&
+               CanUseNavAgent(passenger);
+    }
+
+    private bool CanTransferPassengerToFacility(StationFacility currentFacility, StationFacility candidateFacility)
+    {
+        return currentFacility != null &&
+               candidateFacility != null &&
+               currentFacility != candidateFacility &&
+               currentFacility.facilityType == candidateFacility.facilityType;
+    }
+
     private bool TrySendPassengerToNeedFacility(Passenger passenger, Passenger.NeedType needType)
     {
         if (FacilityManager.Instance == null || passenger == null)
@@ -982,6 +1024,82 @@ public class PassengerManager : MonoBehaviour
         }
 
         return bestFacility != null && GoToFacility(bestFacility, passenger);
+    }
+
+    private float EstimateFacilityDelay(Passenger passenger, StationFacility facility)
+    {
+        if (passenger == null || facility == null || !facility.CanAcceptPerson(passenger))
+        {
+            return Mathf.Infinity;
+        }
+
+        return EstimateQueueDelayToFacility(passenger, facility) + EstimateWalkTimeToService(passenger, facility);
+    }
+
+    private bool TryTransferPassengerIfBeneficial(Passenger passenger, StationFacility currentFacility, StationFacility candidateFacility)
+    {
+        if (!CanTransferPassengerToFacility(currentFacility, candidateFacility))
+        {
+            return false;
+        }
+
+        float currentDelay = EstimateFacilityDelay(passenger, currentFacility);
+        float candidateDelay = EstimateFacilityDelay(passenger, candidateFacility);
+
+        if (!float.IsFinite(currentDelay) ||
+            !float.IsFinite(candidateDelay) ||
+            candidateDelay + Mathf.Max(0f, serviceTransferMinimumTimeSavings) >= currentDelay)
+        {
+            return false;
+        }
+
+        return TryTransferPassengerToFacility(passenger, currentFacility, candidateFacility);
+    }
+
+    private float EstimateQueueDelayToFacility(Passenger passenger, StationFacility facility)
+    {
+        if (passenger == null || facility == null)
+        {
+            return Mathf.Infinity;
+        }
+
+        if (facility.currentPerson == passenger)
+        {
+            return 0f;
+        }
+
+        int peopleAhead = 0;
+        bool passengerFound = false;
+        List<Person> queuedPeople = facility.PeopleOnWay;
+
+        if (queuedPeople != null)
+        {
+            for (int i = 0; i < queuedPeople.Count; i++)
+            {
+                Person queuedPerson = queuedPeople[i];
+                if (queuedPerson == null)
+                {
+                    continue;
+                }
+
+                if (queuedPerson == passenger)
+                {
+                    passengerFound = true;
+                    break;
+                }
+
+                peopleAhead++;
+            }
+        }
+
+        if (!passengerFound &&
+            facility.currentPerson != null &&
+            (queuedPeople == null || !queuedPeople.Contains(facility.currentPerson)))
+        {
+            peopleAhead++;
+        }
+
+        return peopleAhead * facility.EstimatedServiceDuration;
     }
 
     private void HandleBlockedNeed(Passenger passenger, Passenger.NeedType needType)
@@ -1265,7 +1383,7 @@ public class PassengerManager : MonoBehaviour
     
     private bool GoToFacility(StationFacility bestMachine, Passenger passenger)
     {
-        if (bestMachine != null)
+        if (bestMachine != null && passenger != null && CanUseNavAgent(passenger))
         {
             if (!bestMachine.AssignPerson(passenger))
             {
@@ -1274,22 +1392,52 @@ public class PassengerManager : MonoBehaviour
 
             passenger.currentTarget = bestMachine;
             passenger.currentSubState = Passenger.passengerSubStates.MovingToTarget;
-                            
-            Vector3 targetPosition = bestMachine.GetQueuePositionFor(passenger);
-                            
-            if(NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 4, NavMesh.AllAreas))
-            {
-                passenger.navAgent.SetDestination(hit.position);
-            }
-            else
-            {
-                passenger.navAgent.SetDestination(targetPosition);
-            }
+            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+            SetPassengerDestinationToQueueTarget(passenger, bestMachine);
 
             return true;
         }
 
         return false;
+    }
+
+    private bool TryTransferPassengerToFacility(Passenger passenger, StationFacility currentFacility, StationFacility newFacility)
+    {
+        if (passenger == null || currentFacility == null || newFacility == null || currentFacility == newFacility)
+        {
+            return false;
+        }
+
+        currentFacility.RemovePerson(passenger);
+        passenger.currentTarget = null;
+
+        if (GoToFacility(newFacility, passenger))
+        {
+            return true;
+        }
+
+        GoToFacility(currentFacility, passenger);
+        return false;
+    }
+
+    private void SetPassengerDestinationToQueueTarget(Passenger passenger, QueuableObject target)
+    {
+        if (!CanUseNavAgent(passenger) || target == null)
+        {
+            return;
+        }
+
+        Vector3 targetPosition = target.GetQueuePositionFor(passenger);
+        passenger.navAgent.stoppingDistance = GetTargetStoppingDistance(target, passenger);
+
+        if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 4f, NavMesh.AllAreas))
+        {
+            passenger.navAgent.SetDestination(hit.position);
+        }
+        else
+        {
+            passenger.navAgent.SetDestination(targetPosition);
+        }
     }
     
     private void UpdateQueuePosition(Passenger passenger)
@@ -1973,6 +2121,11 @@ public class PassengerManager : MonoBehaviour
         if (target == null)
         {
             return passenger != null ? passenger.transform.position : Vector3.zero;
+        }
+
+        if (passenger != null && target.PeopleOnWay != null && target.PeopleOnWay.Contains(passenger))
+        {
+            return target.GetQueuePositionFor(passenger);
         }
 
         if (target.queueLineMode == QueueLineMode.StoppingDistance)

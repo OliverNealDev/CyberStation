@@ -449,6 +449,7 @@ MonoBehaviour:
   potentialLitterPrefabs:
   - {fileID: 1329183700229444931, guid: f9f024c41ea5ccf4ba3388e62abeb48c, type: 3}
   passengerQueueCapacity: 8
+  queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
   usePrice: 8

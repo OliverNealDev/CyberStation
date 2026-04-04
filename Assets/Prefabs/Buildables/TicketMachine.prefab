@@ -843,6 +843,7 @@ MonoBehaviour:
   facilityType: 0
   potentialLitterPrefabs: []
   passengerQueueCapacity: 10
+  queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
   accentRenderers:
