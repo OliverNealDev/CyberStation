@@ -3,11 +3,13 @@ using UnityEngine;
 
 public class Passenger : Person
 {
+    protected override bool UseRandomizedNavAgentSpeed => false;
+    private const float SharedMoveSpeed = 3.5f;
+
     public TrainService assignedTrainService;
     public float TimeToGoToPlatform;
 
     [Header("Movement")]
-    [SerializeField] [Min(0.1f)] private float moveSpeed = 3.5f;
     [Tooltip("NavMeshAgent acceleration controls both speeding up and how firmly passengers brake.")]
     [SerializeField] [Min(0.1f)] private float movementAcceleration = 18f;
     [SerializeField] [Min(0f)] private float interactionTurnSpeedDegreesPerSecond = 360f;
@@ -64,7 +66,7 @@ public class Passenger : Person
 
         if (navAgent != null)
         {
-            navAgent.speed = moveSpeed;
+            navAgent.speed = SharedMoveSpeed;
             navAgent.acceleration = movementAcceleration;
             navAgent.autoBraking = true;
         }

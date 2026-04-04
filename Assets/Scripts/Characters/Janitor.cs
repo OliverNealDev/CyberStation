@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Janitor : Staff
 {
+    protected override bool UseRandomizedNavAgentSpeed => false;
+
     private Litter targetLitter;
     private float defaultStoppingDistance;
     private Vector3 startPosition;

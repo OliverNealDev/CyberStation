@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public abstract class Person : MonoBehaviour
 {
     public NavMeshAgent navAgent;
+    protected virtual bool UseRandomizedNavAgentSpeed => true;
     
     [SerializeField] private GameObject PersonalCanvasPrefab;
     
@@ -27,7 +28,7 @@ public abstract class Person : MonoBehaviour
     {
         navAgent = GetComponent<NavMeshAgent>();
         
-        if (navAgent != null)
+        if (navAgent != null && UseRandomizedNavAgentSpeed)
         {
             navAgent.speed = Random.Range(3f, 4f);
         }

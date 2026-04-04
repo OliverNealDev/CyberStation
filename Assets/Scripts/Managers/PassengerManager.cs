@@ -17,6 +17,8 @@ public class PassengerManager : MonoBehaviour
     
     public List<MaterializerController> materializers = new List<MaterializerController>();
 
+    [Header("Evading")] public int ticketEvaderChance;
+
     [Header("Littering")]
     [Min(0f)] public float litterCheckInterval = 8f;
     public int litterPassengerSampleCount = 3;
@@ -1936,7 +1938,7 @@ public class PassengerManager : MonoBehaviour
             IsNeedUnlocked(Passenger.NeedType.Thirst),
             IsNeedUnlocked(Passenger.NeedType.Energy),
             IsNeedUnlocked(Passenger.NeedType.Hygiene));
-        newPassenger.isTicketEvader = Random.Range(1, 100) <= 5;
+        newPassenger.isTicketEvader = Random.Range(1, 100) <= ticketEvaderChance;
         
         RegisterPassenger(newPassenger);
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
