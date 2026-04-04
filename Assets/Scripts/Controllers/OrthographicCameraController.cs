@@ -12,6 +12,7 @@ public class OrthographicCameraController : MonoBehaviour
     [Header("Rotation")]
     public float rotationTime = 0.15f;
     private bool isRotating = false;
+    private Coroutine rotationCoroutine;
 
     [Header("Zoom Settings")]
     public float zoomSpeed = 2f;
@@ -36,6 +37,13 @@ public class OrthographicCameraController : MonoBehaviour
     private void Update()
     {
         if (Keyboard.current == null || Mouse.current == null) return;
+
+        if (UIController.IsCameraInputBlockedByMenu)
+        {
+            EndRightDragTracking();
+            CancelRotation();
+            return;
+        }
 
         HandleMovement();
         HandleMousePan();
@@ -73,12 +81,18 @@ public class OrthographicCameraController : MonoBehaviour
     {
         if (Keyboard.current.qKey.wasPressedThisFrame)
         {
-            StartCoroutine(RotateAroundCenter(45f));
+            StartRotation(45f);
         }
         else if (Keyboard.current.eKey.wasPressedThisFrame)
         {
-            StartCoroutine(RotateAroundCenter(-45f));
+            StartRotation(-45f);
         }
+    }
+
+    private void StartRotation(float angle)
+    {
+        CancelRotation();
+        rotationCoroutine = StartCoroutine(RotateAroundCenter(angle));
     }
 
     private IEnumerator RotateAroundCenter(float angle)
@@ -121,6 +135,18 @@ public class OrthographicCameraController : MonoBehaviour
 
         transform.position = endPos;
         transform.rotation = endRot;
+
+        rotationCoroutine = null;
+        isRotating = false;
+    }
+
+    private void CancelRotation()
+    {
+        if (rotationCoroutine != null)
+        {
+            StopCoroutine(rotationCoroutine);
+            rotationCoroutine = null;
+        }
 
         isRotating = false;
     }

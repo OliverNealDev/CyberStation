@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class UIController : MonoBehaviour
 {
     public static UIController Instance;
+    public static bool IsCameraInputBlockedByMenu => Instance != null && Instance.HasCameraBlockingMenuOpen();
     
     [Header("Button References")]
     public Button settingsButton;
@@ -183,6 +184,23 @@ public class UIController : MonoBehaviour
 
     private void OnCameraSwitchClicked()
     {
+    }
+
+    private bool HasCameraBlockingMenuOpen()
+    {
+        return IsPanelOpen(trainSelectionPopup) ||
+               IsPanelOpen(settingsPanel) ||
+               IsPanelOpen(trainPanel) ||
+               IsPanelOpen(staffPanel) ||
+               IsPanelOpen(ratingsPanel) ||
+               IsPanelOpen(expansionPanel) ||
+               IsPanelOpen(platformPanel) ||
+               IsPanelOpen(progressionPanel);
+    }
+
+    private static bool IsPanelOpen(GameObject panel)
+    {
+        return panel != null && panel.activeInHierarchy;
     }
 
     private void RefreshTopBarButtonVisibility()
@@ -584,6 +602,7 @@ public static class UIRuntimeListUtility
         }
 
         Canvas.ForceUpdateCanvases();
+        ResizeToPreferredSize(current);
 
         while (current != null)
         {
@@ -592,5 +611,31 @@ public static class UIRuntimeListUtility
         }
 
         Canvas.ForceUpdateCanvases();
+    }
+
+    private static void ResizeToPreferredSize(RectTransform target)
+    {
+        if (target == null || target.GetComponent<LayoutGroup>() == null)
+        {
+            return;
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(target);
+
+        float preferredWidth = LayoutUtility.GetPreferredWidth(target);
+        float preferredHeight = LayoutUtility.GetPreferredHeight(target);
+        Vector2 sizeDelta = target.sizeDelta;
+
+        if (target.anchorMin.x == target.anchorMax.x && preferredWidth > 0f)
+        {
+            sizeDelta.x = preferredWidth;
+        }
+
+        if (target.anchorMin.y == target.anchorMax.y)
+        {
+            sizeDelta.y = Mathf.Max(0f, preferredHeight);
+        }
+
+        target.sizeDelta = sizeDelta;
     }
 }

@@ -29,6 +29,12 @@ public class CameraController : MonoBehaviour
     {
         if (Keyboard.current == null || Mouse.current == null) return;
 
+        if (UIController.IsCameraInputBlockedByMenu)
+        {
+            EndRightDragTracking();
+            return;
+        }
+
         HandleMovement();
         HandleMousePan();
         if (!isRightDragPanning)
