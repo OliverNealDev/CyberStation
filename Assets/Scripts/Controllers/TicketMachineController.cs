@@ -3,20 +3,30 @@ using System.Collections;
 
 public class TicketMachineController : StationFacility, IPreviewInitializable
 {
+    private static readonly int EmissionColorProperty = Shader.PropertyToID("_EmissionColor");
+    private const string EmissionKeyword = "_EMISSION";
+
     [Header("Visuals")]
     public MeshRenderer[] accentRenderers;
     public MeshRenderer screenRenderer;
     public SpriteRenderer ticketSprite;
 
     [Header("Colors")]
-    public Color screenIdleColor = Color.black;
+    public Color screenIdleColor = new Color(0.78f, 0.78f, 0.78f, 1f);
+    public Color screenPulseColor = Color.white;
 
     [Header("Timing")]
     public float processingTime = 4.0f;
     public float holdDuration = 2.0f;
     public float transitionDuration = 0.1f;
+    public float pulseFrequency = 0.5f;
 
-    public override float EstimatedServiceDuration => processingTime + holdDuration + (transitionDuration * 2f);
+    private Material screenMaterialInstance;
+    private Color currentScreenColor;
+    private Color currentTicketColor = Color.white;
+
+    private float BaseServiceDuration => processingTime + holdDuration + (transitionDuration * 2f);
+    public override float EstimatedServiceDuration => ScaleServiceDuration(BaseServiceDuration);
 
     protected override void Start()
     {
@@ -43,15 +53,21 @@ public class TicketMachineController : StationFacility, IPreviewInitializable
 
     private IEnumerator TicketRoutine(Passenger passenger)
     {
-        if (screenRenderer != null) 
-            screenRenderer.material.color = Color.white;
+        SetTicketColor(Color.white);
 
-        SetAccentColors(Color.white);
-        
-        if (ticketSprite != null) 
-            ticketSprite.color = Color.white;
+        float elapsed = 0f;
+        float safePulseFrequency = Mathf.Max(0.01f, pulseFrequency);
 
-        yield return new WaitForSeconds(processingTime);
+        while (elapsed < processingTime)
+        {
+            elapsed += Time.deltaTime;
+
+            float pulse = Mathf.Sin((elapsed * safePulseFrequency * Mathf.PI * 2f) - (Mathf.PI * 0.5f));
+            float pulseT = (pulse + 1f) * 0.5f;
+
+            SetScreenColor(Color.Lerp(screenIdleColor, screenPulseColor, pulseT));
+            yield return null;
+        }
 
         Color passengerColor = Color.white;
         if (passenger.assignedTrainService != null && passenger.assignedTrainService.trainData != null)
@@ -59,31 +75,7 @@ public class TicketMachineController : StationFacility, IPreviewInitializable
             passengerColor = passenger.assignedTrainService.trainData.trainColor;
         }
 
-        float elapsed = 0f;
-        while (elapsed < transitionDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / transitionDuration;
-            Color lerpedColor = Color.Lerp(Color.white, passengerColor, t);
-
-            SetAccentColors(lerpedColor);
-            
-            if (screenRenderer != null) 
-                screenRenderer.material.color = lerpedColor;
-                
-            if (ticketSprite != null) 
-                ticketSprite.color = lerpedColor;
-
-            yield return null;
-        }
-
-        SetAccentColors(passengerColor);
-        
-        if (screenRenderer != null) 
-            screenRenderer.material.color = passengerColor;
-            
-        if (ticketSprite != null) 
-            ticketSprite.color = passengerColor;
+        yield return TransitionDisplay(currentScreenColor, passengerColor, currentTicketColor, passengerColor);
 
         DeliverService(passenger);
 
@@ -92,23 +84,9 @@ public class TicketMachineController : StationFacility, IPreviewInitializable
 
         yield return new WaitForSeconds(holdDuration);
 
-        elapsed = 0f;
-        while (elapsed < transitionDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / transitionDuration;
-            Color idleAccentColor = Color.white;
+        yield return TransitionDisplay(currentScreenColor, screenIdleColor, currentTicketColor, Color.white);
 
-            SetAccentColors(Color.Lerp(passengerColor, idleAccentColor, t));
-            
-            if (ticketSprite != null) 
-                ticketSprite.color = Color.Lerp(passengerColor, idleAccentColor, t);
-                
-            if (screenRenderer != null) 
-                screenRenderer.material.color = Color.Lerp(passengerColor, screenIdleColor, t);
-
-            yield return null;
-        }
+        yield return new WaitForSeconds(GetAdditionalServiceDelay(BaseServiceDuration));
 
         SetIdleVisuals();
 
@@ -117,27 +95,74 @@ public class TicketMachineController : StationFacility, IPreviewInitializable
 
     private void SetIdleVisuals()
     {
-        if (screenRenderer != null)
-            screenRenderer.material.color = screenIdleColor;
-
-        SetAccentColors(Color.white);
-
-        if (ticketSprite != null)
-            ticketSprite.color = Color.white;
+        SetScreenColor(screenIdleColor);
+        SetTicketColor(Color.white);
     }
 
-    private void SetAccentColors(Color color)
+    private IEnumerator TransitionDisplay(Color fromScreenColor, Color toScreenColor, Color fromTicketColor, Color toTicketColor)
     {
-        if (accentRenderers == null) return;
-        
-        foreach (MeshRenderer rend in accentRenderers)
+        if (transitionDuration <= 0f)
         {
-            if (rend != null)
-            {
-                rend.material.color = color;
-                rend.material.SetColor("_EmissionColor", color); 
-            }
+            SetScreenColor(toScreenColor);
+            SetTicketColor(toTicketColor);
+            yield break;
         }
+
+        float elapsed = 0f;
+        while (elapsed < transitionDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / transitionDuration);
+
+            SetScreenColor(Color.Lerp(fromScreenColor, toScreenColor, t));
+            SetTicketColor(Color.Lerp(fromTicketColor, toTicketColor, t));
+
+            yield return null;
+        }
+    }
+
+    private void SetScreenColor(Color color)
+    {
+        currentScreenColor = color;
+
+        Material screenMaterial = GetScreenMaterial();
+        if (screenMaterial == null)
+        {
+            return;
+        }
+
+        screenMaterial.color = color;
+
+        if (screenMaterial.HasProperty(EmissionColorProperty))
+        {
+            screenMaterial.EnableKeyword(EmissionKeyword);
+            screenMaterial.SetColor(EmissionColorProperty, color * 0.35f);
+        }
+    }
+
+    private void SetTicketColor(Color color)
+    {
+        currentTicketColor = color;
+
+        if (ticketSprite != null)
+        {
+            ticketSprite.color = color;
+        }
+    }
+
+    private Material GetScreenMaterial()
+    {
+        if (screenRenderer == null)
+        {
+            return null;
+        }
+
+        if (screenMaterialInstance == null)
+        {
+            screenMaterialInstance = screenRenderer.material;
+        }
+
+        return screenMaterialInstance;
     }
 
     protected override void DeliverService(Passenger passenger)

@@ -3,8 +3,10 @@ using UnityEngine;
 
 public class BottleDispenserController : StationFacility, IPreviewInitializable
 {
-    public int usePrice = 8;
-    public override float EstimatedServiceDuration => waitDelay + endPositionDelay + dispenseDuration + magnetizeDuration;
+    public int usePrice = 3;
+    private float BaseServiceDuration => waitDelay + endPositionDelay + dispenseDuration + magnetizeDuration;
+    private float TotalWaitBeforeDispense => waitDelay + GetAdditionalServiceDelay(BaseServiceDuration);
+    public override float EstimatedServiceDuration => ScaleServiceDuration(BaseServiceDuration);
 
     [Header("Setup & Waypoints")]
     public GameObject bottlePrefab;
@@ -15,10 +17,10 @@ public class BottleDispenserController : StationFacility, IPreviewInitializable
     public float passengerHeadYOffset = 3.172f;
 
     [Header("Timing")]
-    public float waitDelay = 4.5f;
-    public float dispenseDuration = 0.5f;
-    public float endPositionDelay = 2.5f;
-    public float magnetizeDuration = 0.5f;
+    public float waitDelay = 1.5f;
+    public float dispenseDuration = 0.4f;
+    public float endPositionDelay = 0.8f;
+    public float magnetizeDuration = 0.3f;
 
     [Header("Light")]
     public float activeLightIntensity = 4f;
@@ -91,7 +93,7 @@ public class BottleDispenserController : StationFacility, IPreviewInitializable
         }
 
         float elapsed = 0f;
-        while (elapsed < waitDelay)
+        while (elapsed < TotalWaitBeforeDispense)
         {
             if (passenger == null || activeBottleInstance == null)
             {

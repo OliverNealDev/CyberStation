@@ -4,7 +4,8 @@ using System.Collections;
 public class CleansingShowerController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 4;
-    public override float EstimatedServiceDuration => showerDuration + dropletFallDuration + (doorMoveDuration * 2f);
+    private float BaseServiceDuration => showerDuration + dropletFallDuration + (doorMoveDuration * 2f);
+    public override float EstimatedServiceDuration => ScaleServiceDuration(BaseServiceDuration);
 
     [Header("Waypoints & Targeting")]
     public Transform showerHeadPoint;
@@ -25,10 +26,10 @@ public class CleansingShowerController : StationFacility, IPreviewInitializable
     public Transform doorTransform;
     public Transform doorIdlePosition;
     public Transform doorClosedPosition;
-    public float doorMoveDuration = 1.25f;
+    public float doorMoveDuration = 0.9f;
 
     [Header("Shower Settings")]
-    public float showerDuration = 9.1f;
+    public float showerDuration = 1.8f;
     public float dropletSpawnRate = 0.12f;
     public float dropletFallDuration = 0.4f;
 
@@ -113,7 +114,7 @@ public class CleansingShowerController : StationFacility, IPreviewInitializable
             yield return StartCoroutine(MoveDoor(doorClosedPosition.localPosition, doorIdlePosition.localPosition));
         }
 
-        Invoke("FinishProcessing", 0f);
+        ScheduleFinishAfterAdditionalDelay(BaseServiceDuration);
     }
 
     private void SpawnDroplet(Color color, Passenger passenger)

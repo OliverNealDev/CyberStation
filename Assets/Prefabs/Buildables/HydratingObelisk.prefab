@@ -150,7 +150,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 2
+  usePrice: 3
   facilityIcon: {fileID: 5969262218880966119}
   activeFacilityColor: {r: 0, g: 1, b: 1, a: 1}
   dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}
@@ -159,7 +159,7 @@ MonoBehaviour:
   arcHeight: 0.4
   dropletCount: 28
   timeBetweenShots: 0.12
-  flightDuration: 0.65
+  flightDuration: 0.64
   puddleLitterPrefab: {fileID: 7923471293361742921, guid: 8019f2ee46344ec4cb816cdba221c5ed, type: 3}
   puddleLitterChance: 0.05
   puddleSpawnDistance: 1

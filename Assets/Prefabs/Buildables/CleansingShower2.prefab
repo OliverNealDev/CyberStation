@@ -174,8 +174,8 @@ MonoBehaviour:
   doorTransform: {fileID: 2679333801809600609}
   doorIdlePosition: {fileID: 7612832003182387273}
   doorClosedPosition: {fileID: 5934110839818210532}
-  doorMoveDuration: 1.25
-  showerDuration: 9.1
+  doorMoveDuration: 0.9
+  showerDuration: 1.8
   dropletSpawnRate: 0.12
   dropletFallDuration: 0.4
   dropletWidth: 0.05

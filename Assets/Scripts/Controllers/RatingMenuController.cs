@@ -17,7 +17,8 @@ public class RatingMenuController : MonoBehaviour
     public Transform crowdednessRatingStarsContainer;
     public Transform queueTimesRatingStarsContainer;
     public Transform passengerNeedsRatingStarsContainer;
-    public Transform stationSizeRatingStarsContainer;
+    [FormerlySerializedAs("stationSizeRatingStarsContainer")]
+    public Transform choiceRatingStarsContainer;
     [FormerlySerializedAs("trainSelectionRatingStarsContainer")]
     public Transform decorationRatingStarsContainer;
     
@@ -48,7 +49,7 @@ public class RatingMenuController : MonoBehaviour
         SetStars(crowdednessRatingStarsContainer, RatingManager.Instance.crowdednessRating);
         SetStars(queueTimesRatingStarsContainer, RatingManager.Instance.queueTimesRating);
         SetStars(passengerNeedsRatingStarsContainer, RatingManager.Instance.passengerNeedsRating);
-        SetStars(stationSizeRatingStarsContainer, RatingManager.Instance.stationSizeRating);
+        SetStars(choiceRatingStarsContainer, RatingManager.Instance.choiceRating);
         SetStars(decorationRatingStarsContainer, RatingManager.Instance.decorationRating);
     }
     

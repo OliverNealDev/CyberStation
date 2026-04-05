@@ -10,6 +10,13 @@ public class PassengerNeedIconController : MonoBehaviour
         Failed
     }
 
+    public enum MoneyOverlayState
+    {
+        None,
+        TopRight,
+        BelowFailedOverlay
+    }
+
     [SerializeField] private float blinkSpeed = 7f;
     [SerializeField] private float minBlinkAlpha = 0.2f;
     [SerializeField] private float popDuration = 0.32f;
@@ -20,14 +27,18 @@ public class PassengerNeedIconController : MonoBehaviour
     private Passenger targetPassenger;
     private Image iconImage;
     private Image statusOverlayImage;
+    private Image moneyOverlayImage;
     private Vector3 worldOffset = new Vector3(0f, 5.5f, 0f);
     private Color normalColor = Color.white;
+    private Color moneyOverlayColor = new Color(0.18f, 0.76f, 0.23f, 1f);
     private bool isBlinking;
     private Vector3 baseLocalScale = Vector3.one;
     private float iconOpacity = 1f;
     private float fadeMultiplier = 1f;
     private OverlayState overlayState = OverlayState.None;
+    private MoneyOverlayState moneyOverlayState = MoneyOverlayState.None;
     private Sprite failedOverlaySprite;
+    private Sprite moneyOverlaySprite;
     private Coroutine popCoroutine;
     private Coroutine fadeCoroutine;
 
@@ -99,6 +110,24 @@ public class PassengerNeedIconController : MonoBehaviour
         ApplyVisuals();
     }
 
+    public void SetMoneyOverlaySprite(Sprite moneySprite)
+    {
+        moneyOverlaySprite = moneySprite;
+        ApplyVisuals();
+    }
+
+    public void SetMoneyOverlayColor(Color color)
+    {
+        moneyOverlayColor = color;
+        ApplyVisuals();
+    }
+
+    public void SetMoneyOverlayState(MoneyOverlayState state)
+    {
+        moneyOverlayState = state;
+        ApplyVisuals();
+    }
+
     public void SetIconOpacity(float opacity)
     {
         iconOpacity = Mathf.Clamp01(opacity);
@@ -156,6 +185,30 @@ public class PassengerNeedIconController : MonoBehaviour
         statusOverlayImage.enabled = false;
     }
 
+    private void EnsureMoneyOverlay()
+    {
+        if (moneyOverlayImage != null)
+        {
+            return;
+        }
+
+        GameObject overlayObject = new GameObject("MoneyOverlay", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+        overlayObject.transform.SetParent(transform, false);
+
+        RectTransform overlayTransform = overlayObject.GetComponent<RectTransform>();
+        overlayTransform.anchorMin = Vector2.one;
+        overlayTransform.anchorMax = Vector2.one;
+        overlayTransform.pivot = Vector2.one;
+        overlayTransform.anchoredPosition = new Vector2(-6f, 6f);
+        overlayTransform.sizeDelta = new Vector2(30f, 30f);
+        overlayTransform.localScale = Vector3.one;
+
+        moneyOverlayImage = overlayObject.GetComponent<Image>();
+        moneyOverlayImage.raycastTarget = false;
+        moneyOverlayImage.preserveAspect = true;
+        moneyOverlayImage.enabled = false;
+    }
+
     private void ApplyVisuals()
     {
         if (iconImage == null)
@@ -178,15 +231,36 @@ public class PassengerNeedIconController : MonoBehaviour
         }
 
         statusOverlayImage.enabled = overlayState == OverlayState.Failed && failedOverlaySprite != null;
-        if (!statusOverlayImage.enabled)
+        if (statusOverlayImage.enabled)
+        {
+            statusOverlayImage.sprite = failedOverlaySprite;
+            Color overlayColor = failedOverlayColor;
+            overlayColor.a *= fadeMultiplier;
+            statusOverlayImage.color = overlayColor;
+        }
+
+        EnsureMoneyOverlay();
+        if (moneyOverlayImage == null)
         {
             return;
         }
 
-        statusOverlayImage.sprite = failedOverlaySprite;
-        Color overlayColor = failedOverlayColor;
-        overlayColor.a *= fadeMultiplier;
-        statusOverlayImage.color = overlayColor;
+        bool showMoneyOverlay = moneyOverlayState != MoneyOverlayState.None && moneyOverlaySprite != null;
+        moneyOverlayImage.enabled = showMoneyOverlay;
+        if (!showMoneyOverlay)
+        {
+            return;
+        }
+
+        RectTransform moneyTransform = moneyOverlayImage.rectTransform;
+        moneyTransform.anchoredPosition = moneyOverlayState == MoneyOverlayState.BelowFailedOverlay
+            ? new Vector2(-6f, -24f)
+            : new Vector2(-6f, 6f);
+
+        moneyOverlayImage.sprite = moneyOverlaySprite;
+        Color moneyOverlayTint = moneyOverlayColor;
+        moneyOverlayTint.a *= fadeMultiplier;
+        moneyOverlayImage.color = moneyOverlayTint;
     }
 
     private void PlayPopInAnimation()

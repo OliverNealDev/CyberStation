@@ -452,17 +452,17 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 8
+  usePrice: 3
   bottlePrefab: {fileID: 1329183700229444931, guid: 70c33ec913fddde40891202574c1038d, type: 3}
   startPos: {fileID: 5256804110273632904}
   endPos: {fileID: 8609906337860488024}
   machineLight: {fileID: 905206158880049428}
   facilityIcon: {fileID: 5969262218880966119}
   passengerHeadYOffset: 3.172
-  waitDelay: 4.5
-  dispenseDuration: 0.5
-  endPositionDelay: 2.5
-  magnetizeDuration: 0.5
+  waitDelay: 1.5
+  dispenseDuration: 0.4
+  endPositionDelay: 0.8
+  magnetizeDuration: 0.3
   activeLightIntensity: 4
   activeLightColor: {r: 0, g: 0.6787319, b: 1, a: 1}
 --- !u!1 &2040216026780394366

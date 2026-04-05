@@ -5256,8 +5256,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Measures how much of the station you have expanded. Buying expansions raises
-    this rating.
+  m_text: Measures how much choice passenger's have when deciding on facilities to
+    use. Higher facility variety increases this rating.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
   m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
@@ -17147,8 +17147,8 @@ MonoBehaviour:
   crowdednessRating: 0
   queueTimesRating: 0
   passengerNeedsRating: 0
-  stationSizeRating: 0
-  decorationRating: 5
+  choiceRating: 0
+  decorationRating: 0
 --- !u!1 &717409159
 GameObject:
   m_ObjectHideFlags: 0
@@ -18561,7 +18561,7 @@ GameObject:
   m_Component:
   - component: {fileID: 814475116}
   m_Layer: 5
-  m_Name: StationSize
+  m_Name: Choice
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23027,7 +23027,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Station Size
+  m_text: Choice
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
   m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
@@ -27529,7 +27529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressionManager
   baseXpPerLevel: 100
-  xpIncreasePerLevel: 175
+  xpIncreasePerLevel: 125
   buildPlacedXp: 0
   ticketSoldXp: 5
   passengerBoardedXp: 0
@@ -38708,7 +38708,7 @@ MonoBehaviour:
   crowdednessRatingStarsContainer: {fileID: 1928693318}
   queueTimesRatingStarsContainer: {fileID: 1413598038}
   passengerNeedsRatingStarsContainer: {fileID: 2065347013}
-  stationSizeRatingStarsContainer: {fileID: 241609487}
+  choiceRatingStarsContainer: {fileID: 241609487}
   decorationRatingStarsContainer: {fileID: 1531953077}
 --- !u!1 &1767811410
 GameObject:

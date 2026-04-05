@@ -17,6 +17,7 @@ public enum FacilityType
 
 public abstract class StationFacility : QueuableObject 
 {
+    protected const float ServiceDurationMultiplier = 2f;
     protected static readonly Color IdleNeedIconColor = Color.white;
     protected static readonly Color HungerNeedIconColor = new Color(1f, 0.64f, 0f);
     protected static readonly Color ThirstNeedIconColor = Color.cyan;
@@ -41,7 +42,7 @@ public abstract class StationFacility : QueuableObject
     public MachineState state = MachineState.Idle;
     
     public override bool IsAvailable => state == MachineState.Idle;
-    public virtual float EstimatedServiceDuration => 3f;
+    public virtual float EstimatedServiceDuration => ScaleServiceDuration(3f);
     public int PassengerQueueCapacity => Mathf.Max(1, passengerQueueCapacity);
 
     protected virtual void Start()
@@ -81,7 +82,7 @@ public abstract class StationFacility : QueuableObject
             state = MachineState.Processing;
             currentPerson = person;
             
-            Invoke(nameof(FinishProcessing), 3f);
+            Invoke(nameof(FinishProcessing), EstimatedServiceDuration);
         }
     }
 
@@ -116,6 +117,21 @@ public abstract class StationFacility : QueuableObject
     {
         int queuedCount = Mathf.Max(PeopleOnWay.Count, currentPerson != null ? 1 : 0);
         return queuedCount * EstimatedServiceDuration;
+    }
+
+    protected float ScaleServiceDuration(float baseDuration)
+    {
+        return Mathf.Max(0f, baseDuration) * ServiceDurationMultiplier;
+    }
+
+    protected float GetAdditionalServiceDelay(float baseDuration)
+    {
+        return Mathf.Max(0f, ScaleServiceDuration(baseDuration) - Mathf.Max(0f, baseDuration));
+    }
+
+    protected void ScheduleFinishAfterAdditionalDelay(float baseDuration)
+    {
+        Invoke(nameof(FinishProcessing), GetAdditionalServiceDelay(baseDuration));
     }
 
     private IEnumerator QueueReshuffleLoop()

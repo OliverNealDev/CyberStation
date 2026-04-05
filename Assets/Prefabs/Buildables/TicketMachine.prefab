@@ -851,10 +851,12 @@ MonoBehaviour:
   - {fileID: 5182001605862356388}
   screenRenderer: {fileID: 1452070661766650140}
   ticketSprite: {fileID: 4340323422367248028}
-  screenIdleColor: {r: 0, g: 0, b: 0, a: 1}
-  processingTime: 4
-  holdDuration: 2
+  screenIdleColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
+  screenPulseColor: {r: 1, g: 1, b: 1, a: 1}
+  processingTime: 2
+  holdDuration: 1
   transitionDuration: 0.1
+  pulseFrequency: 0.5
 --- !u!114 &9216194286789144486
 MonoBehaviour:
   m_ObjectHideFlags: 0

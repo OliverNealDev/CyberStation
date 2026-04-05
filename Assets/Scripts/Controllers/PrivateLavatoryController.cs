@@ -3,8 +3,9 @@ using System.Collections;
 
 public class PrivateLavatoryController : StationFacility, IPreviewInitializable
 {
-    public int usePrice = 12; 
-    public override float EstimatedServiceDuration => usageTime + (doorMoveDuration * 2f);
+    public int usePrice = 4; 
+    private float BaseServiceDuration => usageTime + (doorMoveDuration * 2f);
+    public override float EstimatedServiceDuration => ScaleServiceDuration(BaseServiceDuration);
 
     [Header("Visuals")]
     public SpriteRenderer facilityIcon;
@@ -14,10 +15,10 @@ public class PrivateLavatoryController : StationFacility, IPreviewInitializable
     public Transform doorTransform;
     public Transform doorIdlePosition;
     public Transform doorClosedPosition;
-    public float doorMoveDuration = 1.25f; 
+    public float doorMoveDuration = 0.75f; 
     
     [Header("Timing")]
-    public float usageTime = 18.0f;
+    public float usageTime = 1.5f;
 
     protected override void Start()
     {
@@ -65,7 +66,7 @@ public class PrivateLavatoryController : StationFacility, IPreviewInitializable
             yield return StartCoroutine(MoveDoor(doorClosedPosition.localPosition, doorIdlePosition.localPosition));
         }
 
-        Invoke("FinishProcessing", 0f);
+        ScheduleFinishAfterAdditionalDelay(BaseServiceDuration);
     }
 
     private IEnumerator MoveDoor(Vector3 startPos, Vector3 endPos)

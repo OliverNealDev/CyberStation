@@ -26,6 +26,10 @@ public class Passenger : Person
     
     public bool hasFailedNeed = false;
     public bool hasGivenUpNeed = false;
+    [HideInInspector] public bool hasEvaluatedChoice = false;
+    [HideInInspector] public bool didntHaveChoice = false;
+    [HideInInspector] public NeedType preferredFacilityNeed = NeedType.None;
+    [HideInInspector] public FacilityType preferredFacilityType;
     [HideInInspector] public NeedType blockedNeed = NeedType.None;
     [HideInInspector] public float blockedNeedStartTime;
     [HideInInspector] public float nextBlockedNeedCheckTime;
@@ -117,6 +121,12 @@ public class Passenger : Person
     public bool HasPotentialLitter()
     {
         return potentialLitterables != null && potentialLitterables.Count > 0;
+    }
+
+    public void ResetFacilityChoicePreference()
+    {
+        preferredFacilityNeed = NeedType.None;
+        preferredFacilityType = default;
     }
 
     private void EnsureAtLeastOneNeed(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked)

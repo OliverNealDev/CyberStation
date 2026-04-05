@@ -596,7 +596,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 12
+  usePrice: 3
   snackPrefabs:
   - {fileID: 2787784830846119071, guid: e2b452ff94a93dc4bafd7f220f7d6eaa, type: 3}
   startPos: {fileID: 8720672773387069009}
@@ -608,7 +608,7 @@ MonoBehaviour:
   activeLightIntensity: 4
   idleLightColor: {r: 1, g: 1, b: 1, a: 1}
   activeLightColor: {r: 1, g: 0.64, b: 0, a: 1}
-  printDuration: 14.5
+  printDuration: 2.5
   consumeDuration: 0.5
 --- !u!1 &2547920770302478061
 GameObject:

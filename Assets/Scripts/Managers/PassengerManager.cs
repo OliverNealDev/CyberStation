@@ -977,6 +977,46 @@ public class PassengerManager : MonoBehaviour
         return GetCurrentNeedTier() >= GetNeedStartTier(needType);
     }
 
+    private void ResetFacilityChoicePreference(Passenger passenger)
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        passenger.ResetFacilityChoicePreference();
+    }
+
+    private void RecordFacilityChoiceEvaluation(Passenger passenger, bool hadChoice)
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        passenger.hasEvaluatedChoice = true;
+        if (!hadChoice)
+        {
+            passenger.didntHaveChoice = true;
+        }
+    }
+
+    private FacilityType GetPreferredFacilityType(Passenger passenger, Passenger.NeedType needType, IList<FacilityType> facilityTypes)
+    {
+        if (passenger == null || facilityTypes == null || facilityTypes.Count == 0)
+        {
+            return default;
+        }
+
+        if (passenger.preferredFacilityNeed != needType || !facilityTypes.Contains(passenger.preferredFacilityType))
+        {
+            passenger.preferredFacilityNeed = needType;
+            passenger.preferredFacilityType = facilityTypes[Random.Range(0, facilityTypes.Count)];
+        }
+
+        return passenger.preferredFacilityType;
+    }
+
     private bool TryGetRetargetableFacility(Passenger passenger, out StationFacility currentFacility)
     {
         currentFacility = passenger != null ? passenger.currentTarget as StationFacility : null;
@@ -999,33 +1039,62 @@ public class PassengerManager : MonoBehaviour
 
     private bool TrySendPassengerToNeedFacility(Passenger passenger, Passenger.NeedType needType)
     {
+        if (passenger == null)
+        {
+            return false;
+        }
+
+        if (!TryResolveNeedFacility(passenger, needType, out StationFacility facility))
+        {
+            return false;
+        }
+
+        if (!GoToFacility(facility, passenger))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool TryResolveNeedFacility(Passenger passenger, Passenger.NeedType needType, out StationFacility facility)
+    {
+        facility = null;
         if (FacilityManager.Instance == null || passenger == null)
         {
             return false;
         }
 
-        List<FacilityType> validFacilities = FacilityManager.Instance.GetFacilitiesForNeed(needType);
-        StationFacility bestFacility = null;
-        float bestWait = Mathf.Infinity;
-
-        for (int i = 0; i < validFacilities.Count; i++)
+        List<FacilityType> facilityTypes = FacilityManager.Instance.GetFacilitiesForNeed(needType);
+        if (facilityTypes == null || facilityTypes.Count == 0)
         {
-            FacilityType type = validFacilities[i];
-            List<StationFacility> facilities = FacilityManager.Instance.GetFacilities(type);
-            if (facilities == null || facilities.Count == 0)
-            {
-                continue;
-            }
-
-            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger, serviceQueueTolerance, out float candidateDelay);
-            if (candidateFacility != null && candidateDelay < bestWait)
-            {
-                bestWait = candidateDelay;
-                bestFacility = candidateFacility;
-            }
+            return false;
         }
 
-        return bestFacility != null && GoToFacility(bestFacility, passenger);
+        if (facilityTypes.Count == 1)
+        {
+            facility = GetMostAccessibleFacility(
+                facilityTypes,
+                passenger,
+                serviceQueueTolerance,
+                out _);
+
+            return facility != null;
+        }
+
+        FacilityType preferredFacilityType = GetPreferredFacilityType(passenger, needType, facilityTypes);
+        facility = GetMostAccessibleFacility(preferredFacilityType, passenger, serviceQueueTolerance, out _);
+
+        if (facility != null)
+        {
+            RecordFacilityChoiceEvaluation(passenger, true);
+            return true;
+        }
+
+        RecordFacilityChoiceEvaluation(passenger, false);
+        facility = GetMostAccessibleFacility(facilityTypes, passenger, serviceQueueTolerance, out _);
+
+        return facility != null;
     }
 
     private float EstimateFacilityDelay(Passenger passenger, StationFacility facility)
@@ -1036,6 +1105,51 @@ public class PassengerManager : MonoBehaviour
         }
 
         return EstimateQueueDelayToFacility(passenger, facility) + EstimateWalkTimeToService(passenger, facility);
+    }
+
+    private StationFacility GetMostAccessibleFacility(IList<FacilityType> facilityTypes, Passenger passenger, float maxWaitTime, out float bestWait)
+    {
+        bestWait = Mathf.Infinity;
+        if (FacilityManager.Instance == null || facilityTypes == null || facilityTypes.Count == 0)
+        {
+            return null;
+        }
+
+        StationFacility bestFacility = null;
+        for (int i = 0; i < facilityTypes.Count; i++)
+        {
+            List<StationFacility> facilities = FacilityManager.Instance.GetFacilities(facilityTypes[i]);
+            if (facilities == null || facilities.Count == 0)
+            {
+                continue;
+            }
+
+            StationFacility candidateFacility = GetMostAccessibleFacility(facilities, passenger, maxWaitTime, out float candidateDelay);
+            if (candidateFacility != null && candidateDelay < bestWait)
+            {
+                bestWait = candidateDelay;
+                bestFacility = candidateFacility;
+            }
+        }
+
+        return bestFacility;
+    }
+
+    private StationFacility GetMostAccessibleFacility(FacilityType facilityType, Passenger passenger, float maxWaitTime, out float bestWait)
+    {
+        bestWait = Mathf.Infinity;
+        if (FacilityManager.Instance == null)
+        {
+            return null;
+        }
+
+        List<StationFacility> facilities = FacilityManager.Instance.GetFacilities(facilityType);
+        if (facilities == null || facilities.Count == 0)
+        {
+            return null;
+        }
+
+        return GetMostAccessibleFacility(facilities, passenger, maxWaitTime, out bestWait);
     }
 
     private bool TryTransferPassengerIfBeneficial(Passenger passenger, StationFacility currentFacility, StationFacility candidateFacility)
@@ -1137,8 +1251,9 @@ public class PassengerManager : MonoBehaviour
         if (passenger.blockedNeedFailureStage == 1 && blockedDuration >= passiveDuration)
         {
             passenger.blockedNeedFailureStage = 2;
-            ShowBlockedNeedIcon(passenger, needType, true);
         }
+
+        ShowBlockedNeedIcon(passenger, needType, passenger.blockedNeedFailureStage >= 2);
 
         if (blockedDuration >= passiveDuration + urgentDuration)
         {
@@ -1193,6 +1308,7 @@ public class PassengerManager : MonoBehaviour
         iconController.SetNormalColor(GetNeedColor(needType));
         iconController.SetFailedOverlaySprite(failedNeedOverlaySprite);
         iconController.SetOverlayState(PassengerNeedIconController.OverlayState.None);
+        iconController.SetMoneyOverlayState(PassengerNeedIconController.MoneyOverlayState.None);
         iconController.SetIconOpacity(1f);
         iconController.SetAlertState(shouldBlink, shouldBlink);
     }
@@ -1224,6 +1340,7 @@ public class PassengerManager : MonoBehaviour
         }
 
         passenger.ClearNeed(needType);
+        ResetFacilityChoicePreference(passenger);
         passenger.hasFailedNeed = true;
         passenger.hasGivenUpNeed = needType != Passenger.NeedType.Ticket;
         passenger.blockedNeed = Passenger.NeedType.None;
@@ -1260,6 +1377,7 @@ public class PassengerManager : MonoBehaviour
         passenger.blockedNeedIcon.SetNormalColor(GetNeedColor(needType));
         passenger.blockedNeedIcon.SetAlertState(false, false);
         passenger.blockedNeedIcon.SetOverlayState(PassengerNeedIconController.OverlayState.Failed);
+        passenger.blockedNeedIcon.SetMoneyOverlayState(PassengerNeedIconController.MoneyOverlayState.None);
         passenger.blockedNeedIcon.SetIconOpacity(0.4f);
     }
 
@@ -1503,6 +1621,7 @@ public class PassengerManager : MonoBehaviour
                 passenger.currentTarget = null;
             }
             passenger.hasTicket = true;
+            ResetFacilityChoicePreference(passenger);
             ClearBlockedNeed(passenger, true);
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
             if (passenger.assignedTrainService != null)
@@ -1533,6 +1652,7 @@ public class PassengerManager : MonoBehaviour
             }
 
             passenger.ClearNeed(needType);
+            ResetFacilityChoicePreference(passenger);
             passenger.hasGivenUpNeed = false;
             ClearBlockedNeed(passenger, true);
             passenger.currentSubState = Passenger.passengerSubStates.Idle;

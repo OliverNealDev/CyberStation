@@ -491,8 +491,8 @@ MonoBehaviour:
   cubeExtrudePoint: {fileID: 1035859554179908143}
   passengerHeadYOffset: 3.172
   arcHeight: 1.125
-  extrudeDuration: 7.5
-  arcDuration: 0.75
+  extrudeDuration: 3.6
+  arcDuration: 0.8
 --- !u!1 &1861435115874483206
 GameObject:
   m_ObjectHideFlags: 0

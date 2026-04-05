@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class RatingManager : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class RatingManager : MonoBehaviour
     private const float DecorationFiveStarStrengthMultiplier = 0.4f;
     private const float DecorationMinFiveStarScore = 1.25f;
     private const float DecorationMaxFiveStarScore = 2.5f;
+    private const int ChoicePassengerSampleSize = 20;
+    private const float ChoiceFiveStarCoverageThreshold = 0.9f;
 
     public static RatingManager Instance;
 
@@ -22,8 +25,8 @@ public class RatingManager : MonoBehaviour
     public float crowdednessRating = 5f;
     public float queueTimesRating = 5f;
     public float passengerNeedsRating = 5f;
-    public float stationSizeRating = 5f;
-    public float decorationRating = 5f;
+    [FormerlySerializedAs("stationSizeRating")] public float choiceRating = 5f;
+    public float decorationRating = 0f;
 
     public const float DecorationSampleRadius = 8f;
     public const float MaxDecorationScorePerPassenger = 5f;
@@ -31,6 +34,7 @@ public class RatingManager : MonoBehaviour
     private float tickTimer;
     private int groundLayerMask;
     private readonly List<Passenger> floorRatingPassengers = new();
+    private readonly List<Passenger> choiceRatingPassengers = new();
     private readonly RaycastHit[] passengerFloorHits = new RaycastHit[32];
 
     void Awake()
@@ -58,18 +62,18 @@ public class RatingManager : MonoBehaviour
         float targetCleanliness = GetCleanlinessTarget();
         float targetCrowdedness = GetCrowdednessTarget(floorEligiblePassengers);
         float targetQueueTimes = GetQueueTimesTarget();
-        float targetStationSize = GetStationSizeTarget();
+        float targetChoice = GetChoiceTarget();
         float targetPassengerNeeds = GetPassengerNeedsTarget();
         float targetDecoration = GetDecorationTarget(floorEligiblePassengers);
 
         cleanlinessRating = Mathf.Lerp(cleanlinessRating, targetCleanliness, 0.2f);
         crowdednessRating = Mathf.Lerp(crowdednessRating, targetCrowdedness, 0.2f);
         queueTimesRating = Mathf.Lerp(queueTimesRating, targetQueueTimes, 0.2f);
-        stationSizeRating = Mathf.Lerp(stationSizeRating, targetStationSize, 0.2f);
+        choiceRating = Mathf.Lerp(choiceRating, targetChoice, 0.2f);
         passengerNeedsRating = Mathf.Lerp(passengerNeedsRating, targetPassengerNeeds, 0.2f);
         decorationRating = Mathf.Lerp(decorationRating, targetDecoration, 0.2f);
 
-        stationRating = (cleanlinessRating + crowdednessRating + queueTimesRating + passengerNeedsRating + stationSizeRating + decorationRating) / 6f;
+        stationRating = (cleanlinessRating + crowdednessRating + queueTimesRating + passengerNeedsRating + choiceRating + decorationRating) / 6f;
     }
     
     float GetCleanlinessTarget()
@@ -141,22 +145,52 @@ public class RatingManager : MonoBehaviour
         return 0f;
     }
 
-    float GetStationSizeTarget()
+    float GetChoiceTarget()
     {
-        if (ExpansionManager.Instance == null || ExpansionManager.Instance.allExpansions == null)
+        if (PassengerManager.Instance == null)
         {
-            return 1f;
+            return 5f;
         }
 
-        int totalExpansions = ExpansionManager.Instance.allExpansions.Length;
-        if (totalExpansions == 0)
+        choiceRatingPassengers.Clear();
+
+        var passengers = PassengerManager.Instance.activePassengers;
+        for (int i = 0; i < passengers.Count; i++)
         {
-            return 1f;
+            Passenger passenger = passengers[i];
+            if (passenger != null && passenger.hasEvaluatedChoice)
+            {
+                choiceRatingPassengers.Add(passenger);
+            }
         }
 
-        int builtCount = ExpansionManager.Instance.builtExpansions.Count;
-        float ratio = (float)builtCount / totalExpansions;
-        return 1f + (ratio * 4f);
+        int count = choiceRatingPassengers.Count;
+        if (count == 0)
+        {
+            return 5f;
+        }
+
+        int sampleSize = Mathf.Min(count, ChoicePassengerSampleSize);
+        for (int i = 0; i < sampleSize; i++)
+        {
+            int swapIndex = Random.Range(i, count);
+            Passenger swapPassenger = choiceRatingPassengers[i];
+            choiceRatingPassengers[i] = choiceRatingPassengers[swapIndex];
+            choiceRatingPassengers[swapIndex] = swapPassenger;
+        }
+
+        int hadChoiceCount = 0;
+        for (int i = 0; i < sampleSize; i++)
+        {
+            Passenger passenger = choiceRatingPassengers[i];
+            if (passenger != null && !passenger.didntHaveChoice)
+            {
+                hadChoiceCount++;
+            }
+        }
+
+        float choiceRatio = (float)hadChoiceCount / sampleSize;
+        return Mathf.Clamp01(choiceRatio / ChoiceFiveStarCoverageThreshold) * 5f;
     }
 
     float GetPassengerNeedsTarget()
@@ -291,9 +325,24 @@ public class RatingManager : MonoBehaviour
 
     float GetDecorationTarget(List<Passenger> passengers)
     {
-        int count = passengers.Count;
+        if (PassengerManager.Instance == null)
+        {
+            return 0f;
+        }
 
-        if (count == 0) return 5f;
+        List<Passenger> samplePassengers = passengers;
+        int count = samplePassengers.Count;
+
+        if (count == 0)
+        {
+            samplePassengers = PassengerManager.Instance.activePassengers;
+            count = samplePassengers.Count;
+        }
+
+        if (count == 0)
+        {
+            return 0f;
+        }
 
         PlacedBuildable[] placedBuildables = FindObjectsByType<PlacedBuildable>(FindObjectsSortMode.None);
         if (placedBuildables.Length == 0) return 0f;
@@ -320,7 +369,7 @@ public class RatingManager : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            Passenger passenger = passengers[i];
+            Passenger passenger = samplePassengers[i];
             if (passenger == null) continue;
 
             float localDecorationScore = GetDecorationScoreAtPosition(passenger.transform.position, placedBuildables);

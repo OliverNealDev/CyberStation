@@ -4,7 +4,9 @@ using System.Collections;
 public class NutrientDispenserController : StationFacility, IPreviewInitializable
 {
     public int usePrice = 3;
-    public override float EstimatedServiceDuration => extrudeDuration + arcDuration;
+    private float BaseServiceDuration => extrudeDuration + arcDuration;
+    private float TotalExtrudeDuration => extrudeDuration + GetAdditionalServiceDelay(BaseServiceDuration);
+    public override float EstimatedServiceDuration => ScaleServiceDuration(BaseServiceDuration);
     
     [Header("Visuals")]
     public Transform nutrientCube;
@@ -15,11 +17,11 @@ public class NutrientDispenserController : StationFacility, IPreviewInitializabl
     public Transform cubeRestPoint;      
     public Transform cubeExtrudePoint;   
     public float passengerHeadYOffset = 3.172f; 
-    public float arcHeight = 1.25f;
+    public float arcHeight = 1.125f;
 
     [Header("Timing")]
-    public float extrudeDuration = 7.5f; 
-    public float arcDuration = 0.75f;     
+    public float extrudeDuration = 3.6f; 
+    public float arcDuration = 0.4f;     
     
     private MeshRenderer cubeRenderer;
 
@@ -78,10 +80,10 @@ public class NutrientDispenserController : StationFacility, IPreviewInitializabl
 
             float elapsed = 0f;
 
-            while (elapsed < extrudeDuration)
+            while (elapsed < TotalExtrudeDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = elapsed / extrudeDuration;
+                float t = elapsed / TotalExtrudeDuration;
                 float smoothT = t * t * (3f - 2f * t); 
                 
                 nutrientCube.position = Vector3.Lerp(cubeRestPoint.position, cubeExtrudePoint.position, smoothT);

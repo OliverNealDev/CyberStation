@@ -3,8 +3,7 @@ using System.Collections;
 
 public class HydratingObeliskController : StationFacility, IPreviewInitializable
 {
-    public int usePrice = 2;
-    public override float EstimatedServiceDuration => (dropletCount * timeBetweenShots) + flightDuration;
+    public int usePrice = 3;
 
     [Header("Visuals")]
     public SpriteRenderer facilityIcon;
@@ -19,12 +18,15 @@ public class HydratingObeliskController : StationFacility, IPreviewInitializable
     [Header("Timing & Firing")]
     public int dropletCount = 28;
     public float timeBetweenShots = 0.12f; 
-    public float flightDuration = 0.65f;
+    public float flightDuration = 0.64f;
 
     [Header("Litter")]
     public GameObject puddleLitterPrefab;
     [Range(0f, 1f)] public float puddleLitterChance = 0.05f;
     [Min(0f)] public float puddleSpawnDistance = 1f;
+
+    private int EffectiveDropletCount => GetEffectiveDropletCount();
+    public override float EstimatedServiceDuration => GetHydrationDuration(EffectiveDropletCount);
 
     protected override void Start()
     {
@@ -54,7 +56,8 @@ public class HydratingObeliskController : StationFacility, IPreviewInitializable
     {
         SetNeedIconActive(facilityIcon, Passenger.NeedType.Thirst);
 
-        for (int i = 0; i < dropletCount; i++)
+        int dropletShots = EffectiveDropletCount;
+        for (int i = 0; i < dropletShots; i++)
         {
             if (passenger == null) break;
 
@@ -68,7 +71,10 @@ public class HydratingObeliskController : StationFacility, IPreviewInitializable
                 StartCoroutine(DropletFlightRoutine(droplet, passenger));
             }
 
-            yield return new WaitForSeconds(timeBetweenShots);
+            if (i < dropletShots - 1)
+            {
+                yield return new WaitForSeconds(timeBetweenShots);
+            }
         }
 
         yield return new WaitForSeconds(flightDuration);
@@ -131,6 +137,21 @@ public class HydratingObeliskController : StationFacility, IPreviewInitializable
 
         Vector3 puddleOrigin = transform.position + (transform.forward * puddleSpawnDistance);
         PassengerManager.Instance.TrySpawnPlacedLitter(puddleLitterPrefab, puddleOrigin);
+    }
+
+    private int GetEffectiveDropletCount()
+    {
+        int baseDropletCount = Mathf.Max(1, dropletCount);
+        float targetDuration = ScaleServiceDuration(GetHydrationDuration(baseDropletCount));
+        float safeShotSpacing = Mathf.Max(0.01f, timeBetweenShots);
+        float requiredShots = ((targetDuration - flightDuration) / safeShotSpacing) + 1f;
+        return Mathf.Max(baseDropletCount, Mathf.CeilToInt(requiredShots));
+    }
+
+    private float GetHydrationDuration(int shotCount)
+    {
+        int clampedShotCount = Mathf.Max(1, shotCount);
+        return ((clampedShotCount - 1) * Mathf.Max(0f, timeBetweenShots)) + Mathf.Max(0f, flightDuration);
     }
 
 }

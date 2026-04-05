@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class SnackPrinterController : StationFacility, IPreviewInitializable
 {
-    public int usePrice = 12;
-    public override float EstimatedServiceDuration => printDuration + consumeDuration;
+    public int usePrice = 3;
+    private float BaseServiceDuration => printDuration + consumeDuration;
+    private float TotalPrintDuration => printDuration + GetAdditionalServiceDelay(BaseServiceDuration);
+    public override float EstimatedServiceDuration => ScaleServiceDuration(BaseServiceDuration);
 
     [Header("Setup & Waypoints")]
     public List<GameObject> snackPrefabs = new List<GameObject>();
@@ -22,7 +24,7 @@ public class SnackPrinterController : StationFacility, IPreviewInitializable
     public Color activeLightColor = new Color(1f, 0.64f, 0f);
 
     [Header("Timing")]
-    public float printDuration = 14.5f;
+    public float printDuration = 2.5f;
     public float consumeDuration = 0.5f;
 
     private GameObject activeSnackInstance;
@@ -88,7 +90,7 @@ public class SnackPrinterController : StationFacility, IPreviewInitializable
         Quaternion startRotation = startPos.rotation;
         Quaternion endRotation = endPos.rotation;
 
-        while (elapsed < printDuration)
+        while (elapsed < TotalPrintDuration)
         {
             if (activeSnackInstance == null)
             {
@@ -97,7 +99,7 @@ public class SnackPrinterController : StationFacility, IPreviewInitializable
             }
 
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / printDuration);
+            float t = Mathf.Clamp01(elapsed / TotalPrintDuration);
             float smoothT = t * t * (3f - 2f * t);
 
             activeSnackInstance.transform.position = Vector3.Lerp(startPos.position, endPos.position, smoothT);
