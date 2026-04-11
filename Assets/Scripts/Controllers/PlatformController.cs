@@ -56,22 +56,10 @@ public class PlatformController : MonoBehaviour
         if (trainToSpawn != null && TrainManager.Instance != null)
         {
             TrainService service = TrainManager.Instance.GetServiceByTrain(trainToSpawn);
-            
+
             if (service != null)
             {
-                Vector3 spawnPosition = trainStopPoint.position - (trainStopPoint.forward * 1000f);
-                GameObject trainInstance = Instantiate(trainToSpawn.trainPrefab, spawnPosition, trainStopPoint.rotation);
-                
-                TrainController controller = trainInstance.GetComponent<TrainController>();
-                service.physicalTrainInstance = controller;
-                SoundEffectController.Play(SoundEffectId.TrainApproaching);
-                
-                isOccupied = true;
-                
-                controller.trainData = trainToSpawn;
-                controller.trainStopPoint = trainStopPoint;
-                controller.platformNumber = platformNumber;
-                controller.trainService = service;
+                TrainManager.Instance.SpawnTrainService(service);
             }
         }
     }

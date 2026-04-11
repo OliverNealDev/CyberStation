@@ -16,7 +16,8 @@ public class TrainManager : MonoBehaviour
     public List<Train> unlockedTrains = new List<Train>();
     public PlatformController pendingPlatform;
     public int pendingSlot = -1;
-    
+    [SerializeField] private GameObject genericTrainPrefab;
+
     public bool unlockAllTrains = false;
 
     void Awake()
@@ -90,6 +91,42 @@ public class TrainManager : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public bool SpawnTrainService(TrainService service)
+    {
+        if (service == null || service.trainData == null || service.assignedPlatform == null || service.assignedPlatform.trainStopPoint == null)
+        {
+            return false;
+        }
+
+        if (genericTrainPrefab == null)
+        {
+            Debug.LogWarning("TrainManager cannot spawn a train because the generic train prefab is not assigned.");
+            return false;
+        }
+
+        PlatformController platform = service.assignedPlatform;
+        Vector3 spawnPosition = platform.trainStopPoint.position - (platform.trainStopPoint.forward * 1000f);
+        GameObject trainInstance = Instantiate(genericTrainPrefab, spawnPosition, platform.trainStopPoint.rotation);
+        TrainController controller = trainInstance.GetComponent<TrainController>();
+
+        if (controller == null)
+        {
+            Debug.LogWarning("The assigned generic train prefab is missing a TrainController component.");
+            Destroy(trainInstance);
+            return false;
+        }
+
+        controller.trainData = service.trainData;
+        controller.trainService = service;
+        controller.trainStopPoint = platform.trainStopPoint;
+        controller.platformNumber = platform.platformNumber;
+        service.physicalTrainInstance = controller;
+        platform.isOccupied = true;
+
+        SoundEffectController.Play(SoundEffectId.TrainApproaching);
+        return true;
     }
 
     public void AssignTrainToPlatformSlot(Train train, PlatformController platform, int slotIndex)

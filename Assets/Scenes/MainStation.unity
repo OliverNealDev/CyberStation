@@ -5427,7 +5427,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 80.8, y: 32, z: 6.9}
+  m_LocalPosition: {x: 80.8, y: 36, z: -15.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42777,6 +42777,7 @@ MonoBehaviour:
   unlockedTrains: []
   pendingPlatform: {fileID: 0}
   pendingSlot: -1
+  genericTrainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   unlockAllTrains: 0
 --- !u!4 &1832696139
 Transform:
