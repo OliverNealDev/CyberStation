@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Pink
   m_EditorClassIdentifier: Assembly-CSharp::Train
   trainName: Pink Line
-  requiredTier: 1
+  requiredTier: 2
   description: Passengers on this service will be dirtier than usual.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: bd41421e2d6b07140b952464cde9a5b4, type: 3}
   trainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 3e33f49075d057740aa0198f6d529663, type: 3}
-  speed: 10
+  speed: 50
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 25
@@ -32,5 +32,5 @@ MonoBehaviour:
   hygieneNeedChance: 0.8
   evasionChanceMultiplier: 1
   connectingTrainChance: 0.2
-  upfrontCost: 1000
+  upfrontCost: 1200
   costPerMinute: 100

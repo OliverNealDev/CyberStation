@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SecurityGuard
   m_EditorClassIdentifier: Assembly-CSharp::StaffMember
   staffName: Security Guard
-  requiredTier: 6
+  requiredTier: 1
   description: Hunts fare evaders and turns security coverage into fine income.
   icon: {fileID: 21300000, guid: 5a1928b16647f2e40b69b8675b63c81b, type: 3}
   staffPrefab: {fileID: 2991288983431714229, guid: 503c2d2c68034b34399e65161f2b81a3, type: 3}

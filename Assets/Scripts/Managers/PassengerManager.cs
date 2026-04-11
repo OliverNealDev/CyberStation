@@ -1888,13 +1888,9 @@ public class PassengerManager : MonoBehaviour
 
         TrainService connectingService = GetConnectingTrainService(service);
         newPassenger.assignedTrainService = connectingService;
-        if (connectingService != null)
-        {
-            ApplyPassengerVisuals(newPassenger);
-        }
 
         RegisterPassenger(newPassenger);
-        newPassenger.hasTicket = true;
+        newPassenger.hasTicket = connectingService == null;
         newPassenger.shouldUseFacilitiesBeforeExit = connectingService == null && Random.value < disembarkingFacilityUsageChance;
 
         if (connectingService != null || newPassenger.shouldUseFacilitiesBeforeExit)
