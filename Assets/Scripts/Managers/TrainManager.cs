@@ -16,7 +16,6 @@ public class TrainManager : MonoBehaviour
     public List<Train> unlockedTrains = new List<Train>();
     public PlatformController pendingPlatform;
     public int pendingSlot = -1;
-    [SerializeField] private GameObject genericTrainPrefab;
 
     public bool unlockAllTrains = false;
 
@@ -100,15 +99,16 @@ public class TrainManager : MonoBehaviour
             return false;
         }
 
-        if (genericTrainPrefab == null)
+        GameObject trainPrefab = service.trainData.trainPrefab;
+        if (trainPrefab == null)
         {
-            Debug.LogWarning("TrainManager cannot spawn a train because the generic train prefab is not assigned.");
+            Debug.LogWarning($"TrainManager cannot spawn {service.trainData.name} because its train prefab is not assigned.");
             return false;
         }
 
         PlatformController platform = service.assignedPlatform;
         Vector3 spawnPosition = platform.trainStopPoint.position - (platform.trainStopPoint.forward * 1000f);
-        GameObject trainInstance = Instantiate(genericTrainPrefab, spawnPosition, platform.trainStopPoint.rotation);
+        GameObject trainInstance = Instantiate(trainPrefab, spawnPosition, platform.trainStopPoint.rotation);
         TrainController controller = trainInstance.GetComponent<TrainController>();
 
         if (controller == null)

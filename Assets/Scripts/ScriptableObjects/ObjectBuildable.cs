@@ -45,7 +45,8 @@ public interface IPreviewInitializable
 public static class PrefabIconRenderer
 {
     private const int PreviewLayer = 31;
-    private const int IconSize = 256;
+    private const int IconSize = 512;
+    private const int IconAntiAliasing = 8;
 
     private static readonly System.Collections.Generic.Dictionary<string, Sprite> CachedIcons =
         new System.Collections.Generic.Dictionary<string, Sprite>();
@@ -70,12 +71,27 @@ public static class PrefabIconRenderer
 
     public static Sprite GetIcon(GameObject prefab, Sprite fallback, PrefabIconView view)
     {
+        return GetIcon(prefab, fallback, view, null, null);
+    }
+
+    public static Sprite GetIcon(
+        GameObject prefab,
+        Sprite fallback,
+        PrefabIconView view,
+        string cacheKeySuffix,
+        System.Action<GameObject> configurePreviewInstance)
+    {
         if (prefab == null)
         {
             return fallback;
         }
 
         string cacheKey = prefab.GetInstanceID() + ":" + (int)view;
+        if (!string.IsNullOrEmpty(cacheKeySuffix))
+        {
+            cacheKey += ":" + cacheKeySuffix;
+        }
+
         Sprite cachedSprite;
         if (CachedIcons.TryGetValue(cacheKey, out cachedSprite) && cachedSprite != null)
         {
@@ -85,7 +101,7 @@ public static class PrefabIconRenderer
         EnsurePreviewRig();
 
         PrefabIconRenderSettings settings = GetSettings(view);
-        Sprite renderedSprite = RenderPrefabToSprite(prefab, settings);
+        Sprite renderedSprite = RenderPrefabToSprite(prefab, settings, configurePreviewInstance);
         Sprite finalSprite = renderedSprite != null ? renderedSprite : fallback;
 
         if (finalSprite != null)
@@ -127,6 +143,9 @@ public static class PrefabIconRenderer
         previewTexture = new RenderTexture(IconSize, IconSize, 24, RenderTextureFormat.ARGB32);
         previewTexture.hideFlags = HideFlags.HideAndDontSave;
         previewTexture.name = "PrefabIconRendererTexture";
+        previewTexture.antiAliasing = IconAntiAliasing;
+        previewTexture.filterMode = FilterMode.Bilinear;
+        previewTexture.wrapMode = TextureWrapMode.Clamp;
         previewTexture.Create();
         previewCamera.targetTexture = previewTexture;
 
@@ -144,7 +163,10 @@ public static class PrefabIconRenderer
         previewLight.enabled = false;
     }
 
-    private static Sprite RenderPrefabToSprite(GameObject prefab, PrefabIconRenderSettings settings)
+    private static Sprite RenderPrefabToSprite(
+        GameObject prefab,
+        PrefabIconRenderSettings settings,
+        System.Action<GameObject> configurePreviewInstance)
     {
         GameObject previewInstance = Object.Instantiate(prefab);
         previewInstance.hideFlags = HideFlags.HideInHierarchy;
@@ -153,8 +175,9 @@ public static class PrefabIconRenderer
         previewInstance.transform.localPosition = Vector3.zero;
         previewInstance.transform.localRotation = Quaternion.identity;
 
-        SetLayerRecursively(previewInstance.transform, PreviewLayer);
+        configurePreviewInstance?.Invoke(previewInstance);
         PrepareInstanceForPreview(previewInstance);
+        SetLayerRecursively(previewInstance.transform, PreviewLayer);
 
         Renderer[] renderers = previewInstance.GetComponentsInChildren<Renderer>(true);
         Bounds bounds;
@@ -173,6 +196,8 @@ public static class PrefabIconRenderer
         Texture2D iconTexture = new Texture2D(IconSize, IconSize, TextureFormat.ARGB32, false);
         iconTexture.hideFlags = HideFlags.HideAndDontSave;
         iconTexture.name = prefab.name + "_RuntimeIconTexture";
+        iconTexture.filterMode = FilterMode.Bilinear;
+        iconTexture.wrapMode = TextureWrapMode.Clamp;
 
         RenderTexture previousTarget = RenderTexture.active;
         RenderTexture.active = previewTexture;
@@ -277,15 +302,16 @@ public static class PrefabIconRenderer
 
     private static void PrepareInstanceForPreview(GameObject previewInstance)
     {
-        Behaviour[] behaviours = previewInstance.GetComponentsInChildren<Behaviour>(true);
-        for (int i = 0; i < behaviours.Length; i++)
+        MonoBehaviour[] previewBehaviours = previewInstance.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < previewBehaviours.Length; i++)
         {
-            if (behaviours[i] is IPreviewInitializable previewInitializable)
+            if (previewBehaviours[i] is IPreviewInitializable previewInitializable)
             {
                 previewInitializable.InitializePreviewVisuals();
             }
         }
 
+        Behaviour[] behaviours = previewInstance.GetComponentsInChildren<Behaviour>(true);
         for (int i = 0; i < behaviours.Length; i++)
         {
             if (behaviours[i] == null || ShouldKeepBehaviourEnabled(behaviours[i]))

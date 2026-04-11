@@ -17,8 +17,8 @@ MonoBehaviour:
   description: A boutique service with smaller capacity but elite fares, ideal when
     you want profit without flooding one platform.
   icon: {fileID: 21300000, guid: 49c34829667242640805b3269f24a675, type: 3}
-  trainPrefab: {fileID: 1096767433483698802, guid: 5d084b5b346907445ac968edf438a737, type: 3}
-  carriagePrefab: {fileID: 6338816846241299915, guid: ba6a72c68374fd74e998701a0313fab0, type: 3}
+  trainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
+  carriagePrefab: {fileID: 6338816846241299915, guid: 3e33f49075d057740aa0198f6d529663, type: 3}
   speed: 120
   carriageCount: 4
   carriageLength: 34

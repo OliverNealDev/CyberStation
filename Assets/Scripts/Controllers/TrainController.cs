@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrainController : MonoBehaviour
+public class TrainController : MonoBehaviour, IPreviewInitializable
 {
     private static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
@@ -15,6 +15,8 @@ public class TrainController : MonoBehaviour
     private float currentSpeed;
     private float acceleration;
     private float deceleration;
+    private bool extraCarriagesSpawned;
+    private bool serviceColorApplied;
 
     [SerializeField] private List<MeshRenderer> changeableMeshRenderers = new List<MeshRenderer>();
     [SerializeField] private GameObject carriagePrefab;
@@ -46,9 +48,19 @@ public class TrainController : MonoBehaviour
             transform.rotation = trainStopPoint.rotation;
         }
 
+        InitializeRuntimeVisuals();
+        trainDoors = GetComponentsInChildren<TrainDoorController>();
+    }
+
+    private void InitializeRuntimeVisuals()
+    {
         SpawnCarriages();
         ApplyServiceColor();
-        trainDoors = GetComponentsInChildren<TrainDoorController>();
+    }
+
+    public void InitializePreviewVisuals()
+    {
+        ApplyServiceColor();
     }
 
     void Update()
@@ -166,10 +178,12 @@ public class TrainController : MonoBehaviour
 
     private void SpawnCarriages()
     {
-        if (carriagePrefab == null || trainData.carriageCount <= 1)
+        if (extraCarriagesSpawned || carriagePrefab == null || trainData == null || trainData.carriageCount <= 1)
         {
             return;
         }
+
+        extraCarriagesSpawned = true;
 
         for (int i = 2; i < trainData.carriageCount + 1; i++)
         {
@@ -180,11 +194,12 @@ public class TrainController : MonoBehaviour
 
     private void ApplyServiceColor()
     {
-        if (trainData == null)
+        if (serviceColorApplied || trainData == null)
         {
             return;
         }
 
+        serviceColorApplied = true;
         List<MeshRenderer> renderersToColor = CollectChangeableMeshRenderers();
         foreach (MeshRenderer renderer in renderersToColor)
         {

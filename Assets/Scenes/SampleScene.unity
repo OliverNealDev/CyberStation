@@ -34395,7 +34395,6 @@ MonoBehaviour:
   unlockedTrains: []
   pendingPlatform: {fileID: 0}
   pendingSlot: -1
-  genericTrainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   unlockAllTrains: 0
 --- !u!4 &1832696139
 Transform:

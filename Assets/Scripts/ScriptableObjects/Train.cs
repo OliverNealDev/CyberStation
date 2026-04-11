@@ -34,7 +34,19 @@ public class Train : ScriptableObject
     {
         if (runtimeIcon == null)
         {
-            runtimeIcon = PrefabIconRenderer.GetIcon(trainPrefab, icon, PrefabIconView.TrainFront);
+            runtimeIcon = PrefabIconRenderer.GetIcon(
+                trainPrefab,
+                icon,
+                PrefabIconView.TrainFront,
+                GetInstanceID().ToString(),
+                previewInstance =>
+                {
+                    TrainController controller = previewInstance.GetComponent<TrainController>();
+                    if (controller != null)
+                    {
+                        controller.trainData = this;
+                    }
+                });
         }
 
         return runtimeIcon;
