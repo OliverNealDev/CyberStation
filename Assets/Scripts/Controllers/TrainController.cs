@@ -12,6 +12,8 @@ public class TrainController : MonoBehaviour
     private float currentSpeed;
     private float acceleration;
     private float deceleration;
+
+    [SerializeField] private List<Material> changeableMaterials;
     
     // We will store all the doors here to check if they are busy
     private TrainDoorController[] trainDoors; 
