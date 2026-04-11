@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SquareBillboard
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Square Billboard
-  requiredTier: 4
+  requiredTier: 3
   description: Advertises local businesses. 10 Decoration strength.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 3e825999f9dc76f4a9b4e18cb209e8b1, type: 3}

@@ -12,7 +12,8 @@ public enum FacilityType
     CleansingShower,
     PrivateLavatory,
     RestPad,
-    MolecularScrubber
+    MolecularScrubber,
+    EnergyBottleDispenser
 }
 
 public abstract class StationFacility : QueuableObject 
@@ -21,6 +22,7 @@ public abstract class StationFacility : QueuableObject
     protected static readonly Color IdleNeedIconColor = Color.white;
     protected static readonly Color HungerNeedIconColor = new Color(1f, 0.64f, 0f);
     protected static readonly Color ThirstNeedIconColor = Color.cyan;
+    protected static readonly Color EnergyNeedIconColor = new Color(1f, 1f, 0f);
     protected static readonly Color HygieneNeedIconColor = new Color(1f, 0.41f, 0.71f);
 
     [Header("Facility Settings")]
@@ -246,6 +248,8 @@ public abstract class StationFacility : QueuableObject
                 return HungerNeedIconColor;
             case Passenger.NeedType.Thirst:
                 return ThirstNeedIconColor;
+            case Passenger.NeedType.Energy:
+                return EnergyNeedIconColor;
             case Passenger.NeedType.Hygiene:
                 return HygieneNeedIconColor;
             default:

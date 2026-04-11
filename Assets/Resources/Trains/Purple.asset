@@ -12,20 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
   m_Name: Purple
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  trainName: Afterglow Line
+  trainName: Purple Line
   requiredTier: 1
-  description: A balanced commuter upgrade that charges more per rider without asking
-    for luxury-line upkeep.
-  icon: {fileID: 21300000, guid: 0acf459aace31dd4da652bde7a2165a2, type: 3}
+  description: More expensive tickets, but lower passenger connection chance..
+  icon: {fileID: 0}
   trainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 3e33f49075d057740aa0198f6d529663, type: 3}
-  speed: 120
+  speed: 10
   carriageCount: 4
   carriageLength: 34
-  capacityPerCarriage: 24
+  capacityPerCarriage: 25
   costPerRide: 15
   secondsStationary: 30
-  trainColor: {r: 0.5019608, g: 0, b: 0.5019608, a: 1}
+  trainColor: {r: 0.5019608, g: 0, b: 1, a: 1}
   isWarm: 0
-  upfrontCost: 1100
-  costPerMinute: 110
+  hungerNeedChance: 0.4
+  thirstNeedChance: 0.4
+  energyNeedChance: 0.4
+  hygieneNeedChance: 0.4
+  evasionChanceMultiplier: 1
+  connectingTrainChance: 0.1
+  upfrontCost: 1000
+  costPerMinute: 100

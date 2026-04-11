@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SnackPrinter
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Snack Printer
-  requiredTier: 3
+  requiredTier: 2
   description: Generates a variety of delicious snacks on command, providing a comfortable
     hunger fulfilment.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}

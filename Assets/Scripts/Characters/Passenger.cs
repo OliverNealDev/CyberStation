@@ -76,13 +76,21 @@ public class Passenger : Person
         }
     }
 
-    public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked, bool requireAtLeastOne = false)
+    public void RollNeeds(bool hungerUnlocked, bool thirstUnlocked, bool energyUnlocked, bool hygieneUnlocked, bool requireAtLeastOne = false, Train trainProfile = null)
     {
         PassengerManager manager = PassengerManager.Instance;
-        float hungerChance = manager != null ? manager.hungerNeedChance : 0.4f;
-        float thirstChance = manager != null ? manager.thirstNeedChance : 0.4f;
-        float energyChance = manager != null ? manager.energyNeedChance : 0.15f;
-        float hygieneChance = manager != null ? manager.hygieneNeedChance : 0.2f;
+        float hungerChance = trainProfile != null
+            ? trainProfile.hungerNeedChance
+            : (manager != null ? manager.hungerNeedChance : 0.4f);
+        float thirstChance = trainProfile != null
+            ? trainProfile.thirstNeedChance
+            : (manager != null ? manager.thirstNeedChance : 0.4f);
+        float energyChance = trainProfile != null
+            ? trainProfile.energyNeedChance
+            : (manager != null ? manager.energyNeedChance : 0.15f);
+        float hygieneChance = trainProfile != null
+            ? trainProfile.hygieneNeedChance
+            : (manager != null ? manager.hygieneNeedChance : 0.2f);
 
         needsHunger = hungerUnlocked && Random.value < hungerChance;
         needsThirst = thirstUnlocked && Random.value < thirstChance;

@@ -24,6 +24,14 @@ public class Train : ScriptableObject
 
     public bool isWarm = false;
 
+    [Header("Passenger Profile")]
+    [Range(0f, 1f)] public float hungerNeedChance = 0.4f;
+    [Range(0f, 1f)] public float thirstNeedChance = 0.4f;
+    [Range(0f, 1f)] public float energyNeedChance = 0.15f;
+    [Range(0f, 1f)] public float hygieneNeedChance = 0.2f;
+    [Min(0f)] public float evasionChanceMultiplier = 1f;
+    [Range(0f, 1f)] public float connectingTrainChance = 0.2f;
+
     [Header("Economy")]
     public int upfrontCost = 100;
     public int costPerMinute = 10;

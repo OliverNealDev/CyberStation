@@ -12,20 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d803996ec79c524d97eeb8de5dc8c8d, type: 3}
   m_Name: Orange
   m_EditorClassIdentifier: Assembly-CSharp::Train
-  trainName: Solstice Express
-  requiredTier: 8
-  description: An express built for mature stations that can keep queues short
-    and platforms moving.
-  icon: {fileID: 21300000, guid: 694f5034ce0a7cd4f8fcbe6e898b02d8, type: 3}
+  trainName: Orange Line
+  requiredTier: 1
+  description: Passengers on this service will be hungrier than usual.
+  icon: {fileID: 0}
   trainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 3e33f49075d057740aa0198f6d529663, type: 3}
-  speed: 120
+  speed: 10
   carriageCount: 4
   carriageLength: 34
-  capacityPerCarriage: 32
-  costPerRide: 18
+  capacityPerCarriage: 25
+  costPerRide: 10
   secondsStationary: 30
-  trainColor: {r: 1, g: 0.40392157, b: 0, a: 1}
-  isWarm: 1
-  upfrontCost: 2400
-  costPerMinute: 280
+  trainColor: {r: 1, g: 0.5019608, b: 0, a: 1}
+  isWarm: 0
+  hungerNeedChance: 0.8
+  thirstNeedChance: 0.4
+  energyNeedChance: 0.4
+  hygieneNeedChance: 0.4
+  evasionChanceMultiplier: 1
+  connectingTrainChance: 0.2
+  upfrontCost: 1000
+  costPerMinute: 100

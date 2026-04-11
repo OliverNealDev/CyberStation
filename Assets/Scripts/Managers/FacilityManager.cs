@@ -110,6 +110,7 @@ public class FacilityManager : MonoBehaviour
                 validFacilities.Add(FacilityType.BottleDispenser);
                 break;
             case Passenger.NeedType.Energy:
+                validFacilities.Add(FacilityType.EnergyBottleDispenser);
                 validFacilities.Add(FacilityType.RestPad);
                 break;
             case Passenger.NeedType.Hygiene:

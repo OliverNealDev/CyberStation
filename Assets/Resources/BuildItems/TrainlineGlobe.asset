@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TrainlineGlobe
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Trainline Globe
-  requiredTier: 4
+  requiredTier: 1
   description: Shows the active trainlines on a neon-magnetic globe. 5 Decoration
     strength.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}

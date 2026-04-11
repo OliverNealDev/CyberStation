@@ -31,7 +31,7 @@ public class PassengerManager : MonoBehaviour
     [Header("Need Unlock Tiers")]
     public int hungerNeedStartTier = 3;
     public int thirstNeedStartTier = 2;
-    public int energyNeedStartTier = 999;
+    public int energyNeedStartTier = 5;
     public int hygieneNeedStartTier = 4;
     [Range(0f, 1f)] public float disembarkingFacilityUsageChance = 0.2f;
 
@@ -48,10 +48,12 @@ public class PassengerManager : MonoBehaviour
     [SerializeField] private Sprite thirstNeedSprite;
     [SerializeField] private Sprite hungerNeedSprite;
     [SerializeField] private Sprite hygieneNeedSprite;
+    [SerializeField] private Sprite energyNeedSprite;
     [SerializeField] private Color ticketNeedColor = new Color(1f, 0.88f, 0.26f);
     [SerializeField] private Color thirstNeedColor = new Color(0.22f, 0.67f, 1f);
     [SerializeField] private Color hungerNeedColor = new Color(0.88f, 0.53f, 0.2f);
     [SerializeField] private Color hygieneNeedColor = new Color(0.54f, 0.87f, 0.64f);
+    [SerializeField] private Color energyNeedColor = new Color(1f, 1f, 0f);
     [Min(0f)] public float blockedNeedPassiveDuration = 20f;
     [Min(0f)] public float blockedNeedUrgentDuration = 20f;
     public Vector3 needIconWorldOffset = new Vector3(0f, 5.5f, 0f);
@@ -1451,6 +1453,8 @@ public class PassengerManager : MonoBehaviour
                 return thirstNeedSprite;
             case Passenger.NeedType.Hunger:
                 return hungerNeedSprite;
+            case Passenger.NeedType.Energy:
+                return energyNeedSprite;
             case Passenger.NeedType.Hygiene:
                 return hygieneNeedSprite;
             default:
@@ -1468,6 +1472,8 @@ public class PassengerManager : MonoBehaviour
                 return thirstNeedColor;
             case Passenger.NeedType.Hunger:
                 return hungerNeedColor;
+            case Passenger.NeedType.Energy:
+                return energyNeedColor;
             case Passenger.NeedType.Hygiene:
                 return hygieneNeedColor;
             default:
@@ -1879,22 +1885,23 @@ public class PassengerManager : MonoBehaviour
 
         newPassenger.assignedTrainService = service;
         ApplyPassengerVisuals(newPassenger);
-        
-        newPassenger.assignedTrainService = null; 
+
+        TrainService connectingService = GetConnectingTrainService(service);
+        newPassenger.assignedTrainService = connectingService;
+        if (connectingService != null)
+        {
+            ApplyPassengerVisuals(newPassenger);
+        }
 
         RegisterPassenger(newPassenger);
-        newPassenger.hasTicket = true; 
-        newPassenger.shouldUseFacilitiesBeforeExit = Random.value < disembarkingFacilityUsageChance;
-        if (newPassenger.shouldUseFacilitiesBeforeExit)
-        {
-            newPassenger.RollNeeds(
-                IsNeedUnlocked(Passenger.NeedType.Hunger),
-                IsNeedUnlocked(Passenger.NeedType.Thirst),
-                IsNeedUnlocked(Passenger.NeedType.Energy),
-                IsNeedUnlocked(Passenger.NeedType.Hygiene),
-                true);
+        newPassenger.hasTicket = true;
+        newPassenger.shouldUseFacilitiesBeforeExit = connectingService == null && Random.value < disembarkingFacilityUsageChance;
 
-            if (!newPassenger.HasAnyNeed())
+        if (connectingService != null || newPassenger.shouldUseFacilitiesBeforeExit)
+        {
+            RollPassengerNeedsForTrain(newPassenger, service != null ? service.trainData : null, newPassenger.shouldUseFacilitiesBeforeExit);
+
+            if (newPassenger.shouldUseFacilitiesBeforeExit && !newPassenger.HasAnyNeed())
             {
                 newPassenger.shouldUseFacilitiesBeforeExit = false;
             }
@@ -1916,6 +1923,15 @@ public class PassengerManager : MonoBehaviour
             {
                 passenger.navAgent.Warp(hit.position); 
             }
+        }
+
+        if (passenger.assignedTrainService != null)
+        {
+            passenger.shouldUseFacilitiesBeforeExit = false;
+            passenger.currentSubState = Passenger.passengerSubStates.Idle;
+            passenger.currentSpecialTarget = Passenger.passengerSpecialTargets.None;
+            DecideNextAction(passenger);
+            return;
         }
 
         if (passenger.shouldUseFacilitiesBeforeExit && passenger.HasAnyNeed())
@@ -2053,12 +2069,8 @@ public class PassengerManager : MonoBehaviour
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = service;
-        newPassenger.RollNeeds(
-            IsNeedUnlocked(Passenger.NeedType.Hunger),
-            IsNeedUnlocked(Passenger.NeedType.Thirst),
-            IsNeedUnlocked(Passenger.NeedType.Energy),
-            IsNeedUnlocked(Passenger.NeedType.Hygiene));
-        newPassenger.isTicketEvader = Random.Range(1, 100) <= ticketEvaderChance;
+        RollPassengerNeedsForTrain(newPassenger, service.trainData);
+        newPassenger.isTicketEvader = RollTicketEvader(service);
         
         RegisterPassenger(newPassenger);
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
@@ -2236,6 +2248,65 @@ public class PassengerManager : MonoBehaviour
         }
 
         return FallbackPassengerWalkSpeed;
+    }
+
+    private void RollPassengerNeedsForTrain(Passenger passenger, Train trainProfile, bool requireAtLeastOne = false)
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        passenger.RollNeeds(
+            IsNeedUnlocked(Passenger.NeedType.Hunger),
+            IsNeedUnlocked(Passenger.NeedType.Thirst),
+            IsNeedUnlocked(Passenger.NeedType.Energy),
+            IsNeedUnlocked(Passenger.NeedType.Hygiene),
+            requireAtLeastOne,
+            trainProfile);
+    }
+
+    private bool RollTicketEvader(TrainService service)
+    {
+        float adjustedChance = ticketEvaderChance;
+        if (service != null && service.trainData != null)
+        {
+            adjustedChance *= Mathf.Max(0f, service.trainData.evasionChanceMultiplier);
+        }
+
+        return Random.value < Mathf.Clamp01(adjustedChance / 100f);
+    }
+
+    private TrainService GetConnectingTrainService(TrainService sourceService)
+    {
+        if (sourceService == null || sourceService.trainData == null)
+        {
+            return null;
+        }
+
+        if (Random.value >= sourceService.trainData.connectingTrainChance || TrainManager.Instance == null)
+        {
+            return null;
+        }
+
+        List<TrainService> candidates = new List<TrainService>();
+        for (int i = 0; i < TrainManager.Instance.activeTrainServices.Count; i++)
+        {
+            TrainService candidate = TrainManager.Instance.activeTrainServices[i];
+            if (candidate == null || candidate == sourceService || candidate.trainData == null)
+            {
+                continue;
+            }
+
+            candidates.Add(candidate);
+        }
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        return candidates[Random.Range(0, candidates.Count)];
     }
 
     private Vector3 GetEstimatedQueueTargetPosition(QueuableObject target, Passenger passenger)

@@ -1,5 +1,7 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -8,6 +10,7 @@ public class TrainMenuController : MonoBehaviour
     public string targetFolderPath = "Trains";
     public GameObject TrainItemButtonPrefab;
     public Transform contentContainer;
+    [SerializeField] private ScrollRect trainScrollRect;
 
     public Train[] trains;
     
@@ -21,6 +24,7 @@ public class TrainMenuController : MonoBehaviour
     public Button endServiceButton;
     
     private Train selectedTrain;
+    private Coroutine pendingScrollReset;
     
     void Start()
     {
@@ -32,6 +36,7 @@ public class TrainMenuController : MonoBehaviour
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
         ProgressionManager.OnProgressionChanged += LoadItems;
         LoadItems();
+        QueueScrollReset();
         if (selectedTrain != null) UpdateDetailView(selectedTrain);
     }
     
@@ -39,6 +44,8 @@ public class TrainMenuController : MonoBehaviour
     {
         UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
         ProgressionManager.OnProgressionChanged -= LoadItems;
+        StopQueuedScrollReset();
+        ClearSelectedMenuObject();
     }
 
     public void LoadItems()
@@ -159,5 +166,71 @@ public class TrainMenuController : MonoBehaviour
 
         checkBuyServiceButtonInteractability(data);
         checkEndServiceButtonInteractability(data);
+    }
+
+    private void QueueScrollReset()
+    {
+        StopQueuedScrollReset();
+        pendingScrollReset = StartCoroutine(ResetScrollStateNextFrame());
+    }
+
+    private void StopQueuedScrollReset()
+    {
+        if (pendingScrollReset == null)
+        {
+            return;
+        }
+
+        StopCoroutine(pendingScrollReset);
+        pendingScrollReset = null;
+    }
+
+    private IEnumerator ResetScrollStateNextFrame()
+    {
+        yield return null;
+        pendingScrollReset = null;
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
+        ClearSelectedMenuObject();
+
+        ScrollRect scrollRect = ResolveScrollRect();
+        if (scrollRect == null)
+        {
+            yield break;
+        }
+
+        scrollRect.StopMovement();
+        scrollRect.velocity = Vector2.zero;
+
+        // Toggling the component forces Unity to discard stale drag state after the panel is reopened.
+        scrollRect.enabled = false;
+        scrollRect.enabled = true;
+
+        Canvas.ForceUpdateCanvases();
+        scrollRect.verticalNormalizedPosition = 1f;
+    }
+
+    private ScrollRect ResolveScrollRect()
+    {
+        if (trainScrollRect == null && contentContainer != null)
+        {
+            trainScrollRect = contentContainer.GetComponentInParent<ScrollRect>(true);
+        }
+
+        return trainScrollRect;
+    }
+
+    private void ClearSelectedMenuObject()
+    {
+        if (EventSystem.current == null)
+        {
+            return;
+        }
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+        if (selectedObject != null && selectedObject.transform.IsChildOf(transform))
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
     }
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HydratingObelisk
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Hydrating Obelisk
-  requiredTier: 2
+  requiredTier: 1
   description: Materialises hydrating droplets and shoots them into passengers for
     a quick, uncomfortable hydration.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
