@@ -14490,13 +14490,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92a5a333ab3c9d2419c2bbfec9d49a7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RatingManager
-  stationRating: 0
-  cleanlinessRating: 0
-  crowdednessRating: 0
-  queueTimesRating: 0
-  passengerNeedsRating: 0
+  stationRating: 5
+  cleanlinessRating: 5
+  crowdednessRating: 5
+  queueTimesRating: 5
+  passengerNeedsRating: 5
   trainSelectionRating: 0
-  stationSizeRating: 0
+  stationSizeRating: 5
 --- !u!1 &717409159
 GameObject:
   m_ObjectHideFlags: 0

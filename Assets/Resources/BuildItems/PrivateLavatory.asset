@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PrivateLavatory
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Private Lavatory
-  requiredTier: 1
+  requiredTier: 3
   description: Completely isolated facility to provide a comfortable experience for
     passengers.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}

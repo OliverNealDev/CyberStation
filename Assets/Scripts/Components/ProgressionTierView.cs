@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 [DisallowMultipleComponent]
 public class ProgressionTierView : MonoBehaviour
@@ -10,6 +11,7 @@ public class ProgressionTierView : MonoBehaviour
     [SerializeField] private ProgressionUnlockableView[] unlockables = System.Array.Empty<ProgressionUnlockableView>();
     [SerializeField] private bool autoDiscoverUnlockables = true;
     [SerializeField] private Image panelImage;
+    [SerializeField] private Transform unlocksRoot;
     [SerializeField] private Color unlockedPanelColor = new Color(0.08f, 0.2f, 0.12f, 0.6f);
 
     private Color defaultPanelColor = Color.white;
@@ -102,6 +104,41 @@ public class ProgressionTierView : MonoBehaviour
         }
     }
 
+    public void SetUnlockableEntries(IReadOnlyList<ProgressionUnlockableEntry> entries)
+    {
+        EnsureReferences();
+
+        if (unlocksRoot == null)
+        {
+            return;
+        }
+
+        List<ProgressionUnlockableView> unlockableViews = new List<ProgressionUnlockableView>(
+            unlocksRoot.GetComponentsInChildren<ProgressionUnlockableView>(true));
+
+        ProgressionUnlockableView template = unlockableViews.Count > 0 ? unlockableViews[0] : null;
+        while (template != null && unlockableViews.Count < entries.Count)
+        {
+            ProgressionUnlockableView clone = Instantiate(template, unlocksRoot);
+            clone.gameObject.SetActive(true);
+            unlockableViews.Add(clone);
+        }
+
+        for (int i = 0; i < unlockableViews.Count; i++)
+        {
+            if (i < entries.Count)
+            {
+                entries[i].ApplyTo(unlockableViews[i]);
+            }
+            else
+            {
+                unlockableViews[i].ClearDefinition();
+            }
+        }
+
+        unlockables = unlockableViews.ToArray();
+    }
+
     private void EnsureReferences()
     {
         if (titleText == null)
@@ -116,6 +153,15 @@ public class ProgressionTierView : MonoBehaviour
         if (autoDiscoverUnlockables || unlockables == null || unlockables.Length == 0)
         {
             unlockables = GetComponentsInChildren<ProgressionUnlockableView>(true);
+        }
+
+        if (unlocksRoot == null)
+        {
+            Transform directUnlocksRoot = transform.Find("Unlocks");
+            if (directUnlocksRoot != null)
+            {
+                unlocksRoot = directUnlocksRoot;
+            }
         }
 
         if (panelImage == null)

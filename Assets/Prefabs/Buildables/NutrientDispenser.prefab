@@ -483,7 +483,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 3
+  usePrice: 4
   nutrientCube: {fileID: 5822321231277756889}
   facilityIcon: {fileID: 7333661233552951150}
   activeFacilityColor: {r: 1, g: 0.64, b: 0, a: 1}

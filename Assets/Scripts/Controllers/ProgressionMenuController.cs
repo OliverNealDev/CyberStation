@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -30,16 +31,153 @@ public class ProgressionMenuController : MonoBehaviour
     public void RefreshAll()
     {
         tierViews = GetComponentsInChildren<ProgressionTierView>(true);
+        System.Array.Sort(tierViews, CompareTierViews);
+
+        Dictionary<string, ObjectBuildable> buildables = BuildLookup(Resources.LoadAll<ObjectBuildable>("BuildItems"));
+        Dictionary<string, Train> trains = BuildLookup(Resources.LoadAll<Train>("Trains"));
+        Dictionary<string, StaffMember> staffMembers = BuildLookup(Resources.LoadAll<StaffMember>("Staff"));
+        Dictionary<string, Expansion> expansions = BuildLookup(Resources.LoadAll<Expansion>("Expansions"));
+
+        int currentLevel = ProgressionManager.Instance != null ? ProgressionManager.Instance.CurrentLevel : 1;
 
         for (int i = 0; i < tierViews.Length; i++)
         {
             if (tierViews[i] != null)
             {
-                tierViews[i].RefreshView();
                 int tierNumber = tierViews[i].GetTierNumber(i + 1);
-                int currentLevel = ProgressionManager.Instance != null ? ProgressionManager.Instance.CurrentLevel : 1;
+                tierViews[i].SetUnlockableEntries(BuildEntriesForTier(
+                    tierNumber,
+                    buildables,
+                    trains,
+                    staffMembers,
+                    expansions));
+                tierViews[i].RefreshView();
                 tierViews[i].SetUnlockedState(currentLevel >= tierNumber);
             }
+        }
+    }
+
+    private int CompareTierViews(ProgressionTierView left, ProgressionTierView right)
+    {
+        int leftTier = left != null ? left.GetTierNumber(0) : 0;
+        int rightTier = right != null ? right.GetTierNumber(0) : 0;
+        return leftTier.CompareTo(rightTier);
+    }
+
+    private List<ProgressionUnlockableEntry> BuildEntriesForTier(
+        int tierNumber,
+        Dictionary<string, ObjectBuildable> buildables,
+        Dictionary<string, Train> trains,
+        Dictionary<string, StaffMember> staffMembers,
+        Dictionary<string, Expansion> expansions)
+    {
+        List<ProgressionUnlockableEntry> entries = new List<ProgressionUnlockableEntry>();
+
+        switch (tierNumber)
+        {
+            case 1:
+                AddTrain(entries, trains, "Orange");
+                AddTrain(entries, trains, "Cyan");
+                AddBuildable(entries, buildables, "TicketMachine");
+                AddBuildable(entries, buildables, "Materializer");
+                AddBuildable(entries, buildables, "NutrientDispenser");
+                AddBuildable(entries, buildables, "HydratingObelisk");
+                AddBuildable(entries, buildables, "LightStandard");
+                AddBuildable(entries, buildables, "WallBlock");
+                break;
+
+            case 2:
+                AddTrain(entries, trains, "Yellow");
+                AddBuildable(entries, buildables, "EnergyBottleDispenser");
+                AddBuildable(entries, buildables, "SnackPrinter");
+                AddBuildable(entries, buildables, "BottleDispenser");
+                AddExpansion(entries, expansions, "Platform2");
+                AddStaff(entries, staffMembers, "Janitor");
+                AddStaff(entries, staffMembers, "SecurityGuard");
+                AddBuildable(entries, buildables, "TrainlineGlobe");
+                break;
+
+            case 3:
+                AddTrain(entries, trains, "Pink");
+                AddBuildable(entries, buildables, "PrivateLavatory");
+                AddExpansion(entries, expansions, "LeftExpansion");
+                AddExpansion(entries, expansions, "RightExpansion");
+                AddBuildable(entries, buildables, "SquareBillboard");
+                break;
+
+            case 4:
+                AddTrain(entries, trains, "Green");
+                AddTrain(entries, trains, "Red");
+                AddBuildable(entries, buildables, "CleansingShower");
+                break;
+
+            case 5:
+                AddTrain(entries, trains, "Blue");
+                AddTrain(entries, trains, "Purple");
+                break;
+        }
+
+        return entries;
+    }
+
+    private static Dictionary<string, T> BuildLookup<T>(T[] items) where T : Object
+    {
+        Dictionary<string, T> lookup = new Dictionary<string, T>();
+
+        for (int i = 0; i < items.Length; i++)
+        {
+            if (items[i] == null)
+            {
+                continue;
+            }
+
+            lookup[items[i].name] = items[i];
+        }
+
+        return lookup;
+    }
+
+    private void AddBuildable(
+        List<ProgressionUnlockableEntry> entries,
+        Dictionary<string, ObjectBuildable> buildables,
+        string assetName)
+    {
+        if (buildables.TryGetValue(assetName, out ObjectBuildable buildable))
+        {
+            entries.Add(ProgressionUnlockableEntry.Buildable(buildable));
+        }
+    }
+
+    private void AddTrain(
+        List<ProgressionUnlockableEntry> entries,
+        Dictionary<string, Train> trains,
+        string assetName)
+    {
+        if (trains.TryGetValue(assetName, out Train train))
+        {
+            entries.Add(ProgressionUnlockableEntry.Train(train));
+        }
+    }
+
+    private void AddStaff(
+        List<ProgressionUnlockableEntry> entries,
+        Dictionary<string, StaffMember> staffMembers,
+        string assetName)
+    {
+        if (staffMembers.TryGetValue(assetName, out StaffMember staffMember))
+        {
+            entries.Add(ProgressionUnlockableEntry.Staff(staffMember));
+        }
+    }
+
+    private void AddExpansion(
+        List<ProgressionUnlockableEntry> entries,
+        Dictionary<string, Expansion> expansions,
+        string assetName)
+    {
+        if (expansions.TryGetValue(assetName, out Expansion expansion))
+        {
+            entries.Add(ProgressionUnlockableEntry.Expansion(expansion));
         }
     }
 }

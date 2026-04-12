@@ -967,10 +967,7 @@ public class PassengerManager : MonoBehaviour
         }
 
         passenger.hasEvaluatedChoice = true;
-        if (!hadChoice)
-        {
-            passenger.didntHaveChoice = true;
-        }
+        passenger.didntHaveChoice = !hadChoice;
     }
 
     private FacilityType GetPreferredFacilityType(Passenger passenger, Passenger.NeedType needType, IList<FacilityType> facilityTypes)
@@ -1037,16 +1034,27 @@ public class PassengerManager : MonoBehaviour
             return false;
         }
 
-        List<FacilityType> facilityTypes = FacilityManager.Instance.GetFacilitiesForNeed(needType);
-        if (facilityTypes == null || facilityTypes.Count == 0)
+        List<FacilityType> possibleFacilityTypes = FacilityManager.Instance.GetFacilitiesForNeed(needType);
+        if (possibleFacilityTypes == null || possibleFacilityTypes.Count == 0)
         {
             return false;
         }
 
-        if (facilityTypes.Count == 1)
+        List<FacilityType> unlockedFacilityTypes = FacilityManager.Instance.GetUnlockedFacilitiesForNeed(needType);
+        if (unlockedFacilityTypes == null || unlockedFacilityTypes.Count == 0)
+        {
+            unlockedFacilityTypes = possibleFacilityTypes;
+        }
+
+        if (possibleFacilityTypes.Count > 1)
+        {
+            RecordFacilityChoiceEvaluation(passenger, unlockedFacilityTypes.Count > 1);
+        }
+
+        if (unlockedFacilityTypes.Count == 1)
         {
             facility = GetMostAccessibleFacility(
-                facilityTypes,
+                unlockedFacilityTypes,
                 passenger,
                 serviceQueueTolerance,
                 out _);
@@ -1054,17 +1062,15 @@ public class PassengerManager : MonoBehaviour
             return facility != null;
         }
 
-        FacilityType preferredFacilityType = GetPreferredFacilityType(passenger, needType, facilityTypes);
+        FacilityType preferredFacilityType = GetPreferredFacilityType(passenger, needType, unlockedFacilityTypes);
         facility = GetMostAccessibleFacility(preferredFacilityType, passenger, serviceQueueTolerance, out _);
 
         if (facility != null)
         {
-            RecordFacilityChoiceEvaluation(passenger, true);
             return true;
         }
 
-        RecordFacilityChoiceEvaluation(passenger, false);
-        facility = GetMostAccessibleFacility(facilityTypes, passenger, serviceQueueTolerance, out _);
+        facility = GetMostAccessibleFacility(unlockedFacilityTypes, passenger, serviceQueueTolerance, out _);
 
         return facility != null;
     }

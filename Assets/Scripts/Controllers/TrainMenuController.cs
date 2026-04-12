@@ -60,7 +60,7 @@ public class TrainMenuController : MonoBehaviour
             return;
         }
 
-        System.Array.Sort(trains, (a, b) => a.upfrontCost.CompareTo(b.upfrontCost));
+        System.Array.Sort(trains, CompareTrainMenuOrder);
 
         foreach (var item in trains)
         {
@@ -85,6 +85,17 @@ public class TrainMenuController : MonoBehaviour
         Button btnComp = newButton.GetComponent<Button>();
         btnComp.onClick.AddListener(() => OnTrainItemButtonClicked(data));
     }
+
+    private int CompareTrainMenuOrder(Train left, Train right)
+    {
+        int tierComparison = left.requiredTier.CompareTo(right.requiredTier);
+        if (tierComparison != 0)
+        {
+            return tierComparison;
+        }
+
+        return left.upfrontCost.CompareTo(right.upfrontCost);
+    }
     
     private void OnTrainItemButtonClicked(Train data)
     {
@@ -108,7 +119,30 @@ public class TrainMenuController : MonoBehaviour
 
     public void OnEndServiceButtonClicked()
     {
-        TrainManager.Instance.RemoveTrainFromService(selectedTrain);
+        if (selectedTrain == null || TrainManager.Instance == null)
+        {
+            return;
+        }
+
+        if (!TrainManager.Instance.unlockedTrains.Contains(selectedTrain))
+        {
+            UpdateDetailView(selectedTrain);
+            return;
+        }
+
+        TrainService activeService = TrainManager.Instance.GetServiceByTrain(selectedTrain);
+        if (activeService != null)
+        {
+            TrainManager.Instance.RemoveTrainFromService(selectedTrain);
+        }
+
+        TrainManager.Instance.unlockedTrains.Remove(selectedTrain);
+
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.AddMoney(selectedTrain.upfrontCost, false);
+        }
+
         UpdateDetailView(selectedTrain);
     }
     
@@ -138,7 +172,7 @@ public class TrainMenuController : MonoBehaviour
     
     void checkEndServiceButtonInteractability(Train data)
     {
-        bool canEnd = TrainManager.Instance.activeTrainServices.Exists(s => s.trainData == data);
+        bool canEnd = TrainManager.Instance.unlockedTrains.Contains(data);
         endServiceButton.interactable = canEnd;
     }
     

@@ -15,9 +15,6 @@ public class RatingManager : MonoBehaviour
     private const float DecorationFiveStarStrengthMultiplier = 0.4f;
     private const float DecorationMinFiveStarScore = 1.25f;
     private const float DecorationMaxFiveStarScore = 2.5f;
-    private const int ChoicePassengerSampleSize = 20;
-    private const float ChoiceFiveStarCoverageThreshold = 0.9f;
-
     public static RatingManager Instance;
 
     public float stationRating = 5f;
@@ -34,7 +31,6 @@ public class RatingManager : MonoBehaviour
     private float tickTimer;
     private int groundLayerMask;
     private readonly List<Passenger> floorRatingPassengers = new();
-    private readonly List<Passenger> choiceRatingPassengers = new();
     private readonly RaycastHit[] passengerFloorHits = new RaycastHit[32];
 
     void Awake()
@@ -147,50 +143,62 @@ public class RatingManager : MonoBehaviour
 
     float GetChoiceTarget()
     {
-        if (PassengerManager.Instance == null)
+        if (PassengerManager.Instance == null || FacilityManager.Instance == null)
         {
             return 5f;
         }
 
-        choiceRatingPassengers.Clear();
-
         var passengers = PassengerManager.Instance.activePassengers;
+        float totalChoiceScore = 0f;
+        int evaluatedNeedCount = 0;
+
         for (int i = 0; i < passengers.Count; i++)
         {
             Passenger passenger = passengers[i];
-            if (passenger != null && passenger.hasEvaluatedChoice)
+            if (passenger == null)
             {
-                choiceRatingPassengers.Add(passenger);
+                continue;
             }
+
+            EvaluatePassengerNeedChoice(passenger.needsHunger, Passenger.NeedType.Hunger, ref totalChoiceScore, ref evaluatedNeedCount);
+            EvaluatePassengerNeedChoice(passenger.needsThirst, Passenger.NeedType.Thirst, ref totalChoiceScore, ref evaluatedNeedCount);
+            EvaluatePassengerNeedChoice(passenger.needsEnergy, Passenger.NeedType.Energy, ref totalChoiceScore, ref evaluatedNeedCount);
+            EvaluatePassengerNeedChoice(passenger.needsHygiene, Passenger.NeedType.Hygiene, ref totalChoiceScore, ref evaluatedNeedCount);
         }
 
-        int count = choiceRatingPassengers.Count;
-        if (count == 0)
+        if (evaluatedNeedCount == 0)
         {
             return 5f;
         }
 
-        int sampleSize = Mathf.Min(count, ChoicePassengerSampleSize);
-        for (int i = 0; i < sampleSize; i++)
+        return (totalChoiceScore / evaluatedNeedCount) * 5f;
+    }
+
+    private void EvaluatePassengerNeedChoice(bool hasNeed, Passenger.NeedType needType, ref float totalChoiceScore, ref int evaluatedNeedCount)
+    {
+        if (!hasNeed || FacilityManager.Instance == null)
         {
-            int swapIndex = Random.Range(i, count);
-            Passenger swapPassenger = choiceRatingPassengers[i];
-            choiceRatingPassengers[i] = choiceRatingPassengers[swapIndex];
-            choiceRatingPassengers[swapIndex] = swapPassenger;
+            return;
         }
 
-        int hadChoiceCount = 0;
-        for (int i = 0; i < sampleSize; i++)
+        List<FacilityType> unlockedFacilityTypes = FacilityManager.Instance.GetUnlockedFacilitiesForNeed(needType);
+        if (unlockedFacilityTypes == null || unlockedFacilityTypes.Count == 0)
         {
-            Passenger passenger = choiceRatingPassengers[i];
-            if (passenger != null && !passenger.didntHaveChoice)
+            evaluatedNeedCount++;
+            return;
+        }
+
+        int availableUnlockedFacilities = 0;
+        for (int i = 0; i < unlockedFacilityTypes.Count; i++)
+        {
+            if (FacilityManager.Instance.HasFacility(unlockedFacilityTypes[i]))
             {
-                hadChoiceCount++;
+                availableUnlockedFacilities++;
             }
         }
 
-        float choiceRatio = (float)hadChoiceCount / sampleSize;
-        return Mathf.Clamp01(choiceRatio / ChoiceFiveStarCoverageThreshold) * 5f;
+        totalChoiceScore += Mathf.Clamp01((float)availableUnlockedFacilities / unlockedFacilityTypes.Count);
+        evaluatedNeedCount++;
     }
 
     float GetPassengerNeedsTarget()

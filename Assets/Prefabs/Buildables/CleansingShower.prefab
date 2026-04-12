@@ -109,7 +109,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 3
+  usePrice: 4
   showerHeadPoint: {fileID: 4938023395520558314}
   passengerDropYOffset: 0
   showerSpread: 0.8

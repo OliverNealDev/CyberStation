@@ -161,7 +161,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 3
+  usePrice: 4
   facilityIcon: {fileID: 190379259570442455}
   activeFacilityColor: {r: 1, g: 0, b: 1, a: 1}
   doorTransform: {fileID: 2679333801809600609}

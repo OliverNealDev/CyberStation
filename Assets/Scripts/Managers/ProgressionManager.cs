@@ -12,8 +12,8 @@ public class ProgressionManager : MonoBehaviour
     public static event Action OnProgressionChanged;
 
     [Header("XP Curve")]
-    public int baseXpPerLevel = 100;
-    public int xpIncreasePerLevel = 50;
+    public int baseXpPerLevel = 200;
+    public int xpIncreasePerLevel = 150;
 
     [Header("XP Rewards")]
     public int buildPlacedXp = 10;

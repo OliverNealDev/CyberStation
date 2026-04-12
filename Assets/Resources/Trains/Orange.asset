@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Train
   trainName: Orange Line
   requiredTier: 1
-  description: A starter hunger line. Passengers on this service only generate hunger needs.
+  description: A dependable starter line that brings in passengers looking for food.
   icon: {fileID: 21300000, guid: bd41421e2d6b07140b952464cde9a5b4, type: 3}
   trainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 3e33f49075d057740aa0198f6d529663, type: 3}
@@ -32,5 +32,5 @@ MonoBehaviour:
   hygieneNeedChance: 0
   evasionChanceMultiplier: 1
   connectingTrainChance: 0.2
-  upfrontCost: 1000
-  costPerMinute: 100
+  upfrontCost: 750
+  costPerMinute: 45

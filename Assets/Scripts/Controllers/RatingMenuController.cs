@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using TMPro;
 
 public class RatingMenuController : MonoBehaviour
 {
@@ -21,6 +22,7 @@ public class RatingMenuController : MonoBehaviour
     public Transform choiceRatingStarsContainer;
     [FormerlySerializedAs("trainSelectionRatingStarsContainer")]
     public Transform decorationRatingStarsContainer;
+    [SerializeField] private TextMeshProUGUI throughputEfficiencyText;
     
     void Start()
     {
@@ -44,6 +46,8 @@ public class RatingMenuController : MonoBehaviour
     {
         if (RatingManager.Instance == null) return;
 
+        EnsureReferences();
+
         SetStars(stationRatingStarsContainer, RatingManager.Instance.stationRating);
         SetStars(cleanlinessRatingStarsContainer, RatingManager.Instance.cleanlinessRating);
         SetStars(crowdednessRatingStarsContainer, RatingManager.Instance.crowdednessRating);
@@ -51,6 +55,7 @@ public class RatingMenuController : MonoBehaviour
         SetStars(passengerNeedsRatingStarsContainer, RatingManager.Instance.passengerNeedsRating);
         SetStars(choiceRatingStarsContainer, RatingManager.Instance.choiceRating);
         SetStars(decorationRatingStarsContainer, RatingManager.Instance.decorationRating);
+        UpdateThroughputEfficiencyText();
     }
     
     void SetStars(Transform starsContainer, float rating)
@@ -78,5 +83,36 @@ public class RatingMenuController : MonoBehaviour
                 starImage.sprite = starEmpty;
             }
         }
+    }
+
+    private void EnsureReferences()
+    {
+        if (throughputEfficiencyText != null)
+        {
+            return;
+        }
+
+        TextMeshProUGUI[] textComponents = GetComponentsInChildren<TextMeshProUGUI>(true);
+        for (int i = 0; i < textComponents.Length; i++)
+        {
+            TextMeshProUGUI textComponent = textComponents[i];
+            if (textComponent != null && textComponent.text.Contains("Passenger Throughput Efficiency"))
+            {
+                throughputEfficiencyText = textComponent;
+                return;
+            }
+        }
+    }
+
+    private void UpdateThroughputEfficiencyText()
+    {
+        if (throughputEfficiencyText == null || RatingManager.Instance == null)
+        {
+            return;
+        }
+
+        float occupancy = PassengerSpawner.CalculateTargetOccupancy(RatingManager.Instance.stationRating);
+        int occupancyPercent = Mathf.RoundToInt(occupancy * 100f);
+        throughputEfficiencyText.text = $"Passenger Throughput Efficiency: {occupancyPercent}%";
     }
 }

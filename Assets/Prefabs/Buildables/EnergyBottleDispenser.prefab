@@ -452,7 +452,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 3
+  usePrice: 4
   bottlePrefab: {fileID: 1329183700229444931, guid: 6ebee58ac6375904c8145f21afb46b89, type: 3}
   startPos: {fileID: 5256804110273632904}
   endPos: {fileID: 8609906337860488024}

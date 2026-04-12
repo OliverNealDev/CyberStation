@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Pink
   m_EditorClassIdentifier: Assembly-CSharp::Train
   trainName: Pink Line
-  requiredTier: 1
-  description: A starter hygiene line. Passengers on this service only generate hygiene needs.
+  requiredTier: 3
+  description: A comfort-focused route that introduces passengers who care about
+    staying fresh while passing through.
   icon: {fileID: 21300000, guid: bd41421e2d6b07140b952464cde9a5b4, type: 3}
   trainPrefab: {fileID: 1096767433483698802, guid: ffb48a952afc1294fb88b34ecac97db4, type: 3}
   carriagePrefab: {fileID: 6338816846241299915, guid: 3e33f49075d057740aa0198f6d529663, type: 3}
@@ -22,7 +23,7 @@ MonoBehaviour:
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 25
-  costPerRide: 10
+  costPerRide: 12
   secondsStationary: 30
   trainColor: {r: 1, g: 0, b: 1, a: 1}
   isWarm: 0
@@ -32,5 +33,5 @@ MonoBehaviour:
   hygieneNeedChance: 0.4
   evasionChanceMultiplier: 1
   connectingTrainChance: 0.2
-  upfrontCost: 1200
-  costPerMinute: 100
+  upfrontCost: 1100
+  costPerMinute: 60

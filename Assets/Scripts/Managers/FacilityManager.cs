@@ -5,6 +5,20 @@ public class FacilityManager : MonoBehaviour
 {
     public static FacilityManager Instance;
 
+    private static readonly Dictionary<FacilityType, string> FacilityBuildableResourcePaths = new Dictionary<FacilityType, string>
+    {
+        { FacilityType.TicketMachine, "BuildItems/TicketMachine" },
+        { FacilityType.NutrientExtruder, "BuildItems/NutrientDispenser" },
+        { FacilityType.SnackPrinter, "BuildItems/SnackPrinter" },
+        { FacilityType.HydratingObelisk, "BuildItems/HydratingObelisk" },
+        { FacilityType.BottleDispenser, "BuildItems/BottleDispenser" },
+        { FacilityType.CleansingShower, "BuildItems/CleansingShower" },
+        { FacilityType.PrivateLavatory, "BuildItems/PrivateLavatory" },
+        { FacilityType.EnergyBottleDispenser, "BuildItems/EnergyBottleDispenser" }
+    };
+
+    private readonly Dictionary<FacilityType, ObjectBuildable> facilityBuildables = new Dictionary<FacilityType, ObjectBuildable>();
+
     private Dictionary<FacilityType, List<StationFacility>> facilitiesMap = new Dictionary<FacilityType, List<StationFacility>>();
 
     void Awake()
@@ -121,5 +135,51 @@ public class FacilityManager : MonoBehaviour
         }
 
         return validFacilities;
+    }
+
+    public List<FacilityType> GetUnlockedFacilitiesForNeed(Passenger.NeedType need)
+    {
+        List<FacilityType> unlockedFacilities = new List<FacilityType>();
+        List<FacilityType> possibleFacilities = GetFacilitiesForNeed(need);
+
+        for (int i = 0; i < possibleFacilities.Count; i++)
+        {
+            FacilityType facilityType = possibleFacilities[i];
+            if (IsFacilityTypeUnlocked(facilityType))
+            {
+                unlockedFacilities.Add(facilityType);
+            }
+        }
+
+        return unlockedFacilities;
+    }
+
+    public bool IsFacilityTypeUnlocked(FacilityType facilityType)
+    {
+        ObjectBuildable buildable = GetBuildableForFacilityType(facilityType);
+        if (buildable == null)
+        {
+            return false;
+        }
+
+        return ProgressionManager.Instance == null || ProgressionManager.Instance.IsUnlocked(buildable);
+    }
+
+    private ObjectBuildable GetBuildableForFacilityType(FacilityType facilityType)
+    {
+        if (facilityBuildables.TryGetValue(facilityType, out ObjectBuildable cachedBuildable))
+        {
+            return cachedBuildable;
+        }
+
+        if (!FacilityBuildableResourcePaths.TryGetValue(facilityType, out string resourcePath))
+        {
+            facilityBuildables[facilityType] = null;
+            return null;
+        }
+
+        ObjectBuildable buildable = Resources.Load<ObjectBuildable>(resourcePath);
+        facilityBuildables[facilityType] = buildable;
+        return buildable;
     }
 }

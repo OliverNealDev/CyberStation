@@ -4,7 +4,7 @@ public class PassengerSpawner : MonoBehaviour
 {
     private const float ServiceCycleDurationSeconds = 240f;
     private const float MinDemandOccupancy = 0.35f;
-    private const float MaxDemandOccupancy = 0.85f;
+    private const float MaxDemandOccupancy = 1f;
     private const float DemandCurveExponent = 1.6f;
     private float tickRate = 20f; 
     private float tickInterval;
@@ -60,7 +60,12 @@ public class PassengerSpawner : MonoBehaviour
 
     private float GetTargetOccupancy()
     {
-        float normalizedRating = Mathf.InverseLerp(1f, 5f, RatingManager.Instance.stationRating);
+        return CalculateTargetOccupancy(RatingManager.Instance.stationRating);
+    }
+
+    public static float CalculateTargetOccupancy(float stationRating)
+    {
+        float normalizedRating = Mathf.InverseLerp(1f, 5f, stationRating);
         float curvedRating = Mathf.Pow(normalizedRating, DemandCurveExponent);
         return Mathf.Lerp(MinDemandOccupancy, MaxDemandOccupancy, curvedRating);
     }
