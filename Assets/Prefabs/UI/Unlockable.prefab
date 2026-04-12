@@ -161,6 +161,8 @@ GameObject:
   - component: {fileID: 3778388310012456622}
   - component: {fileID: 3778388310012456623}
   - component: {fileID: 3778388310012456624}
+  - component: {fileID: 8633656669064767753}
+  - component: {fileID: 4644207181897011547}
   m_Layer: 5
   m_Name: HoverPanel
   m_TagString: Untagged
@@ -226,6 +228,44 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8633656669064767753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3778388310012456621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7ea6c56d0a487abcb4f144ca0fa4ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RenderUIOnTop
+  sortingOrderOffset: 100
+  disableGraphicRaycastTarget: 1
+  moveToFrontWithinParent: 1
+--- !u!223 &4644207181897011547
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3778388310012456621}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 100
+  m_TargetDisplay: 0
 --- !u!1 &4888388310012456621
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,6 +277,8 @@ GameObject:
   - component: {fileID: 4888388310012456622}
   - component: {fileID: 4888388310012456623}
   - component: {fileID: 4888388310012456624}
+  - component: {fileID: 1612923356888472540}
+  - component: {fileID: 8182815344287379626}
   m_Layer: 5
   m_Name: HoverText
   m_TagString: Untagged
@@ -363,6 +405,44 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &1612923356888472540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4888388310012456621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7ea6c56d0a487abcb4f144ca0fa4ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RenderUIOnTop
+  sortingOrderOffset: 100
+  disableGraphicRaycastTarget: 1
+  moveToFrontWithinParent: 1
+--- !u!223 &8182815344287379626
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4888388310012456621}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 200
+  m_TargetDisplay: 0
 --- !u!1 &8083950173228070116
 GameObject:
   m_ObjectHideFlags: 0
@@ -455,6 +535,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressionUnlockableView
   iconImage: {fileID: 2554564562587412590}
+  backgroundImage: {fileID: 0}
   iconSource:
     sourceType: 0
     spriteOverride: {fileID: 0}
@@ -469,3 +550,5 @@ MonoBehaviour:
   hideWhenIconMissing: 0
   hoverText: {fileID: 4888388310012456624}
   hoverTextOverride: 
+  lockedIconAlphaMultiplier: 0.25
+  lockedBackgroundAlphaMultiplier: 0.6

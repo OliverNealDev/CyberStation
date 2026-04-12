@@ -25,9 +25,13 @@ public class Train : ScriptableObject
     public bool isWarm = false;
 
     [Header("Passenger Profile")]
+    [Tooltip("Chance that passengers on this line arrive hungry. Set to 0 to disable hunger for the line.")]
     [Range(0f, 1f)] public float hungerNeedChance = 0.4f;
+    [Tooltip("Chance that passengers on this line arrive thirsty. Set to 0 to disable thirst for the line.")]
     [Range(0f, 1f)] public float thirstNeedChance = 0.4f;
+    [Tooltip("Chance that passengers on this line arrive needing energy. Set to 0 to disable energy for the line.")]
     [Range(0f, 1f)] public float energyNeedChance = 0.15f;
+    [Tooltip("Chance that passengers on this line arrive needing hygiene. Set to 0 to disable hygiene for the line.")]
     [Range(0f, 1f)] public float hygieneNeedChance = 0.2f;
     [Min(0f)] public float evasionChanceMultiplier = 1f;
     [Range(0f, 1f)] public float connectingTrainChance = 0.2f;

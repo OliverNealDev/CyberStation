@@ -28,17 +28,16 @@ public class PassengerManager : MonoBehaviour
     [Header("Litter Placement")]
     [Min(0f)] public float litterOverlapDistance = 0.8f;
 
-    [Header("Need Unlock Tiers")]
-    public int hungerNeedStartTier = 3;
-    public int thirstNeedStartTier = 2;
-    public int energyNeedStartTier = 5;
-    public int hygieneNeedStartTier = 4;
     [Range(0f, 1f)] public float disembarkingFacilityUsageChance = 0.2f;
 
-    [Header("Need Roll Chances")]
+    [Header("Fallback Need Profile")]
+    [Tooltip("Used only when a passenger is rolled without a train profile. Set to 0 to disable a need.")]
     [Range(0f, 1f)] public float hungerNeedChance = 0.4f;
+    [Tooltip("Used only when a passenger is rolled without a train profile. Set to 0 to disable a need.")]
     [Range(0f, 1f)] public float thirstNeedChance = 0.4f;
+    [Tooltip("Used only when a passenger is rolled without a train profile. Set to 0 to disable a need.")]
     [Range(0f, 1f)] public float energyNeedChance = 0.15f;
+    [Tooltip("Used only when a passenger is rolled without a train profile. Set to 0 to disable a need.")]
     [Range(0f, 1f)] public float hygieneNeedChance = 0.2f;
 
     [Header("Need Warning UI")]
@@ -948,35 +947,6 @@ public class PassengerManager : MonoBehaviour
     private bool IsActivePassenger(Passenger passenger)
     {
         return passenger != null && activePassengers.Contains(passenger);
-    }
-
-    private int GetCurrentNeedTier()
-    {
-        return ProgressionManager.Instance != null ? Mathf.Max(1, ProgressionManager.Instance.CurrentLevel) : 1;
-    }
-
-    private int GetNeedStartTier(Passenger.NeedType needType)
-    {
-        switch (needType)
-        {
-            case Passenger.NeedType.Ticket:
-                return 1;
-            case Passenger.NeedType.Hunger:
-                return Mathf.Max(1, hungerNeedStartTier);
-            case Passenger.NeedType.Thirst:
-                return Mathf.Max(1, thirstNeedStartTier);
-            case Passenger.NeedType.Energy:
-                return Mathf.Max(1, energyNeedStartTier);
-            case Passenger.NeedType.Hygiene:
-                return Mathf.Max(1, hygieneNeedStartTier);
-            default:
-                return int.MaxValue;
-        }
-    }
-
-    private bool IsNeedUnlocked(Passenger.NeedType needType)
-    {
-        return GetCurrentNeedTier() >= GetNeedStartTier(needType);
     }
 
     private void ResetFacilityChoicePreference(Passenger passenger)
@@ -2253,13 +2223,25 @@ public class PassengerManager : MonoBehaviour
             return;
         }
 
+        if (trainProfile != null)
+        {
+            passenger.RollNeeds(
+                trainProfile.hungerNeedChance > 0f,
+                trainProfile.thirstNeedChance > 0f,
+                trainProfile.energyNeedChance > 0f,
+                trainProfile.hygieneNeedChance > 0f,
+                requireAtLeastOne,
+                trainProfile);
+            return;
+        }
+
         passenger.RollNeeds(
-            IsNeedUnlocked(Passenger.NeedType.Hunger),
-            IsNeedUnlocked(Passenger.NeedType.Thirst),
-            IsNeedUnlocked(Passenger.NeedType.Energy),
-            IsNeedUnlocked(Passenger.NeedType.Hygiene),
+            hungerNeedChance > 0f,
+            thirstNeedChance > 0f,
+            energyNeedChance > 0f,
+            hygieneNeedChance > 0f,
             requireAtLeastOne,
-            trainProfile);
+            null);
     }
 
     private bool RollTicketEvader(TrainService service)
