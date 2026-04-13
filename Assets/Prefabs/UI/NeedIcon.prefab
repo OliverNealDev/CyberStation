@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 5546049444805509444}
   - component: {fileID: 8931517336331841707}
   - component: {fileID: -4747201608250265256}
+  - component: {fileID: -1827178206471356148}
+  - component: {fileID: -1422374048396327554}
   m_Layer: 5
   m_Name: NeedIcon
   m_TagString: Untagged
@@ -60,7 +62,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -89,3 +91,41 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FaceCamera
   mainCamera: {fileID: 0}
+--- !u!114 &-1827178206471356148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8039886225430953968}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b7ea6c56d0a487abcb4f144ca0fa4ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RenderUIOnTop
+  sortingOrderOffset: 100
+  disableGraphicRaycastTarget: 1
+  moveToFrontWithinParent: 1
+--- !u!223 &-1422374048396327554
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8039886225430953968}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 100
+  m_TargetDisplay: 0

@@ -501,7 +501,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Litter
   timeToClean: 5
-  interactablePromptPrefab: {fileID: 610401586093004303, guid: 44b00c41e02feb342ac63da0521aaeda, type: 3}
+  litterIconColor: {r: 1, g: 1, b: 1, a: 1}
+  litterIconYOffset: 4.25
+  litterIconScale: 1
+  litterIconSortingOrder: 10
+  taskIconPrefab: {fileID: 8039886225430953968, guid: 26a4406b0692e834cb3cdd7f9225a335, type: 3}
+  interactablePromptPrefab: {fileID: 6115310855659940326, guid: cd7813c211b2c7a4692fd11b14e4d57c, type: 3}
 --- !u!1 &8493410787156547252
 GameObject:
   m_ObjectHideFlags: 0
