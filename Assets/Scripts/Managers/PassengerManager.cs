@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class PassengerManager : MonoBehaviour
 {
     public static PassengerManager Instance;
+    private const int CaughtEvaderFineAmount = 25;
     
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
@@ -284,13 +285,30 @@ public class PassengerManager : MonoBehaviour
         
         foreach (Passenger p in activePassengers) 
         {
-            if (p != null && p.currentMasterState == Passenger.passengerMasterStates.OnPlatform && !p.hasBeenInspected)
+            if (CanSecurityInspectPassenger(p))
             {
                 uncheckedPassengers.Add(p);
             }
         }
         
         return uncheckedPassengers;
+    }
+
+    public bool CanSecurityInspectPassenger(Passenger passenger)
+    {
+        if (passenger == null ||
+            passenger.currentMasterState != Passenger.passengerMasterStates.OnPlatform ||
+            passenger.hasBeenInspected)
+        {
+            return false;
+        }
+
+        if (passenger.currentSpecialTarget == Passenger.passengerSpecialTargets.Platform)
+        {
+            return false;
+        }
+
+        return !(passenger.currentTarget is TrainDoorController);
     }
     
     private System.Collections.IEnumerator TraverseBarrierSmoothly(Passenger passenger)
@@ -1995,13 +2013,13 @@ public class PassengerManager : MonoBehaviour
 
         if (EconomyManager.Instance != null)
         {
-            EconomyManager.Instance.AddMoney(50);
+            EconomyManager.Instance.AddMoney(CaughtEvaderFineAmount);
         }
 
         if (WorldSpacePromptCoordinator.Instance != null)
         {
             WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
-                "+$50", 
+                $"+${CaughtEvaderFineAmount}", 
                 passenger.transform.position + Vector3.up * 3f, 
                 Color.darkGreen);
         }
@@ -2122,7 +2140,6 @@ public class PassengerManager : MonoBehaviour
             return null;
         }
 
-        float clampedMaxWait = Mathf.Max(0f, maxWaitTime);
         StationFacility bestFacility = null;
 
         for (int i = 0; i < facilities.Count; i++)
@@ -2137,11 +2154,7 @@ public class PassengerManager : MonoBehaviour
             float estimatedWalkTime = EstimateWalkTimeToService(passenger, facility);
             float totalEstimatedDelay = estimatedWait + estimatedWalkTime;
 
-            if (totalEstimatedDelay > clampedMaxWait)
-            {
-                continue;
-            }
-
+            // Cross-platform facilities should stay viable; delay only affects ordering.
             if (totalEstimatedDelay < bestWait)
             {
                 bestWait = totalEstimatedDelay;

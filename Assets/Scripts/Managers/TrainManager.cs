@@ -48,12 +48,23 @@ public class TrainManager : MonoBehaviour
             {
                 ProgressionManager.Instance.RecordTrainUnlocked();
             }
+
+            NotifyTrainAssignmentsChanged();
         }
     }
 
     public void RegisterPlatform(PlatformController platform)
     {
-        if (!activePlatforms.Contains(platform)) activePlatforms.Add(platform);
+        if (!activePlatforms.Contains(platform))
+        {
+            activePlatforms.Add(platform);
+            NotifyTrainAssignmentsChanged();
+        }
+    }
+
+    public void NotifyTrainAssignmentsChanged()
+    {
+        OnTrainAssignmentsChanged?.Invoke();
     }
 
     public TrainService GetServiceByTrain(Train train)

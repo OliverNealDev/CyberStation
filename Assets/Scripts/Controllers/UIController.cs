@@ -145,15 +145,20 @@ public class UIController : MonoBehaviour
             return;
         }
 
+        OpenPanel(panelToToggle);
+    }
+
+    private void OpenPanel(GameObject panelToOpen)
+    {
         if (currentActivePanel != null)
         {
             currentActivePanel.SetActive(false);
         }
 
-        if (panelToToggle != null)
+        if (panelToOpen != null)
         {
-            panelToToggle.SetActive(true);
-            currentActivePanel = panelToToggle;
+            panelToOpen.SetActive(true);
+            currentActivePanel = panelToOpen;
         }
 
         if (buildController != null)
@@ -314,10 +319,11 @@ public class UIController : MonoBehaviour
 
     private bool HasPlatformMenuFunctionality()
     {
-        return HasUnlockedTrains() &&
-               TrainManager.Instance != null &&
+        return TrainManager.Instance != null &&
                TrainManager.Instance.activePlatforms != null &&
-               TrainManager.Instance.activePlatforms.Count > 0;
+               TrainManager.Instance.activePlatforms.Count > 0 &&
+               TrainManager.Instance.unlockedTrains != null &&
+               TrainManager.Instance.unlockedTrains.Count > 0;
     }
 
     public void CloseAllPanels()

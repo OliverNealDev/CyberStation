@@ -82,7 +82,7 @@ public class SecurityDrone : Staff
 
     private void UpdateTargetPosition()
     {
-        if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
+        if (!HasValidCurrentTarget())
         {
             ClearCurrentTarget();
             SecurityCoordinator.Instance.RequestAssignment(this);
@@ -102,6 +102,30 @@ public class SecurityDrone : Staff
         {
             targetPosition = currentTarget.transform.position;
         }
+    }
+
+    private bool HasValidCurrentTarget()
+    {
+        if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
+        {
+            return false;
+        }
+
+        if (isPursuingEvader)
+        {
+            return true;
+        }
+
+        return PassengerManager.Instance != null &&
+               PassengerManager.Instance.CanSecurityInspectPassenger(currentTarget);
+    }
+
+    private bool CanInspectTarget(Passenger passenger)
+    {
+        return passenger != null &&
+               passenger.gameObject.activeInHierarchy &&
+               PassengerManager.Instance != null &&
+               PassengerManager.Instance.CanSecurityInspectPassenger(passenger);
     }
 
     private void MoveDrone()
@@ -128,6 +152,11 @@ public class SecurityDrone : Staff
     private void CheckDistanceToTarget()
     {
         if (currentTarget == null) return;
+        if (!isPursuingEvader && !CanInspectTarget(currentTarget))
+        {
+            ClearCurrentTarget();
+            return;
+        }
 
         Vector2 flatPos = new Vector2(transform.position.x, transform.position.z);
         Vector2 flatTarget = new Vector2(currentTarget.transform.position.x, currentTarget.transform.position.z);
@@ -157,6 +186,12 @@ public class SecurityDrone : Staff
         transform.rotation = baseRotation;
         
         Passenger p = currentTarget; 
+        if (!isPursuingEvader && !CanInspectTarget(p))
+        {
+            ClearCurrentTarget();
+            isCurrentlyScanning = false;
+            yield break;
+        }
         
         if (indicatorRenderer != null && actionLightMat != null)
         {
@@ -169,6 +204,18 @@ public class SecurityDrone : Staff
 
         if (p != null)
         {
+            if (!isPursuingEvader && !CanInspectTarget(p))
+            {
+                if (indicatorRenderer != null && idleLightMat != null)
+                {
+                    indicatorRenderer.material = idleLightMat;
+                }
+
+                ClearCurrentTarget();
+                isCurrentlyScanning = false;
+                yield break;
+            }
+
             p.hasBeenInspected = true;
             SecurityCoordinator.Instance.ResolveInspection(p); 
             

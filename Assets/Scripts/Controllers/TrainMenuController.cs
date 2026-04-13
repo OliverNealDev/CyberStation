@@ -105,13 +105,16 @@ public class TrainMenuController : MonoBehaviour
 
     public void OnBuyServiceButtonClicked()
     {
-        if (!TrainManager.Instance.unlockedTrains.Contains(selectedTrain))
+        if (selectedTrain == null || TrainManager.Instance == null)
         {
-            if (EconomyManager.Instance.money >= selectedTrain.upfrontCost)
-            {
-                EconomyManager.Instance.SpendMoney(selectedTrain.upfrontCost);
-                TrainManager.Instance.UnlockTrain(selectedTrain);
-            }
+            return;
+        }
+
+        bool wasUnlocked = TrainManager.Instance.unlockedTrains.Contains(selectedTrain);
+        if (!wasUnlocked && EconomyManager.Instance != null && EconomyManager.Instance.money >= selectedTrain.upfrontCost)
+        {
+            EconomyManager.Instance.SpendMoney(selectedTrain.upfrontCost);
+            TrainManager.Instance.UnlockTrain(selectedTrain);
         }
 
         UpdateDetailView(selectedTrain);
@@ -137,6 +140,7 @@ public class TrainMenuController : MonoBehaviour
         }
 
         TrainManager.Instance.unlockedTrains.Remove(selectedTrain);
+        TrainManager.Instance.NotifyTrainAssignmentsChanged();
 
         if (EconomyManager.Instance != null)
         {

@@ -6,7 +6,14 @@ using UnityEngine.InputSystem;
 
 public class Litter : MonoBehaviour
 {
+    private const float LitterIconScaleMultiplier = 1.75f;
     public float timeToClean = 5f;
+
+    [Header("Litter Icon")]
+    [SerializeField] private Color litterIconColor = Color.white;
+    [SerializeField] [Min(0f)] private float litterIconYOffset = 1.5f;
+    [SerializeField] [Min(0.01f)] private float litterIconScale = 0.35f;
+    [SerializeField] private int litterIconSortingOrder = 10;
 
     [SerializeField] private GameObject interactablePromptPrefab;
     [SerializeField] private float manualCleanHoldDuration = 3f;
@@ -34,6 +41,8 @@ public class Litter : MonoBehaviour
 
     private void Start()
     {
+        CreateOrRefreshLitterIcon();
+
         if (JanitorCoordinator.Instance != null)
         {
             JanitorCoordinator.Instance.ReportLitter(this);
@@ -312,6 +321,26 @@ public class Litter : MonoBehaviour
         sphereCollider.radius = largestScale > 0f
             ? Mathf.Max(bounds.extents.x, bounds.extents.y, bounds.extents.z) / largestScale
             : fallbackColliderRadius;
+    }
+
+    private void CreateOrRefreshLitterIcon()
+    {
+        Sprite iconSprite = JanitorCoordinator.Instance != null ? JanitorCoordinator.Instance.LitterIconSprite : null;
+        if (iconSprite == null)
+        {
+            return;
+        }
+
+        GameObject iconObject = new GameObject("LitterIcon", typeof(SpriteRenderer), typeof(FaceCamera));
+        iconObject.transform.SetParent(transform, false);
+        iconObject.transform.localPosition = Vector3.up * litterIconYOffset;
+        iconObject.transform.localRotation = Quaternion.identity;
+        iconObject.transform.localScale = Vector3.one * Mathf.Max(0.01f, litterIconScale * LitterIconScaleMultiplier);
+
+        SpriteRenderer iconRenderer = iconObject.GetComponent<SpriteRenderer>();
+        iconRenderer.sprite = iconSprite;
+        iconRenderer.color = litterIconColor;
+        iconRenderer.sortingOrder = litterIconSortingOrder;
     }
 
     private void SetCollidersEnabled(bool isEnabled)

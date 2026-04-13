@@ -97,14 +97,18 @@ public class SecurityCoordinator : MonoBehaviour
         Passenger bestTarget = null;
         float closestDist = float.MaxValue;
 
+        if (PassengerManager.Instance == null)
+        {
+            return null;
+        }
+
         List<Passenger> uncheckedPassengers = PassengerManager.Instance.GetUncheckedPlatformPassengers();
 
         foreach (Passenger p in uncheckedPassengers)
         {
             if (p == null) continue;
             if (currentInspections.ContainsKey(p) || currentPursuits.ContainsKey(p)) continue;
-            if (p.currentMasterState != Passenger.passengerMasterStates.OnPlatform) continue;
-            if (p.hasBeenInspected) continue;
+            if (!PassengerManager.Instance.CanSecurityInspectPassenger(p)) continue;
 
             float dist = Vector3.Distance(securityDrone.transform.position, p.transform.position);
             if (dist < closestDist)

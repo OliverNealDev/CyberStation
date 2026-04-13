@@ -15,6 +15,11 @@ public class RatingManager : MonoBehaviour
     private const float DecorationFiveStarStrengthMultiplier = 0.4f;
     private const float DecorationMinFiveStarScore = 1.25f;
     private const float DecorationMaxFiveStarScore = 2.5f;
+    private const float DecorationPlacementStrengthTarget = 25f;
+    private const float DecorationPlacementCountTarget = 6f;
+    private const float DecorationPlacementStrengthWeight = 0.7f;
+    private const float DecorationPlacementCountWeight = 0.3f;
+    private const float DecorationPlacementFloorMultiplier = 0.5f;
     public static RatingManager Instance;
 
     public float stationRating = 5f;
@@ -333,27 +338,11 @@ public class RatingManager : MonoBehaviour
 
     float GetDecorationTarget(List<Passenger> passengers)
     {
-        if (PassengerManager.Instance == null)
-        {
-            return 0f;
-        }
-
-        List<Passenger> samplePassengers = passengers;
-        int count = samplePassengers.Count;
-
-        if (count == 0)
-        {
-            samplePassengers = PassengerManager.Instance.activePassengers;
-            count = samplePassengers.Count;
-        }
-
-        if (count == 0)
-        {
-            return 0f;
-        }
-
         PlacedBuildable[] placedBuildables = FindObjectsByType<PlacedBuildable>(FindObjectsSortMode.None);
-        if (placedBuildables.Length == 0) return 0f;
+        if (placedBuildables.Length == 0)
+        {
+            return 0f;
+        }
 
         int decorativeBuildableCount = 0;
         float totalPlacedDecorationStrength = 0f;
@@ -372,13 +361,25 @@ public class RatingManager : MonoBehaviour
             return 0f;
         }
 
+        float placementDecorationTarget = GetDecorationPlacementTarget(decorativeBuildableCount, totalPlacedDecorationStrength);
+        if (passengers == null || passengers.Count == 0)
+        {
+            return placementDecorationTarget;
+        }
+
         float totalDecorationScore = 0f;
         int decoratedPassengerCount = 0;
+        int sampledPassengerCount = 0;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < passengers.Count; i++)
         {
-            Passenger passenger = samplePassengers[i];
-            if (passenger == null) continue;
+            Passenger passenger = passengers[i];
+            if (passenger == null)
+            {
+                continue;
+            }
+
+            sampledPassengerCount++;
 
             float localDecorationScore = GetDecorationScoreAtPosition(passenger.transform.position, placedBuildables);
             totalDecorationScore += localDecorationScore;
@@ -389,7 +390,12 @@ public class RatingManager : MonoBehaviour
             }
         }
 
-        float averageDecorationScore = totalDecorationScore / count;
+        if (sampledPassengerCount == 0)
+        {
+            return placementDecorationTarget;
+        }
+
+        float averageDecorationScore = totalDecorationScore / sampledPassengerCount;
         float averageDecorationStrength = totalPlacedDecorationStrength / decorativeBuildableCount;
         float fiveStarScore = Mathf.Clamp(
             averageDecorationStrength * DecorationFiveStarStrengthMultiplier,
@@ -397,11 +403,23 @@ public class RatingManager : MonoBehaviour
             DecorationMaxFiveStarScore);
 
         float normalizedIntensity = Mathf.Clamp01(averageDecorationScore / fiveStarScore);
-        float normalizedCoverage = Mathf.Clamp01(((float)decoratedPassengerCount / count) / DecorationCoverageTarget);
+        float normalizedCoverage = Mathf.Clamp01(((float)decoratedPassengerCount / sampledPassengerCount) / DecorationCoverageTarget);
         float normalizedDecorationRating =
             (normalizedIntensity * DecorationIntensityWeight) +
             (normalizedCoverage * DecorationCoverageWeight);
 
-        return normalizedDecorationRating * 5f;
+        float passengerDecorationTarget = normalizedDecorationRating * 5f;
+        return Mathf.Max(passengerDecorationTarget, placementDecorationTarget * DecorationPlacementFloorMultiplier);
+    }
+
+    private float GetDecorationPlacementTarget(int decorativeBuildableCount, float totalPlacedDecorationStrength)
+    {
+        float normalizedStrength = Mathf.Clamp01(totalPlacedDecorationStrength / DecorationPlacementStrengthTarget);
+        float normalizedCount = Mathf.Clamp01(decorativeBuildableCount / DecorationPlacementCountTarget);
+        float normalizedPlacement =
+            (normalizedStrength * DecorationPlacementStrengthWeight) +
+            (normalizedCount * DecorationPlacementCountWeight);
+
+        return normalizedPlacement * 5f;
     }
 }
