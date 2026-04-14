@@ -27516,7 +27516,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d890fac91f51b439abf70c1dcfd0b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProgressionManager
-  baseXpPerLevel: 400
+  baseXpPerLevel: 300
   xpIncreasePerLevel: 400
   buildPlacedXp: 0
   ticketSoldXp: 5
