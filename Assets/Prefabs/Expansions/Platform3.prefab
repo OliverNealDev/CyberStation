@@ -383,7 +383,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlatformController
   platformName: Platform 3
-  platformNumber: 0
+  platformNumber: 2
   trainStopPoint: {fileID: 4298513585551095012}
   passengerWaitArea: {fileID: 7149126660276784874}
   isOccupied: 0
@@ -974,7 +974,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4757908230203480654}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1

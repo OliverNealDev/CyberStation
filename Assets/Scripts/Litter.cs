@@ -1,21 +1,10 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public class Litter : MonoBehaviour
 {
-    private const float LitterIconScaleMultiplier = 1.15f;
-    private const float LitterIconTopPadding = 0.35f;
     public float timeToClean = 5f;
-
-    [Header("Litter Icon")]
-    [SerializeField] private Color litterIconColor = Color.white;
-    [SerializeField] [Min(0f)] private float litterIconYOffset = 4.25f;
-    [SerializeField] [Min(0.01f)] private float litterIconScale = 1f;
-    [SerializeField] private int litterIconSortingOrder = 10;
-    [SerializeField] private GameObject taskIconPrefab;
 
     [SerializeField] private GameObject interactablePromptPrefab;
     [SerializeField] private float manualCleanHoldDuration = 3f;
@@ -35,40 +24,19 @@ public class Litter : MonoBehaviour
     private GameObject hoverPromptRoot;
     private RectTransform hoverPromptRect;
     private TaskProgressBarController hoverPrompt;
-    private GameObject litterIconObject;
-    private Image litterIconImage;
-    private Canvas litterIconCanvas;
-    private RenderUIOnTop litterIconRenderOnTop;
-    private TaskIconPulse litterIconPulse;
-    private Vector3 litterIconBaseScale = Vector3.one;
-    private Vector3 litterIconWorldOffset;
 
     private void Awake()
     {
         EnsureInteractableCollider();
-        litterIconWorldOffset = CalculateLitterIconWorldOffset();
         CreateHoverPrompt();
     }
 
     private void Start()
     {
-        CreateOrRefreshLitterIcon();
-
         if (JanitorCoordinator.Instance != null)
         {
             JanitorCoordinator.Instance.ReportLitter(this);
         }
-    }
-
-    private void OnEnable()
-    {
-        if (!Application.isPlaying || isCleaning)
-        {
-            return;
-        }
-
-        CreateOrRefreshLitterIcon();
-        SetLitterIconVisible(true);
     }
 
     private void Update()
@@ -116,7 +84,6 @@ public class Litter : MonoBehaviour
         }
 
         SetPromptVisible(false);
-        SetLitterIconVisible(false);
     }
 
     private void OnDestroy()
@@ -135,8 +102,6 @@ public class Litter : MonoBehaviour
         {
             heldLitter = null;
         }
-
-        DestroyLitterIcon();
     }
 
     public bool BeginCleanup(float cleanDuration)
@@ -160,7 +125,6 @@ public class Litter : MonoBehaviour
         }
         SetPromptVisible(false);
         SetCollidersEnabled(false);
-        DestroyLitterIcon();
 
         if (JanitorCoordinator.Instance != null)
         {
@@ -347,136 +311,6 @@ public class Litter : MonoBehaviour
             : fallbackColliderRadius;
     }
 
-    private void CreateOrRefreshLitterIcon()
-    {
-        if (taskIconPrefab == null)
-        {
-            DestroyLitterIcon();
-            return;
-        }
-
-        Sprite iconSprite = JanitorCoordinator.Instance != null ? JanitorCoordinator.Instance.LitterIconSprite : null;
-        if (iconSprite == null)
-        {
-            DestroyLitterIcon();
-            return;
-        }
-
-        if (litterIconObject == null)
-        {
-            litterIconObject = Instantiate(taskIconPrefab);
-            litterIconObject.name = $"{name}_TaskIcon";
-            litterIconBaseScale = litterIconObject.transform.localScale;
-        }
-
-        if (litterIconImage == null)
-        {
-            litterIconImage = litterIconObject.GetComponent<Image>();
-        }
-
-        if (litterIconCanvas == null)
-        {
-            litterIconCanvas = litterIconObject.GetComponent<Canvas>();
-        }
-
-        if (litterIconRenderOnTop == null)
-        {
-            litterIconRenderOnTop = litterIconObject.GetComponent<RenderUIOnTop>();
-        }
-
-        if (litterIconPulse == null)
-        {
-            litterIconPulse = litterIconObject.GetComponent<TaskIconPulse>();
-            if (litterIconPulse == null)
-            {
-                litterIconPulse = litterIconObject.AddComponent<TaskIconPulse>();
-            }
-        }
-
-        litterIconObject.transform.position = transform.position + litterIconWorldOffset;
-        litterIconObject.transform.rotation = Quaternion.identity;
-        Vector3 iconScale = litterIconBaseScale * Mathf.Max(0.01f, litterIconScale * LitterIconScaleMultiplier);
-        litterIconObject.transform.localScale = iconScale;
-
-        if (litterIconImage != null)
-        {
-            litterIconImage.sprite = iconSprite;
-            litterIconImage.color = litterIconColor;
-            litterIconImage.preserveAspect = true;
-        }
-
-        ApplyLitterIconSorting();
-
-        if (litterIconPulse != null)
-        {
-            litterIconPulse.Initialize(iconScale);
-        }
-    }
-
-    private Vector3 CalculateLitterIconWorldOffset()
-    {
-        if (!TryGetLitterWorldBounds(out Bounds litterBounds))
-        {
-            return Vector3.up * litterIconYOffset;
-        }
-
-        Vector3 iconPosition = litterBounds.center;
-        iconPosition.y = Mathf.Max(transform.position.y + litterIconYOffset, litterBounds.max.y + LitterIconTopPadding);
-        return iconPosition - transform.position;
-    }
-
-    private bool TryGetLitterWorldBounds(out Bounds litterBounds)
-    {
-        Renderer[] renderers = GetComponentsInChildren<Renderer>(true);
-        if (renderers.Length > 0)
-        {
-            litterBounds = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++)
-            {
-                litterBounds.Encapsulate(renderers[i].bounds);
-            }
-
-            return true;
-        }
-
-        Collider[] colliders = GetComponentsInChildren<Collider>(true);
-        if (colliders.Length > 0)
-        {
-            litterBounds = colliders[0].bounds;
-            for (int i = 1; i < colliders.Length; i++)
-            {
-                litterBounds.Encapsulate(colliders[i].bounds);
-            }
-
-            return true;
-        }
-
-        litterBounds = default;
-        return false;
-    }
-
-    private void DestroyLitterIcon()
-    {
-        if (litterIconObject != null)
-        {
-            Destroy(litterIconObject);
-            litterIconObject = null;
-            litterIconImage = null;
-            litterIconCanvas = null;
-            litterIconRenderOnTop = null;
-            litterIconPulse = null;
-            litterIconBaseScale = Vector3.one;
-        }
-    }
-
-    private void SetLitterIconVisible(bool isVisible)
-    {
-        if (litterIconObject != null && litterIconObject.activeSelf != isVisible)
-        {
-            litterIconObject.SetActive(isVisible);
-        }
-    }
-
     private void SetCollidersEnabled(bool isEnabled)
     {
         Collider[] colliders = GetComponentsInChildren<Collider>(true);
@@ -546,110 +380,5 @@ public class Litter : MonoBehaviour
         }
 
         return null;
-    }
-
-    private void ApplyLitterIconSorting()
-    {
-        if (litterIconCanvas == null)
-        {
-            return;
-        }
-
-        if (litterIconRenderOnTop != null)
-        {
-            litterIconRenderOnTop.ApplySorting();
-        }
-
-        int baseSortingOrder = litterIconCanvas.sortingOrder;
-        litterIconCanvas.overrideSorting = true;
-        litterIconCanvas.sortingOrder = baseSortingOrder + litterIconSortingOrder;
-    }
-}
-
-public class TaskIconPulse : MonoBehaviour
-{
-    [SerializeField] private float popDuration = 0.32f;
-    [SerializeField] private float popOvershootScale = 1.14f;
-    [SerializeField] private float pulseFrequency = 1.2f;
-    [SerializeField] private float pulseScaleAmount = 0.12f;
-
-    private Vector3 baseScale = Vector3.one;
-    private Coroutine popCoroutine;
-
-    public void Initialize(Vector3 targetScale)
-    {
-        baseScale = targetScale;
-
-        if (isActiveAndEnabled)
-        {
-            RestartAnimation();
-        }
-        else
-        {
-            transform.localScale = baseScale;
-        }
-    }
-
-    private void OnEnable()
-    {
-        RestartAnimation();
-    }
-
-    private void OnDisable()
-    {
-        if (popCoroutine != null)
-        {
-            StopCoroutine(popCoroutine);
-            popCoroutine = null;
-        }
-    }
-
-    private void Update()
-    {
-        if (popCoroutine != null)
-        {
-            return;
-        }
-
-        float pulse = 1f + (Mathf.Sin(Time.time * pulseFrequency * Mathf.PI * 2f) * pulseScaleAmount);
-        transform.localScale = baseScale * pulse;
-    }
-
-    private void RestartAnimation()
-    {
-        if (popCoroutine != null)
-        {
-            StopCoroutine(popCoroutine);
-        }
-
-        popCoroutine = StartCoroutine(PopInRoutine());
-    }
-
-    private IEnumerator PopInRoutine()
-    {
-        float elapsed = 0f;
-        transform.localScale = Vector3.zero;
-
-        while (elapsed < popDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, popDuration));
-            float scaleFactor;
-
-            if (t < 0.7f)
-            {
-                scaleFactor = Mathf.Lerp(0f, popOvershootScale, t / 0.7f);
-            }
-            else
-            {
-                scaleFactor = Mathf.Lerp(popOvershootScale, 1f, (t - 0.7f) / 0.3f);
-            }
-
-            transform.localScale = baseScale * scaleFactor;
-            yield return null;
-        }
-
-        transform.localScale = baseScale;
-        popCoroutine = null;
     }
 }

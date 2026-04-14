@@ -5,6 +5,7 @@ public class Expansion : ScriptableObject
 {
     public string name = "New Expansion";
     public int requiredTier = 1;
+    [Min(0)] public int platformNumber = 0;
     [TextArea]
     public string description = "Description of the expansion.";
     public Sprite icon;

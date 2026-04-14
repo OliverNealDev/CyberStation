@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Expansion
   name: Right Expansion
   requiredTier: 3
-  description: Expand right!
+  description: Expand right for more buildable area!
   icon: {fileID: 21300000, guid: 55c3d1de4826da947bb6f70e08f554d3, type: 3}
-  expansionPrefab: {fileID: 8201980855403194367, guid: 982d5ed45718511459a3b5bcdf21abbe, type: 3}
-  upfrontCost: 1000
+  expansionPrefab: {fileID: 3921208186811851990, guid: 600f675958cf4924ca85e083c78ca436, type: 3}
+  upfrontCost: 2000

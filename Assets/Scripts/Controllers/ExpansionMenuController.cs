@@ -95,15 +95,32 @@ public class ExpansionMenuController : MonoBehaviour
 
     void checkBuyExpansionButtonInteractability(Expansion data)
     {
+        bool isUnlocked = ProgressionManager.Instance == null || ProgressionManager.Instance.IsUnlocked(data);
         bool isBuilt = ExpansionManager.Instance.IsExpansionBuilt(data);
-        bool canAfford = EconomyManager.Instance.money >= data.upfrontCost;
+        bool canAfford = EconomyManager.Instance != null && EconomyManager.Instance.money >= data.upfrontCost;
+        bool hasMissingPlatformRequirement = ExpansionManager.Instance.TryGetMissingPlatformRequirement(data, out Expansion requiredPlatform);
 
-        buyExpansionButton.interactable = !isBuilt && canAfford;
+        buyExpansionButton.interactable = !isBuilt && isUnlocked && !hasMissingPlatformRequirement && canAfford;
 
         TextMeshProUGUI buyText = buyExpansionButton.GetComponentInChildren<TextMeshProUGUI>();
         if (buyText != null)
         {
-            buyText.text = isBuilt ? "Purchased" : $"Buy ${data.upfrontCost}";
+            if (isBuilt)
+            {
+                buyText.text = "Purchased";
+            }
+            else if (!isUnlocked)
+            {
+                buyText.text = $"Requires Tier {Mathf.Max(1, data.requiredTier)}";
+            }
+            else if (hasMissingPlatformRequirement)
+            {
+                buyText.text = $"Requires {requiredPlatform.name}";
+            }
+            else
+            {
+                buyText.text = $"Buy ${data.upfrontCost}";
+            }
         }
     }
     

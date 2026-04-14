@@ -4,14 +4,9 @@ using UnityEngine;
 public class JanitorCoordinator : MonoBehaviour
 {
     public static JanitorCoordinator Instance;
-
-    [Header("Litter Icon")]
-    [SerializeField] private Sprite litterIconSprite;
     
     public List<Litter> allLitter = new List<Litter>();
     public Dictionary<Litter, Janitor> assignedLitter = new Dictionary<Litter, Janitor>();
-
-    public Sprite LitterIconSprite => litterIconSprite;
     
     void Awake()
     {
