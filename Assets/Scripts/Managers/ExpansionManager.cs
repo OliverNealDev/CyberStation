@@ -24,21 +24,12 @@ public class ExpansionManager : MonoBehaviour
         if (!CanBuyExpansion(expansion)) return false;
 
         EconomyManager.Instance.SpendMoney(expansion.upfrontCost);
-        builtExpansions.Add(expansion);
-        
-        if (expansion.expansionPrefab != null)
-        {
-            Instantiate(expansion.expansionPrefab, levelParent);
-            NavMeshManager.Instance.BuildNavMesh();
-        }
+        return AddBuiltExpansion(expansion, true);
+    }
 
-        if (ProgressionManager.Instance != null)
-        {
-            ProgressionManager.Instance.RecordExpansionBuilt();
-        }
-
-        OnExpansionBuilt?.Invoke();
-        return true;
+    public bool RestoreBuiltExpansion(Expansion expansion)
+    {
+        return AddBuiltExpansion(expansion, false);
     }
 
     public bool IsExpansionBuilt(Expansion expansion)
@@ -95,5 +86,29 @@ public class ExpansionManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    private bool AddBuiltExpansion(Expansion expansion, bool awardProgression)
+    {
+        if (expansion == null || builtExpansions.Contains(expansion))
+        {
+            return false;
+        }
+
+        builtExpansions.Add(expansion);
+
+        if (expansion.expansionPrefab != null)
+        {
+            Instantiate(expansion.expansionPrefab, levelParent);
+            NavMeshManager.Instance?.BuildNavMesh();
+        }
+
+        if (awardProgression && ProgressionManager.Instance != null)
+        {
+            ProgressionManager.Instance.RecordExpansionBuilt();
+        }
+
+        OnExpansionBuilt?.Invoke();
+        return true;
     }
 }

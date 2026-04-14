@@ -53,6 +53,18 @@ public class TrainManager : MonoBehaviour
         }
     }
 
+    public bool RestoreUnlockedTrain(Train train)
+    {
+        if (train == null || unlockedTrains.Contains(train))
+        {
+            return false;
+        }
+
+        unlockedTrains.Add(train);
+        NotifyTrainAssignmentsChanged();
+        return true;
+    }
+
     public void RegisterPlatform(PlatformController platform)
     {
         if (!activePlatforms.Contains(platform))
@@ -101,6 +113,20 @@ public class TrainManager : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public PlatformController GetPlatformByNumber(int platformNumber)
+    {
+        for (int i = 0; i < activePlatforms.Count; i++)
+        {
+            PlatformController platform = activePlatforms[i];
+            if (platform != null && platform.platformNumber == platformNumber)
+            {
+                return platform;
+            }
+        }
+
+        return null;
     }
 
     public bool SpawnTrainService(TrainService service)

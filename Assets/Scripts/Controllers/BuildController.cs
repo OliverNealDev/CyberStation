@@ -486,6 +486,13 @@ public class BuildController : MonoBehaviour
         }
     }
 
+    public void RefreshLoadedBuildables()
+    {
+        RefreshPlacedMaterializerCount();
+        NotifyBuildablesChanged();
+        RefreshModeState();
+    }
+
     private void ClearPreviewPlacement()
     {
         hasPreviewPlacement = false;

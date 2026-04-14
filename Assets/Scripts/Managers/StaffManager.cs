@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class StaffManager : MonoBehaviour
 {
@@ -21,16 +22,39 @@ public class StaffManager : MonoBehaviour
             return;
         }
 
-        if (!hiredStaff.Contains(staff))
-        {
-            hiredStaff.Add(staff);
-            SoundEffectController.Play(SoundEffectId.HireAndroid);
+        AddStaff(staff, true, true);
+    }
 
-            if (ProgressionManager.Instance != null)
-            {
-                ProgressionManager.Instance.RecordStaffHired();
-            }
+    public bool RestoreHiredStaff(StaffMember staffType, Vector3 position, Quaternion rotation)
+    {
+        if (staffType == null || staffType.staffPrefab == null)
+        {
+            return false;
         }
+
+        GameObject staffObject = Instantiate(staffType.staffPrefab, position, rotation);
+        Staff restoredStaff = staffObject.GetComponent<Staff>();
+        if (restoredStaff == null)
+        {
+            Destroy(staffObject);
+            return false;
+        }
+
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 2f, NavMesh.AllAreas))
+        {
+            staffObject.transform.position = hit.position;
+        }
+
+        restoredStaff.salaryPerMinute = staffType.salaryPerMinute;
+        restoredStaff.staffType = staffType;
+
+        if (restoredStaff.navAgent != null)
+        {
+            restoredStaff.navAgent.enabled = false;
+            restoredStaff.navAgent.enabled = true;
+        }
+
+        return AddStaff(restoredStaff, false, false);
     }
     
     public int GetHiredStaffAmount(StaffMember type)
@@ -60,4 +84,25 @@ public class StaffManager : MonoBehaviour
         }
     }
 
+    private bool AddStaff(Staff staff, bool playSound, bool awardProgression)
+    {
+        if (staff == null || hiredStaff.Contains(staff))
+        {
+            return false;
+        }
+
+        hiredStaff.Add(staff);
+
+        if (playSound)
+        {
+            SoundEffectController.Play(SoundEffectId.HireAndroid);
+        }
+
+        if (awardProgression && ProgressionManager.Instance != null)
+        {
+            ProgressionManager.Instance.RecordStaffHired();
+        }
+
+        return true;
+    }
 }

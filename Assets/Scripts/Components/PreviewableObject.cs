@@ -23,6 +23,12 @@ public class PreviewableObject : MonoBehaviour
             Color.softRed);
     }
 
+    public void ExitPreviewModeSilently()
+    {
+        isInPreviewMode = false;
+        SetManagedComponentsEnabled(true);
+    }
+
     private void SetManagedComponentsEnabled(bool isEnabled)
     {
         if (componentsToEnable.Count == 0)

@@ -168,6 +168,13 @@ public class ProgressionManager : MonoBehaviour
         FinalizeLevelChange(previousLevel);
     }
 
+    public void LoadProgress(int savedXp)
+    {
+        currentXp = Mathf.Max(0, savedXp);
+        UpdateLevelFromXp();
+        NotifyProgressChanged();
+    }
+
     public int GetXpRequiredForLevel(int level)
     {
         return baseXpPerLevel + (Mathf.Max(1, level) - 1) * xpIncreasePerLevel;

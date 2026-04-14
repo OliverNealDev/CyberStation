@@ -84,6 +84,17 @@ public class EconomyManager : MonoBehaviour
         SpendMoney(refundAmount);
     }
 
+    public void LoadMoney(int amount)
+    {
+        money = Mathf.Max(0, amount);
+        recentMoneyChanges.Clear();
+        recentMoneyWindowTotal = 0;
+        currentIncomePerMinute = 0;
+
+        OnMoneyChanged?.Invoke(money);
+        OnIncomePerMinuteChanged?.Invoke(currentIncomePerMinute);
+    }
+
     private void UpdateRecurringCharges()
     {
         float now = Time.time;
