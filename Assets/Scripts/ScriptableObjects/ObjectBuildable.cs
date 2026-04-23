@@ -42,6 +42,11 @@ public interface IPreviewInitializable
     void InitializePreviewVisuals();
 }
 
+public interface IRenderPreviewInitializable
+{
+    void InitializeRenderPreviewVisuals();
+}
+
 public static class PrefabIconRenderer
 {
     private const int PreviewLayer = 31;
@@ -308,6 +313,14 @@ public static class PrefabIconRenderer
             if (previewBehaviours[i] is IPreviewInitializable previewInitializable)
             {
                 previewInitializable.InitializePreviewVisuals();
+            }
+        }
+
+        for (int i = 0; i < previewBehaviours.Length; i++)
+        {
+            if (previewBehaviours[i] is IRenderPreviewInitializable renderPreviewInitializable)
+            {
+                renderPreviewInitializable.InitializeRenderPreviewVisuals();
             }
         }
 

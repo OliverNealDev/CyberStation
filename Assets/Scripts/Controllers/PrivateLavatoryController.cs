@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class PrivateLavatoryController : StationFacility, IPreviewInitializable
+public class PrivateLavatoryController : StationFacility, IPreviewInitializable, IRenderPreviewInitializable
 {
     public int usePrice = 4; 
     private float BaseServiceDuration => usageTime + (doorMoveDuration * 2f);
@@ -37,6 +37,14 @@ public class PrivateLavatoryController : StationFacility, IPreviewInitializable
         }
 
         SetNeedIconIdle(facilityIcon);
+    }
+
+    public void InitializeRenderPreviewVisuals()
+    {
+        if (doorTransform != null && doorClosedPosition != null)
+        {
+            doorTransform.localPosition = doorClosedPosition.localPosition;
+        }
     }
 
     public override void ProcessInteraction(Person person)

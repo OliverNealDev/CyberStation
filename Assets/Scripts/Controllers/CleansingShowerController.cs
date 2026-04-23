@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class CleansingShowerController : StationFacility, IPreviewInitializable
+public class CleansingShowerController : StationFacility, IPreviewInitializable, IRenderPreviewInitializable
 {
     public int usePrice = 4;
     private float BaseServiceDuration => showerDuration + dropletFallDuration + (doorMoveDuration * 2f);
@@ -61,6 +61,14 @@ public class CleansingShowerController : StationFacility, IPreviewInitializable
         }
 
         SetNeedIconIdle(facilityIcon);
+    }
+
+    public void InitializeRenderPreviewVisuals()
+    {
+        if (doorTransform != null && doorClosedPosition != null)
+        {
+            doorTransform.localPosition = doorClosedPosition.localPosition;
+        }
     }
 
     public override void ProcessInteraction(Person person)
