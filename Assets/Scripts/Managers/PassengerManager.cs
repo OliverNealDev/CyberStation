@@ -364,6 +364,42 @@ public class PassengerManager : MonoBehaviour
         if (passengerSpawnPoints.Count == 0) return Vector3.zero;
         return passengerSpawnPoints[Random.Range(0, passengerSpawnPoints.Count)];
     }
+
+    private static Vector3 GetAgentAlignedTransformPosition(NavMeshAgent agent, Vector3 navMeshPosition)
+    {
+        return agent != null ? navMeshPosition + (Vector3.up * agent.baseOffset) : navMeshPosition;
+    }
+
+    private static void SetPassengerTransformFromNavMeshPosition(Passenger passenger, Vector3 navMeshPosition)
+    {
+        if (passenger == null)
+        {
+            return;
+        }
+
+        passenger.transform.position = GetAgentAlignedTransformPosition(passenger.navAgent, navMeshPosition);
+    }
+
+    private bool EnablePassengerNavAgentAtCurrentPosition(Passenger passenger, float sampleDistance = 4f)
+    {
+        if (passenger == null || passenger.navAgent == null)
+        {
+            return false;
+        }
+
+        if (!passenger.navAgent.enabled)
+        {
+            passenger.navAgent.enabled = true;
+        }
+
+        Vector3 desiredNavMeshPosition = passenger.transform.position - (Vector3.up * passenger.navAgent.baseOffset);
+        if (!NavMesh.SamplePosition(desiredNavMeshPosition, out NavMeshHit hit, sampleDistance, NavMesh.AllAreas))
+        {
+            return passenger.navAgent.isOnNavMesh;
+        }
+
+        return passenger.navAgent.Warp(hit.position);
+    }
     
     void DecideNextAction(Passenger passenger)
     {
@@ -1875,6 +1911,8 @@ public class PassengerManager : MonoBehaviour
             newPassenger.navAgent.enabled = false;
         }
 
+        SetPassengerTransformFromNavMeshPosition(newPassenger, finalSpawnPos);
+
         newPassenger.transform.parent = transform;
 
         newPassenger.assignedTrainService = service;
@@ -1905,15 +1943,7 @@ public class PassengerManager : MonoBehaviour
 
     public void FinaliseExitingPassenger(Passenger passenger)
     {
-        if (passenger.navAgent != null)
-        {
-            passenger.navAgent.enabled = true;
-            
-            if (NavMesh.SamplePosition(passenger.transform.position, out NavMeshHit hit, 4f, NavMesh.AllAreas))
-            {
-                passenger.navAgent.Warp(hit.position); 
-            }
-        }
+        EnablePassengerNavAgentAtCurrentPosition(passenger);
 
         if (passenger.assignedTrainService != null)
         {
@@ -2071,6 +2101,8 @@ public class PassengerManager : MonoBehaviour
             newPassenger.navAgent.enabled = false;
         }
 
+        SetPassengerTransformFromNavMeshPosition(newPassenger, finalSpawnPoint);
+
         MaterializeAnimator animator = newPassenger.GetComponent<MaterializeAnimator>();
         if (animator != null)
         {
@@ -2078,17 +2110,14 @@ public class PassengerManager : MonoBehaviour
             {
                 if (newPassenger != null && newPassenger.gameObject != null)
                 {
-                    if (newPassenger.navAgent != null)
-                    {
-                        newPassenger.navAgent.enabled = true;
-                    }
+                    EnablePassengerNavAgentAtCurrentPosition(newPassenger);
                     DecideNextAction(newPassenger);
                 }
             });
         }
         else
         {
-            if (newPassenger.navAgent != null) newPassenger.navAgent.enabled = true;
+            EnablePassengerNavAgentAtCurrentPosition(newPassenger);
             DecideNextAction(newPassenger);
         }
     }

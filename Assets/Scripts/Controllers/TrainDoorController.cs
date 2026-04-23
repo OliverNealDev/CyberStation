@@ -80,7 +80,9 @@ public class TrainDoorController : QueuableObject
 
     private IEnumerator AnimateExiting(Passenger passenger, Vector3 startPos, Vector3 targetPos)
     {
-        targetPos.y = startPos.y;
+        Vector3 animatedStartPos = GetAgentAlignedTransformPosition(passenger, startPos);
+        Vector3 animatedTargetPos = GetAgentAlignedTransformPosition(passenger, targetPos);
+        animatedTargetPos.y = animatedStartPos.y;
 
         float duration = 0.4f; 
         float elapsed = 0f;
@@ -89,7 +91,7 @@ public class TrainDoorController : QueuableObject
         {
             if (passenger == null) yield break; 
 
-            passenger.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
+            passenger.transform.position = Vector3.Lerp(animatedStartPos, animatedTargetPos, elapsed / duration);
             elapsed += Time.deltaTime;
             
             yield return null; 
@@ -97,8 +99,16 @@ public class TrainDoorController : QueuableObject
 
         if (passenger != null)
         {
+            passenger.transform.position = animatedTargetPos;
             PassengerManager.Instance.FinaliseExitingPassenger(passenger);
         }
+    }
+
+    private static Vector3 GetAgentAlignedTransformPosition(Passenger passenger, Vector3 navMeshPosition)
+    {
+        return passenger != null && passenger.navAgent != null
+            ? navMeshPosition + (Vector3.up * passenger.navAgent.baseOffset)
+            : navMeshPosition;
     }
     
     public void CloseDoors()
@@ -153,6 +163,7 @@ public class TrainDoorController : QueuableObject
 
         if (passenger != null)
         {
+            passenger.transform.position = endPosition;
             PassengerManager.Instance.BoardTrain(passenger);
         }
 
