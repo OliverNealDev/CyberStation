@@ -11,8 +11,25 @@ public class PlatformController : MonoBehaviour
     public Train trainInSlot1;
     public Train trainInSlot2;
 
+    [System.NonSerialized] private Sprite runtimeIcon;
+
     private float spawnTimer = 120f;
     private int nextSlotToSpawn = 1;
+
+    public Sprite GetIcon()
+    {
+        if (runtimeIcon == null)
+        {
+            runtimeIcon = PrefabIconRenderer.GetIcon(
+                gameObject,
+                null,
+                PrefabIconView.BuildablesAndStaff,
+                GetInstanceID().ToString(),
+                null);
+        }
+
+        return runtimeIcon;
+    }
 
     void Start()
     {

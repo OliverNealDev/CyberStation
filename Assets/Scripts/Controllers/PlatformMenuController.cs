@@ -43,6 +43,14 @@ public class PlatformMenuController : MonoBehaviour
         
         TextMeshProUGUI nameText = newButton.transform.Find("Name").GetComponent<TextMeshProUGUI>();
         if (nameText) nameText.text = platform.platformName;
+
+        Image iconImage = newButton.transform.Find("Icon").GetComponent<Image>();
+        if (iconImage)
+        {
+            iconImage.sprite = platform.GetIcon();
+            iconImage.color = Color.white;
+            iconImage.preserveAspect = true;
+        }
         
         Button slot1Btn = newButton.transform.Find("TrainSlot1").GetComponent<Button>();
         Button slot2Btn = newButton.transform.Find("TrainSlot2").GetComponent<Button>();
