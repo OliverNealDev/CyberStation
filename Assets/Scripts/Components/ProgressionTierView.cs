@@ -8,6 +8,7 @@ public class ProgressionTierView : MonoBehaviour
 {
     [SerializeField] private string tierTitle = "Tier 0";
     [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private TextMeshProUGUI unlocksLabelText;
     [SerializeField] private ProgressionUnlockableView[] unlockables = System.Array.Empty<ProgressionUnlockableView>();
     [SerializeField] private bool autoDiscoverUnlockables = true;
     [SerializeField] private Image panelImage;
@@ -143,10 +144,69 @@ public class ProgressionTierView : MonoBehaviour
     {
         if (titleText == null)
         {
-            TextMeshProUGUI[] textComponents = GetComponentsInChildren<TextMeshProUGUI>(true);
-            if (textComponents.Length > 0)
+            Transform directTitleTransform = FindDescendantByName(transform, "Text (TMP)");
+            if (directTitleTransform != null)
             {
-                titleText = textComponents[0];
+                titleText = directTitleTransform.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (titleText == null)
+            {
+                TextMeshProUGUI[] textComponents = GetComponentsInChildren<TextMeshProUGUI>(true);
+                for (int i = 0; i < textComponents.Length; i++)
+                {
+                    if (textComponents[i] == null)
+                    {
+                        continue;
+                    }
+
+                    if (textComponents[i].text.IndexOf("tier", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        titleText = textComponents[i];
+                        break;
+                    }
+                }
+
+                if (titleText == null && textComponents.Length > 0)
+                {
+                    titleText = textComponents[0];
+                }
+            }
+        }
+
+        if (unlocksLabelText == null)
+        {
+            Transform directUnlocksLabelTransform = FindDescendantByName(transform, "Text (TMP) (1)");
+            if (directUnlocksLabelTransform != null)
+            {
+                unlocksLabelText = directUnlocksLabelTransform.GetComponent<TextMeshProUGUI>();
+            }
+
+            TextMeshProUGUI[] textComponents = GetComponentsInChildren<TextMeshProUGUI>(true);
+            for (int i = 0; i < textComponents.Length; i++)
+            {
+                if (textComponents[i] == null || textComponents[i] == titleText)
+                {
+                    continue;
+                }
+
+                if (textComponents[i].text.IndexOf("unlock", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    unlocksLabelText = textComponents[i];
+                    break;
+                }
+            }
+
+            if (unlocksLabelText == null)
+            {
+                for (int i = 0; i < textComponents.Length; i++)
+                {
+                    if (textComponents[i] != null && textComponents[i] != titleText)
+                    {
+                        unlocksLabelText = textComponents[i];
+                        break;
+                    }
+                }
             }
         }
 
@@ -157,7 +217,7 @@ public class ProgressionTierView : MonoBehaviour
 
         if (unlocksRoot == null)
         {
-            Transform directUnlocksRoot = transform.Find("Unlocks");
+            Transform directUnlocksRoot = FindDescendantByName(transform, "Unlocks");
             if (directUnlocksRoot != null)
             {
                 unlocksRoot = directUnlocksRoot;
@@ -179,6 +239,25 @@ public class ProgressionTierView : MonoBehaviour
             defaultPanelColor = panelImage.color;
             hasDefaultPanelColor = true;
         }
+    }
+
+    private static Transform FindDescendantByName(Transform root, string childName)
+    {
+        if (root == null || string.IsNullOrWhiteSpace(childName))
+        {
+            return null;
+        }
+
+        Transform[] descendants = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < descendants.Length; i++)
+        {
+            if (descendants[i] != null && descendants[i].name == childName)
+            {
+                return descendants[i];
+            }
+        }
+
+        return null;
     }
 
     private int ExtractTierNumber(string source, int fallbackTierNumber)

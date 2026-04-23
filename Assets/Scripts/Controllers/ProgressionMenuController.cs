@@ -1,9 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [DisallowMultipleComponent]
 public class ProgressionMenuController : MonoBehaviour
 {
+    private const float TierCardWidth = 1000f;
+    private const float TierCardHeight = 240f;
+    private const float TierCardSpacingY = 28f;
+
     private ProgressionTierView[] tierViews = System.Array.Empty<ProgressionTierView>();
 
     private void OnEnable()
@@ -32,6 +37,7 @@ public class ProgressionMenuController : MonoBehaviour
     {
         tierViews = GetComponentsInChildren<ProgressionTierView>(true);
         System.Array.Sort(tierViews, CompareTierViews);
+        ConfigureTierContainerLayout();
 
         Dictionary<string, ObjectBuildable> buildables = BuildLookup(Resources.LoadAll<ObjectBuildable>("BuildItems"));
         Dictionary<string, Train> trains = BuildLookup(Resources.LoadAll<Train>("Trains"));
@@ -62,6 +68,48 @@ public class ProgressionMenuController : MonoBehaviour
         int leftTier = left != null ? left.GetTierNumber(0) : 0;
         int rightTier = right != null ? right.GetTierNumber(0) : 0;
         return leftTier.CompareTo(rightTier);
+    }
+
+    private void ConfigureTierContainerLayout()
+    {
+        if (tierViews.Length == 0 || tierViews[0] == null)
+        {
+            return;
+        }
+
+        RectTransform tiersRoot = tierViews[0].transform.parent as RectTransform;
+        if (tiersRoot == null)
+        {
+            return;
+        }
+
+        GridLayoutGroup gridLayout = tiersRoot.GetComponent<GridLayoutGroup>();
+        if (gridLayout != null)
+        {
+            gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gridLayout.constraintCount = 1;
+            gridLayout.cellSize = new Vector2(TierCardWidth, TierCardHeight);
+            gridLayout.spacing = new Vector2(0f, TierCardSpacingY);
+            gridLayout.childAlignment = TextAnchor.UpperCenter;
+        }
+
+        tiersRoot.anchorMin = new Vector2(0f, 1f);
+        tiersRoot.anchorMax = new Vector2(1f, 1f);
+        tiersRoot.pivot = new Vector2(0f, 1f);
+        tiersRoot.anchoredPosition = Vector2.zero;
+
+        float totalHeight = (tierViews.Length * TierCardHeight) + (Mathf.Max(0, tierViews.Length - 1) * TierCardSpacingY);
+        if (gridLayout != null)
+        {
+            totalHeight += gridLayout.padding.top + gridLayout.padding.bottom;
+        }
+
+        Vector2 sizeDelta = tiersRoot.sizeDelta;
+        sizeDelta.x = 0f;
+        sizeDelta.y = totalHeight;
+        tiersRoot.sizeDelta = sizeDelta;
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tiersRoot);
     }
 
     private List<ProgressionUnlockableEntry> BuildEntriesForTier(
