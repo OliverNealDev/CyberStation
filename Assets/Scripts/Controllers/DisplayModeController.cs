@@ -6,7 +6,11 @@ public sealed class DisplayModeController : MonoBehaviour
 {
     private const int WindowedWidth = 1280;
     private const int WindowedHeight = 720;
+    private const string FullscreenPrefsKey = "Settings.Fullscreen";
+
     private static bool isBootstrapped;
+
+    public static bool IsFullscreen => Screen.fullScreenMode != FullScreenMode.Windowed;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
@@ -33,7 +37,7 @@ public sealed class DisplayModeController : MonoBehaviour
     {
         DontDestroyOnLoad(gameObject);
 
-        SetWindowedMode();
+        SetFullscreen(PlayerPrefs.GetInt(FullscreenPrefsKey, 0) == 1);
     }
 
     private void Update()
@@ -44,26 +48,29 @@ public sealed class DisplayModeController : MonoBehaviour
         }
     }
 
-    private void ToggleFullscreen()
+    public static void SetFullscreen(bool fullscreen)
     {
-        if (IsFullscreen())
-        {
-            SetWindowedMode();
-        }
-        else
+        PlayerPrefs.SetInt(FullscreenPrefsKey, fullscreen ? 1 : 0);
+        PlayerPrefs.Save();
+
+        if (fullscreen)
         {
             Resolution displayResolution = Screen.currentResolution;
             Screen.SetResolution(displayResolution.width, displayResolution.height, FullScreenMode.FullScreenWindow);
         }
+        else
+        {
+            SetWindowedMode();
+        }
+    }
+
+    private static void ToggleFullscreen()
+    {
+        SetFullscreen(!IsFullscreen);
     }
 
     private static void SetWindowedMode()
     {
         Screen.SetResolution(WindowedWidth, WindowedHeight, FullScreenMode.Windowed);
-    }
-
-    private static bool IsFullscreen()
-    {
-        return Screen.fullScreenMode != FullScreenMode.Windowed;
     }
 }

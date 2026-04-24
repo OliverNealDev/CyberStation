@@ -20,10 +20,15 @@ public enum SoundEffectId
 public class SoundEffectController : MonoBehaviour
 {
     private const float ButtonScanInterval = 0.1f;
+    private const string SfxVolumePrefsKey = "Settings.SfxVolume";
 
     public static SoundEffectController Instance { get; private set; }
+    public static float Volume => Mathf.Clamp01(PlayerPrefs.GetFloat(SfxVolumePrefsKey, 1f));
 
     private readonly HashSet<SoundEffectId> warnedMissingClips = new HashSet<SoundEffectId>();
+
+    [Header("Master")]
+    [SerializeField, Range(0f, 1f)] private float masterVolume = 1f;
 
     [Header("UI")]
     [SerializeField] private AudioClip buttonHoverClip;
@@ -67,6 +72,7 @@ public class SoundEffectController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        masterVolume = Volume;
 
         audioSource = gameObject.GetComponent<AudioSource>();
         if (audioSource == null)
@@ -77,11 +83,18 @@ public class SoundEffectController : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.loop = false;
         audioSource.spatialBlend = 0f;
+        audioSource.volume = masterVolume;
     }
 
     private void OnEnable()
     {
         Instance = this;
+        masterVolume = Volume;
+
+        if (audioSource != null)
+        {
+            audioSource.volume = masterVolume;
+        }
 
         if (buttonScanCoroutine == null)
         {
@@ -140,6 +153,23 @@ public class SoundEffectController : MonoBehaviour
         }
 
         audioSource.PlayOneShot(clip, GetVolume(effectId));
+    }
+
+    public static void SetVolume(float volume)
+    {
+        float clampedVolume = Mathf.Clamp01(volume);
+        PlayerPrefs.SetFloat(SfxVolumePrefsKey, clampedVolume);
+        PlayerPrefs.Save();
+
+        if (Instance != null)
+        {
+            Instance.masterVolume = clampedVolume;
+
+            if (Instance.audioSource != null)
+            {
+                Instance.audioSource.volume = clampedVolume;
+            }
+        }
     }
 
     private bool TryGetClip(SoundEffectId effectId, out AudioClip clip)

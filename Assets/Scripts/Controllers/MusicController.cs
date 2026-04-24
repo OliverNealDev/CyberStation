@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class MusicController : MonoBehaviour
 {
+    private const string MusicVolumePrefsKey = "Settings.MusicVolume";
+
+    public static MusicController Instance { get; private set; }
+    public static float Volume => Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumePrefsKey, 1f));
+
     [Header("Audio Clips")]
     [Tooltip("The audio clip that plays once at the start.")]
     public AudioClip introClip;
@@ -11,6 +16,11 @@ public class MusicController : MonoBehaviour
 
     private AudioSource introSource;
     private AudioSource loopSource;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -31,7 +41,16 @@ public class MusicController : MonoBehaviour
         loopSource.loop = true;
         loopSource.playOnAwake = false;
 
+        ApplyVolume(Volume);
         PlayMusic();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     public void PlayMusic()
@@ -47,5 +66,30 @@ public class MusicController : MonoBehaviour
     {
         introSource.Stop();
         loopSource.Stop();
+    }
+
+    public static void SetVolume(float volume)
+    {
+        float clampedVolume = Mathf.Clamp01(volume);
+        PlayerPrefs.SetFloat(MusicVolumePrefsKey, clampedVolume);
+        PlayerPrefs.Save();
+
+        if (Instance != null)
+        {
+            Instance.ApplyVolume(clampedVolume);
+        }
+    }
+
+    private void ApplyVolume(float volume)
+    {
+        if (introSource != null)
+        {
+            introSource.volume = volume;
+        }
+
+        if (loopSource != null)
+        {
+            loopSource.volume = volume;
+        }
     }
 }

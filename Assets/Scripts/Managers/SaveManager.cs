@@ -201,6 +201,67 @@ public class SaveManager : MonoBehaviour
         }
     }
 
+    public static void ResetSaveDataAndRestartScene()
+    {
+        if (instance == null)
+        {
+            DeleteSaveFile(Path.Combine(Application.persistentDataPath, SaveFileName));
+            ReloadActiveScene();
+            return;
+        }
+
+        instance.ResetSaveDataAndRestartSceneInternal();
+    }
+
+    private void ResetSaveDataAndRestartSceneInternal()
+    {
+        if (initialLoadRoutine != null)
+        {
+            StopCoroutine(initialLoadRoutine);
+            initialLoadRoutine = null;
+        }
+
+        isApplyingSave = false;
+        hasAttemptedInitialLoad = false;
+
+        DeleteSaveFile(SaveFilePath);
+        ReloadActiveScene();
+    }
+
+    private static void DeleteSaveFile(string saveFilePath)
+    {
+        try
+        {
+            if (File.Exists(saveFilePath))
+            {
+                File.Delete(saveFilePath);
+                Debug.Log($"SaveManager deleted save data at {saveFilePath}.");
+            }
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"SaveManager failed to delete save file '{saveFilePath}': {exception}");
+        }
+    }
+
+    private static void ReloadActiveScene()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (!activeScene.IsValid())
+        {
+            return;
+        }
+
+        if (activeScene.buildIndex >= 0)
+        {
+            SceneManager.LoadScene(activeScene.buildIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(activeScene.name);
+        }
+    }
+
     private bool CanSaveOrLoad()
     {
         return hasAttemptedInitialLoad &&
