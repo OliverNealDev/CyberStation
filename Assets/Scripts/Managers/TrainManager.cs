@@ -241,6 +241,49 @@ public class TrainManager : MonoBehaviour
         platform.OnTrainAssigned(slotIndex);
         OnTrainAssignmentsChanged?.Invoke();
     }
+
+    public bool TryAssignTrainToFirstAvailablePlatformSlot(Train train)
+    {
+        if (train == null)
+        {
+            return false;
+        }
+
+        if (TryFindTrainAssignment(train, out _, out _))
+        {
+            return true;
+        }
+
+        PlatformController targetPlatform = null;
+        int targetSlotIndex = -1;
+
+        for (int i = 0; i < activePlatforms.Count; i++)
+        {
+            PlatformController platform = activePlatforms[i];
+            int availableSlotIndex = GetFirstAvailableSlot(platform);
+
+            if (availableSlotIndex == -1)
+            {
+                continue;
+            }
+
+            if (targetPlatform == null ||
+                platform.platformNumber < targetPlatform.platformNumber ||
+                (platform.platformNumber == targetPlatform.platformNumber && availableSlotIndex < targetSlotIndex))
+            {
+                targetPlatform = platform;
+                targetSlotIndex = availableSlotIndex;
+            }
+        }
+
+        if (targetPlatform == null)
+        {
+            return false;
+        }
+
+        AssignTrainToPlatformSlot(train, targetPlatform, targetSlotIndex);
+        return true;
+    }
     
     public void RemoveTrainFromService(Train train)
     {
@@ -266,6 +309,26 @@ public class TrainManager : MonoBehaviour
     private bool IsValidSlotIndex(int slotIndex)
     {
         return slotIndex == 1 || slotIndex == 2;
+    }
+
+    private int GetFirstAvailableSlot(PlatformController platform)
+    {
+        if (platform == null)
+        {
+            return -1;
+        }
+
+        if (platform.trainInSlot1 == null)
+        {
+            return 1;
+        }
+
+        if (platform.trainInSlot2 == null)
+        {
+            return 2;
+        }
+
+        return -1;
     }
 
     private Train GetTrainInSlot(PlatformController platform, int slotIndex)

@@ -115,6 +115,7 @@ public class TrainMenuController : MonoBehaviour
         {
             EconomyManager.Instance.SpendMoney(selectedTrain.upfrontCost);
             TrainManager.Instance.UnlockTrain(selectedTrain);
+            TrainManager.Instance.TryAssignTrainToFirstAvailablePlatformSlot(selectedTrain);
         }
 
         UpdateDetailView(selectedTrain);
