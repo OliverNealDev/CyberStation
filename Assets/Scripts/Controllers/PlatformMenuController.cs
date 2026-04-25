@@ -1,26 +1,38 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class PlatformMenuController : MonoBehaviour
 {
+    private const int PlatformListBottomPadding = 120;
+
     public GameObject platformButtonPrefab;
     public Transform contentContainer;
+    [SerializeField] private ScrollRect platformScrollRect;
+
+    private Coroutine pendingScrollReset;
 
     void OnEnable()
     {
+        ConfigureContentLayout();
         LoadPlatforms();
+        QueueScrollReset();
         TrainManager.OnTrainAssignmentsChanged += LoadPlatforms;
     }
 
     void OnDisable()
     {
         TrainManager.OnTrainAssignmentsChanged -= LoadPlatforms;
+        StopQueuedScrollReset();
+        ClearSelectedMenuObject();
     }
 
     public void LoadPlatforms()
     {
+        ConfigureContentLayout();
         UIRuntimeListUtility.ClearChildren(contentContainer);
 
         if (TrainManager.Instance == null)
@@ -82,5 +94,92 @@ public class PlatformMenuController : MonoBehaviour
         TrainManager.Instance.pendingSlot = slotIndex;
         
         UIController.Instance.OpenTrainSelectionPopup();
+    }
+
+    private void ConfigureContentLayout()
+    {
+        if (contentContainer == null || !contentContainer.TryGetComponent(out VerticalLayoutGroup layoutGroup))
+        {
+            return;
+        }
+
+        layoutGroup.childForceExpandHeight = false;
+
+        RectOffset padding = layoutGroup.padding;
+        if (padding == null || padding.bottom >= PlatformListBottomPadding)
+        {
+            return;
+        }
+
+        layoutGroup.padding = new RectOffset(
+            padding.left,
+            padding.right,
+            padding.top,
+            PlatformListBottomPadding);
+    }
+
+    private void QueueScrollReset()
+    {
+        StopQueuedScrollReset();
+        pendingScrollReset = StartCoroutine(ResetScrollStateNextFrame());
+    }
+
+    private void StopQueuedScrollReset()
+    {
+        if (pendingScrollReset == null)
+        {
+            return;
+        }
+
+        StopCoroutine(pendingScrollReset);
+        pendingScrollReset = null;
+    }
+
+    private IEnumerator ResetScrollStateNextFrame()
+    {
+        yield return null;
+        pendingScrollReset = null;
+
+        UIRuntimeListUtility.RefreshLayout(contentContainer);
+        ClearSelectedMenuObject();
+
+        ScrollRect scrollRect = ResolveScrollRect();
+        if (scrollRect == null)
+        {
+            yield break;
+        }
+
+        scrollRect.StopMovement();
+        scrollRect.velocity = Vector2.zero;
+
+        scrollRect.enabled = false;
+        scrollRect.enabled = true;
+
+        Canvas.ForceUpdateCanvases();
+        scrollRect.verticalNormalizedPosition = 1f;
+    }
+
+    private ScrollRect ResolveScrollRect()
+    {
+        if (platformScrollRect == null && contentContainer != null)
+        {
+            platformScrollRect = contentContainer.GetComponentInParent<ScrollRect>(true);
+        }
+
+        return platformScrollRect;
+    }
+
+    private void ClearSelectedMenuObject()
+    {
+        if (EventSystem.current == null)
+        {
+            return;
+        }
+
+        GameObject selectedObject = EventSystem.current.currentSelectedGameObject;
+        if (selectedObject != null && selectedObject.transform.IsChildOf(transform))
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
     }
 }

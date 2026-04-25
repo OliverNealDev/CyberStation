@@ -608,8 +608,17 @@ public static class UIRuntimeListUtility
         }
 
         Canvas.ForceUpdateCanvases();
+        RectTransform root = current;
         ResizeToPreferredSize(current);
 
+        while (current != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(current);
+            current = current.parent as RectTransform;
+        }
+
+        ExpandHeightToVisibleChildBounds(root);
+        current = root;
         while (current != null)
         {
             LayoutRebuilder.ForceRebuildLayoutImmediate(current);
@@ -642,6 +651,25 @@ public static class UIRuntimeListUtility
             sizeDelta.y = Mathf.Max(0f, preferredHeight);
         }
 
+        target.sizeDelta = sizeDelta;
+    }
+
+    private static void ExpandHeightToVisibleChildBounds(RectTransform target)
+    {
+        if (target == null || target.childCount == 0 || target.anchorMin.y != target.anchorMax.y)
+        {
+            return;
+        }
+
+        Bounds visibleBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(target, target);
+        float overflowBelow = target.rect.yMin - visibleBounds.min.y;
+        if (overflowBelow <= 0.01f || target.pivot.y <= 0.01f)
+        {
+            return;
+        }
+
+        Vector2 sizeDelta = target.sizeDelta;
+        sizeDelta.y += Mathf.Ceil(overflowBelow / target.pivot.y);
         target.sizeDelta = sizeDelta;
     }
 }
