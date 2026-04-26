@@ -150,7 +150,7 @@ MonoBehaviour:
   queueReshuffleIntervalSeconds: 1
   currentPerson: {fileID: 0}
   state: 0
-  usePrice: 5
+  usePrice: 8
   facilityIcon: {fileID: 5969262218880966119}
   activeFacilityColor: {r: 0, g: 1, b: 1, a: 1}
   dropletPrefab: {fileID: 5206356957684020260, guid: 3d924012d9540ed46b0184d823ffa98d, type: 3}

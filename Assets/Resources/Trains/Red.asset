@@ -23,7 +23,7 @@ MonoBehaviour:
   carriageCount: 4
   carriageLength: 34
   capacityPerCarriage: 12
-  costPerRide: 14
+  costPerRide: 16
   secondsStationary: 30
   trainColor: {r: 1, g: 0, b: 0, a: 1}
   isWarm: 0
