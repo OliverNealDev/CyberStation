@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -44,6 +45,9 @@ public class UIController : MonoBehaviour
     public TextMeshProUGUI incomeText;
     public Color positiveMoneyColor = new Color(6, 159, 0);
     public Color negativeMoneyColor = new Color(188, 0, 0);
+
+    [Header("Pointer Feel")]
+    [SerializeField] private int uiDragThresholdPixels = 24;
     
     [Header("Bill Feed")]
     public GameObject billPrefab;
@@ -74,6 +78,7 @@ public class UIController : MonoBehaviour
 
     void Start()
     {
+        ConfigureEventSystemDragThreshold();
         CloseAllPanels();
         CloseTrainSelectionPopup();
 
@@ -100,6 +105,7 @@ public class UIController : MonoBehaviour
 
     void OnEnable()
     {
+        ConfigureEventSystemDragThreshold();
         EconomyManager.OnMoneyChanged += OnMoneyChanged;
         EconomyManager.OnIncomePerMinuteChanged += OnIncomePerMinuteChanged;
         EconomyManager.OnExpenseRecorded += OnExpenseRecorded;
@@ -382,6 +388,7 @@ public class UIController : MonoBehaviour
         if (billContainer == null) return;
 
         GameObject billObject = Instantiate(billPrefab, billContainer);
+        PointerUiUtility.DisableRaycastTargets(billObject);
         RectTransform billRect = billObject.GetComponent<RectTransform>();
         CanvasGroup billCanvasGroup = billObject.GetComponent<CanvasGroup>();
         if (billCanvasGroup == null)
@@ -496,10 +503,24 @@ public class UIController : MonoBehaviour
         if (entry.image != null)
         {
             entry.image.sprite = icon;
+            entry.image.color = Color.white;
             entry.image.enabled = icon != null;
+            entry.image.preserveAspect = true;
         }
 
         entry.canvasGroup.alpha = 0f;
+    }
+
+    private void ConfigureEventSystemDragThreshold()
+    {
+        if (EventSystem.current == null)
+        {
+            return;
+        }
+
+        EventSystem.current.pixelDragThreshold = Mathf.Max(
+            EventSystem.current.pixelDragThreshold,
+            uiDragThresholdPixels);
     }
 
     private IEnumerator BillLifecycle(BillEntry entry)

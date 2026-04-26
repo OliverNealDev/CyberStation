@@ -10,21 +10,22 @@ public class ProgressionMenuController : MonoBehaviour
     private const float TierCardSpacingY = 28f;
 
     private ProgressionTierView[] tierViews = System.Array.Empty<ProgressionTierView>();
+    private bool isRefreshingAll;
 
     private void OnEnable()
     {
-        ProgressionManager.OnProgressionChanged += RefreshAll;
+        ProgressionManager.OnProgressionChanged += RefreshUnlockStates;
         RefreshAll();
     }
 
     private void OnDisable()
     {
-        ProgressionManager.OnProgressionChanged -= RefreshAll;
+        ProgressionManager.OnProgressionChanged -= RefreshUnlockStates;
     }
 
     private void OnTransformChildrenChanged()
     {
-        if (!isActiveAndEnabled)
+        if (!isActiveAndEnabled || isRefreshingAll)
         {
             return;
         }
@@ -35,31 +36,60 @@ public class ProgressionMenuController : MonoBehaviour
     [ContextMenu("Refresh Progression")]
     public void RefreshAll()
     {
-        tierViews = GetComponentsInChildren<ProgressionTierView>(true);
-        System.Array.Sort(tierViews, CompareTierViews);
-        ConfigureTierContainerLayout();
+        isRefreshingAll = true;
+        try
+        {
+            tierViews = GetComponentsInChildren<ProgressionTierView>(true);
+            System.Array.Sort(tierViews, CompareTierViews);
+            ConfigureTierContainerLayout();
 
-        Dictionary<string, ObjectBuildable> buildables = BuildLookup(Resources.LoadAll<ObjectBuildable>("BuildItems"));
-        Dictionary<string, Train> trains = BuildLookup(Resources.LoadAll<Train>("Trains"));
-        Dictionary<string, StaffMember> staffMembers = BuildLookup(Resources.LoadAll<StaffMember>("Staff"));
-        Dictionary<string, Expansion> expansions = BuildLookup(Resources.LoadAll<Expansion>("Expansions"));
+            Dictionary<string, ObjectBuildable> buildables = BuildLookup(Resources.LoadAll<ObjectBuildable>("BuildItems"));
+            Dictionary<string, Train> trains = BuildLookup(Resources.LoadAll<Train>("Trains"));
+            Dictionary<string, StaffMember> staffMembers = BuildLookup(Resources.LoadAll<StaffMember>("Staff"));
+            Dictionary<string, Expansion> expansions = BuildLookup(Resources.LoadAll<Expansion>("Expansions"));
+
+            int currentLevel = ProgressionManager.Instance != null ? ProgressionManager.Instance.CurrentLevel : 1;
+
+            for (int i = 0; i < tierViews.Length; i++)
+            {
+                if (tierViews[i] != null)
+                {
+                    int tierNumber = tierViews[i].GetTierNumber(i + 1);
+                    tierViews[i].SetUnlockableEntries(BuildEntriesForTier(
+                        tierNumber,
+                        buildables,
+                        trains,
+                        staffMembers,
+                        expansions));
+                    tierViews[i].RefreshView();
+                    tierViews[i].SetUnlockedState(currentLevel >= tierNumber);
+                }
+            }
+        }
+        finally
+        {
+            isRefreshingAll = false;
+        }
+    }
+
+    private void RefreshUnlockStates()
+    {
+        if (tierViews == null || tierViews.Length == 0)
+        {
+            RefreshAll();
+            return;
+        }
 
         int currentLevel = ProgressionManager.Instance != null ? ProgressionManager.Instance.CurrentLevel : 1;
-
         for (int i = 0; i < tierViews.Length; i++)
         {
-            if (tierViews[i] != null)
+            if (tierViews[i] == null)
             {
-                int tierNumber = tierViews[i].GetTierNumber(i + 1);
-                tierViews[i].SetUnlockableEntries(BuildEntriesForTier(
-                    tierNumber,
-                    buildables,
-                    trains,
-                    staffMembers,
-                    expansions));
-                tierViews[i].RefreshView();
-                tierViews[i].SetUnlockedState(currentLevel >= tierNumber);
+                continue;
             }
+
+            int tierNumber = tierViews[i].GetTierNumber(i + 1);
+            tierViews[i].SetUnlockedState(currentLevel >= tierNumber);
         }
     }
 

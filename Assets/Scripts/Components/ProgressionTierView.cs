@@ -17,6 +17,7 @@ public class ProgressionTierView : MonoBehaviour
 
     private Color defaultPanelColor = Color.white;
     private bool hasDefaultPanelColor;
+    private bool isConfiguringUnlockables;
 
     private void OnEnable()
     {
@@ -25,7 +26,7 @@ public class ProgressionTierView : MonoBehaviour
 
     private void OnTransformChildrenChanged()
     {
-        if (!isActiveAndEnabled)
+        if (!isActiveAndEnabled || isConfiguringUnlockables)
         {
             return;
         }
@@ -114,30 +115,38 @@ public class ProgressionTierView : MonoBehaviour
             return;
         }
 
-        List<ProgressionUnlockableView> unlockableViews = new List<ProgressionUnlockableView>(
-            unlocksRoot.GetComponentsInChildren<ProgressionUnlockableView>(true));
-
-        ProgressionUnlockableView template = unlockableViews.Count > 0 ? unlockableViews[0] : null;
-        while (template != null && unlockableViews.Count < entries.Count)
+        isConfiguringUnlockables = true;
+        try
         {
-            ProgressionUnlockableView clone = Instantiate(template, unlocksRoot);
-            clone.gameObject.SetActive(true);
-            unlockableViews.Add(clone);
-        }
+            List<ProgressionUnlockableView> unlockableViews = new List<ProgressionUnlockableView>(
+                unlocksRoot.GetComponentsInChildren<ProgressionUnlockableView>(true));
 
-        for (int i = 0; i < unlockableViews.Count; i++)
+            ProgressionUnlockableView template = unlockableViews.Count > 0 ? unlockableViews[0] : null;
+            while (template != null && unlockableViews.Count < entries.Count)
+            {
+                ProgressionUnlockableView clone = Instantiate(template, unlocksRoot);
+                clone.gameObject.SetActive(true);
+                unlockableViews.Add(clone);
+            }
+
+            for (int i = 0; i < unlockableViews.Count; i++)
+            {
+                if (i < entries.Count)
+                {
+                    entries[i].ApplyTo(unlockableViews[i]);
+                }
+                else
+                {
+                    unlockableViews[i].ClearDefinition();
+                }
+            }
+
+            unlockables = unlockableViews.ToArray();
+        }
+        finally
         {
-            if (i < entries.Count)
-            {
-                entries[i].ApplyTo(unlockableViews[i]);
-            }
-            else
-            {
-                unlockableViews[i].ClearDefinition();
-            }
+            isConfiguringUnlockables = false;
         }
-
-        unlockables = unlockableViews.ToArray();
     }
 
     private void EnsureReferences()

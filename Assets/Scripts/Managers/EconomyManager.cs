@@ -15,7 +15,7 @@ public class EconomyManager : MonoBehaviour
 
     public int money = 2050;
     private readonly Dictionary<StaffMember, float> staffBillingDueTimes = new Dictionary<StaffMember, float>();
-    private readonly Dictionary<TrainService, float> trainBillingDueTimes = new Dictionary<TrainService, float>();
+    private float nextTrainBillingDueTime = -1f;
     private const float RecurringBillingInterval = 60f;
     private const float IncomeAverageWindowSeconds = 60f;
 
@@ -207,44 +207,44 @@ public class EconomyManager : MonoBehaviour
     {
         if (TrainManager.Instance == null) return;
 
-        HashSet<TrainService> activeServices = new HashSet<TrainService>();
+        int activeTrainCostPerMinute = 0;
+        Sprite trainBillIcon = null;
         for (int i = 0; i < TrainManager.Instance.activeTrainServices.Count; i++)
         {
             TrainService service = TrainManager.Instance.activeTrainServices[i];
             if (service?.trainData == null) continue;
-            activeServices.Add(service);
-        }
 
-        List<TrainService> trackedServices = new List<TrainService>(trainBillingDueTimes.Keys);
-        for (int i = 0; i < trackedServices.Count; i++)
-        {
-            if (!activeServices.Contains(trackedServices[i]))
+            activeTrainCostPerMinute += Mathf.Max(0, service.trainData.costPerMinute);
+            if (trainBillIcon == null)
             {
-                trainBillingDueTimes.Remove(trackedServices[i]);
+                trainBillIcon = service.trainData.icon != null
+                    ? service.trainData.icon
+                    : service.trainData.GetIcon();
             }
         }
 
-        foreach (TrainService service in activeServices)
+        if (activeTrainCostPerMinute <= 0)
         {
-            if (!trainBillingDueTimes.ContainsKey(service))
-            {
-                trainBillingDueTimes[service] = now + RecurringBillingInterval;
-                continue;
-            }
+            nextTrainBillingDueTime = -1f;
+            return;
+        }
 
-            float dueTime = trainBillingDueTimes[service];
-            while (now >= dueTime)
-            {
-                int amount = service.trainData.costPerMinute;
-                if (amount > 0)
-                {
-                    SpendMoney(amount, service.trainData.GetIcon(), true, true);
-                }
+        if (nextTrainBillingDueTime < 0f)
+        {
+            nextTrainBillingDueTime = now + RecurringBillingInterval;
+            return;
+        }
 
-                dueTime += RecurringBillingInterval;
-            }
+        int elapsedBillingIntervals = 0;
+        while (now >= nextTrainBillingDueTime)
+        {
+            elapsedBillingIntervals++;
+            nextTrainBillingDueTime += RecurringBillingInterval;
+        }
 
-            trainBillingDueTimes[service] = dueTime;
+        if (elapsedBillingIntervals > 0)
+        {
+            SpendMoney(activeTrainCostPerMinute * elapsedBillingIntervals, trainBillIcon, true, true);
         }
     }
 }

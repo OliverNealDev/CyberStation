@@ -25,6 +25,7 @@ public class SettingsMenuController : MonoBehaviour
     private void OnEnable()
     {
         FindResetButtonTextIfNeeded();
+        DisplayModeController.OnFullscreenChanged += HandleFullscreenChanged;
         HookEvents();
         RefreshControlValues();
         ResetSaveButtonState();
@@ -32,6 +33,7 @@ public class SettingsMenuController : MonoBehaviour
 
     private void OnDisable()
     {
+        DisplayModeController.OnFullscreenChanged -= HandleFullscreenChanged;
         UnhookEvents();
         ResetSaveButtonState();
     }
@@ -164,6 +166,14 @@ public class SettingsMenuController : MonoBehaviour
         if (resetSaveDataButtonText == null && resetSaveDataButton != null)
         {
             resetSaveDataButtonText = resetSaveDataButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
+    }
+
+    private void HandleFullscreenChanged(bool isFullscreen)
+    {
+        if (fullscreenToggle != null)
+        {
+            fullscreenToggle.SetIsOnWithoutNotify(isFullscreen);
         }
     }
 }

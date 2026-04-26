@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,12 +11,15 @@ public sealed class DisplayModeController : MonoBehaviour
 
     private static bool isBootstrapped;
 
+    public static event Action<bool> OnFullscreenChanged;
+
     public static bool IsFullscreen => Screen.fullScreenMode != FullScreenMode.Windowed;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics()
     {
         isBootstrapped = false;
+        OnFullscreenChanged = null;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -62,6 +66,8 @@ public sealed class DisplayModeController : MonoBehaviour
         {
             SetWindowedMode();
         }
+
+        OnFullscreenChanged?.Invoke(fullscreen);
     }
 
     private static void ToggleFullscreen()
