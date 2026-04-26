@@ -23,7 +23,7 @@ public class ExpansionMenuController : MonoBehaviour
     void OnEnable()
     {
         UIController.OnDetailsViewUpdate += CheckButtonInteractabilities;
-        ExpansionManager.OnExpansionBuilt += CheckButtonInteractabilities;
+        ExpansionManager.OnExpansionBuilt += RefreshItemsAndSelection;
         ProgressionManager.OnProgressionChanged += LoadItems;
         LoadItems();
         if (selectedExpansion != null) UpdateDetailView(selectedExpansion);
@@ -32,7 +32,7 @@ public class ExpansionMenuController : MonoBehaviour
     void OnDisable()
     {
         UIController.OnDetailsViewUpdate -= CheckButtonInteractabilities;
-        ExpansionManager.OnExpansionBuilt -= CheckButtonInteractabilities;
+        ExpansionManager.OnExpansionBuilt -= RefreshItemsAndSelection;
         ProgressionManager.OnProgressionChanged -= LoadItems;
     }
 
@@ -48,7 +48,7 @@ public class ExpansionMenuController : MonoBehaviour
 
         foreach (var item in ExpansionManager.Instance.allExpansions)
         {
-            if (ProgressionManager.Instance != null && !ProgressionManager.Instance.IsUnlocked(item))
+            if (!ShouldShowExpansion(item))
             {
                 continue;
             }
@@ -57,6 +57,27 @@ public class ExpansionMenuController : MonoBehaviour
         }
 
         UIRuntimeListUtility.RefreshLayout(contentContainer);
+    }
+
+    private bool ShouldShowExpansion(Expansion data)
+    {
+        if (data == null)
+        {
+            return false;
+        }
+
+        if (ProgressionManager.Instance != null && !ProgressionManager.Instance.IsUnlocked(data))
+        {
+            return false;
+        }
+
+        return !ExpansionManager.Instance.TryGetMissingPlatformRequirement(data, out _);
+    }
+
+    private void RefreshItemsAndSelection()
+    {
+        LoadItems();
+        CheckButtonInteractabilities();
     }
 
     private void CreateButton(Expansion data)
