@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Snack Printer
   requiredTier: 2
-  description: Generates a variety of delicious snacks on command, providing a comfortable
-    hunger fulfilment.
+  description: Prints fresh snacks for hungry passengers who want something nicer than nutrient cubes.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 4ea60e4dacd045241ab8e019fe8baaa5, type: 3}
   cost: 330

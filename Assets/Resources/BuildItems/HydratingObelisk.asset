@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Hydrating Obelisk
   requiredTier: 1
-  description: Materialises hydrating droplets and shoots them into passengers for
-    a quick, uncomfortable hydration.
+  description: Fires hydrating droplets at thirsty passengers. Fast, effective, not especially gentle.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 6a48eb4c34b0b544a885be25705a828c, type: 3}
   cost: 200

@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Private Lavatory
   requiredTier: 3
-  description: Completely isolated facility to provide a comfortable experience for
-    passengers.
+  description: Gives passengers a private place to handle hygiene needs in comfort.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 4ce6fa85b11c2f040915b88f15d7f60f, type: 3}
   cost: 210

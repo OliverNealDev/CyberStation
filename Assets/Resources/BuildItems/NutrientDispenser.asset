@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Nutrient Dispenser
   requiredTier: 1
-  description: Materialises an edible cube perfectly packed with nutrients. Flavours
-    not included.
+  description: Prints nutrient cubes for hungry passengers. Efficient, filling, vaguely edible.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: d0a661f2d5385c641a91e4290be3a637, type: 3}
   cost: 220

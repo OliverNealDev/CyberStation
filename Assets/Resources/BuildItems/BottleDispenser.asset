@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Bottle Dispenser
   requiredTier: 2
-  description: "Provides Hyflo\u2122 water bottles for your convenience!"
+  description: Stocks Hyflo water bottles so thirsty passengers can grab a drink and keep moving.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: a92fb98ee433da649a7f6deebbbb73a5, type: 3}
   cost: 300

@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectBuildable
   objectName: Trainline Globe
   requiredTier: 2
-  description: Shows the active trainlines on a neon-magnetic globe. 5 Decoration
-    strength.
+  description: Displays active train lines on a glowing globe and adds 5 decoration.
   icon: {fileID: 21300000, guid: 00eedd0a7124e5d41a099f88624cccd2, type: 3}
   prefab: {fileID: 1821913311329546544, guid: 90fe77bd0ab64924fb61748d5fd09a02, type: 3}
   cost: 70
