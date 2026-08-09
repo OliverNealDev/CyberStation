@@ -4,7 +4,7 @@ A neon station management game about building a transport hub that can take the 
 
 Built solo in Unity 6 as the artefact for my final-year project at Teesside University, where it scored **90/100** and won **Best Games Programming and Development Artefact at ExpoTees 2026**.
 
-[Download for Windows on itch.io](https://olivernealdev.itch.io/cyber-station) · [Full technical breakdown](https://oliverneal.dev/cyber-station.html) · [Portfolio](https://oliverneal.dev)
+[Play in your browser on itch.io](https://olivernealdev.itch.io/cyber-station) · [Full technical breakdown](https://oliverneal.dev/cyber-station.html) · [Portfolio](https://oliverneal.dev)
 
 | | |
 |---|---|
@@ -112,7 +112,9 @@ git clone https://github.com/OliverNealDev/CyberStation.git
 
 Open the project in **Unity 6 (6000.3.8f1 or newer)** and load the main scene from `Assets/Scenes`. No external services or API keys are required.
 
-Or skip the editor and [download the Windows build from itch.io](https://olivernealdev.itch.io/cyber-station). Cyber Station is a standalone Windows build, not a browser game: extract the zip and run the executable.
+Or skip the editor entirely and [play it in your browser on itch.io](https://olivernealdev.itch.io/cyber-station). A Windows build is on the same page if you would rather run it natively.
+
+The web build is a Unity WebGL target with settings chosen for itch.io's hosting, which cannot be configured server side. [Docs/webgl-itch-deployment.md](Docs/webgl-itch-deployment.md) covers what those settings are and why each one is what it is, along with the build and packaging scripts in `Assets/Editor` and `Tools`.
 
 ---
 
