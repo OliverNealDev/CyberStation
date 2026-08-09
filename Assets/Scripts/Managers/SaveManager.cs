@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_WEBGL && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+#endif
 
 public class SaveManager : MonoBehaviour
 {
@@ -29,6 +32,27 @@ public class SaveManager : MonoBehaviour
     private bool isApplyingSave;
 
     private string SaveFilePath => Path.Combine(Application.persistentDataPath, SaveFileName);
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")]
+    private static extern void CyberStationSyncFileSystem();
+#endif
+
+    // On the web a write only reaches IndexedDB once the filesystem is flushed, so every
+    // path that touches the save file has to call this or the save is lost on tab close.
+    private static void FlushSaveFileSystem()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        try
+        {
+            CyberStationSyncFileSystem();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"SaveManager failed to flush the web filesystem: {exception}");
+        }
+#endif
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticState()
@@ -194,6 +218,7 @@ public class SaveManager : MonoBehaviour
             Directory.CreateDirectory(Application.persistentDataPath);
             string json = JsonUtility.ToJson(CaptureCurrentState(), true);
             File.WriteAllText(SaveFilePath, json);
+            FlushSaveFileSystem();
         }
         catch (Exception exception)
         {
@@ -235,6 +260,7 @@ public class SaveManager : MonoBehaviour
             if (File.Exists(saveFilePath))
             {
                 File.Delete(saveFilePath);
+                FlushSaveFileSystem();
                 Debug.Log($"SaveManager deleted save data at {saveFilePath}.");
             }
         }

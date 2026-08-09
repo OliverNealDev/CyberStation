@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEngine.InputSystem;
+#endif
 
 public class EconomyManager : MonoBehaviour
 {
@@ -42,10 +44,12 @@ public class EconomyManager : MonoBehaviour
 
     void Update()
     {
+#if UNITY_EDITOR
         if (Keyboard.current != null && Keyboard.current.mKey.wasPressedThisFrame)
         {
             AddMoney(money, false);
         }
+#endif
 
         UpdateRecurringCharges();
         UpdateIncomeAverage(Time.time);

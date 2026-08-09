@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
+    <title>{{{ PRODUCT_NAME }}}</title>
+#if SHOW_DIAGNOSTICS
+    <link rel="stylesheet" href="<<<TemplateData/diagnostics.css>>>">
+    <script src="<<<TemplateData/diagnostics.js>>>"></script>
+#endif
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #05060a;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      /* The canvas always fills the iframe itch.io gives us. When the player hits
+         itch's fullscreen button the iframe grows and the canvas follows, so we
+         never fight the embed over a fixed pixel size. */
+      #unity-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: {{{ BACKGROUND_FILENAME ? 'url(\'Build/' + BACKGROUND_FILENAME.replace(/'/g, '%27') + '\') center / cover' : BACKGROUND_COLOR }}};
+      }
+
+      #loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        color: #cfe6ff;
+        background: #05060a;
+      }
+
+      #loader-title {
+        font-size: 15px;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        opacity: 0.75;
+      }
+
+      #bar-track {
+        width: min(340px, 60vw);
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(120, 190, 255, 0.18);
+        overflow: hidden;
+      }
+
+      #bar-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #35a7ff, #7ce7ff);
+        transition: width 0.15s linear;
+      }
+
+      #error {
+        position: fixed;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        color: #ffb4b4;
+        background: #05060a;
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+
+    <div id="loader">
+      <div id="loader-title">{{{ PRODUCT_NAME }}}</div>
+      <div id="bar-track"><div id="bar-fill"></div></div>
+    </div>
+
+    <div id="error"></div>
+
+#if SHOW_DIAGNOSTICS
+    <div id="unity-footer">
+        <img id="diagnostics-icon" src="TemplateData/webmemd-icon.png">
+    </div>
+#endif
+
+    <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loader = document.querySelector("#loader");
+      var barFill = document.querySelector("#bar-fill");
+      var errorBox = document.querySelector("#error");
+
+      function showError(message) {
+        loader.style.display = "none";
+        errorBox.style.display = "flex";
+        errorBox.textContent = message;
+        console.error(message);
+      }
+
+      createUnityInstance(canvas, {
+        arguments: [],
+        dataUrl: "Build/{{{ DATA_FILENAME }}}",
+        frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_THREADS
+        workerUrl: "Build/{{{ WORKER_FILENAME }}}",
+#endif
+#if USE_WASM
+        codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        // Render at CSS pixels rather than physical pixels. On a high-DPI laptop
+        // the default would quadruple the fragment cost for no gameplay benefit.
+        devicePixelRatio: 1,
+      }, function (progress) {
+        barFill.style.width = (progress * 100) + "%";
+      }).then(function (unityInstance) {
+        loader.style.display = "none";
+        window.unityInstance = unityInstance;
+
+        // Inside an itch.io iframe the canvas does not have focus on load, so the
+        // first keypress goes nowhere. Claim it on load and on every click.
+        canvas.focus();
+        canvas.addEventListener("mousedown", function () { canvas.focus(); });
+        window.addEventListener("click", function () { canvas.focus(); }, { once: true });
+
+#if SHOW_DIAGNOSTICS
+        document.getElementById("diagnostics-icon").onclick = function () {
+            unityDiagnostics.openDiagnosticsDiv(unityInstance.GetMetricsInfo);
+        };
+#endif
+      }).catch(function (message) {
+        showError(message);
+      });
+
+      // Browsers start the audio context suspended until the player interacts with
+      // the page. Without this the ambience track silently never starts on itch.
+      function resumeAudio() {
+        if (typeof WEBAudio !== "undefined" && WEBAudio.audioContext &&
+            WEBAudio.audioContext.state === "suspended") {
+          WEBAudio.audioContext.resume();
+        }
+      }
+      ["click", "touchstart", "keydown"].forEach(function (eventName) {
+        window.addEventListener(eventName, resumeAudio, { passive: true });
+      });
+    </script>
+  </body>
+</html>

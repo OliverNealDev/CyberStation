@@ -60,9 +60,11 @@ public class UIController : MonoBehaviour
     private GameObject currentActivePanel;
     private RectTransform billContainer;
     private readonly List<BillEntry> activeBills = new List<BillEntry>();
+    private const float HiddenCanvasRescanInterval = 0.25f;
     private readonly Dictionary<Canvas, bool> canvasEnabledStates = new Dictionary<Canvas, bool>();
     private readonly List<Canvas> staleCanvasStateKeys = new List<Canvas>();
     private bool isUiHidden;
+    private float nextHiddenCanvasRescanTime;
 
     public static event Action OnDetailsViewUpdate;
 
@@ -159,10 +161,16 @@ public class UIController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (isUiHidden)
+        // Rescanning catches canvases spawned after the UI was hidden, but a whole-scene
+        // FindObjectsByType every frame is far too expensive to do on WebGL's single
+        // thread. A few times a second is enough for something the eye reads as instant.
+        if (!isUiHidden || Time.unscaledTime < nextHiddenCanvasRescanTime)
         {
-            ApplyHiddenStateToCanvases();
+            return;
         }
+
+        nextHiddenCanvasRescanTime = Time.unscaledTime + HiddenCanvasRescanInterval;
+        ApplyHiddenStateToCanvases();
     }
 
     public void ToggleUiVisibility()

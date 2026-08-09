@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEngine.InputSystem;
+#endif
 
 [DisallowMultipleComponent]
 public class ProgressionManager : MonoBehaviour
@@ -40,6 +42,7 @@ public class ProgressionManager : MonoBehaviour
         RefreshMaxLevel();
     }
 
+#if UNITY_EDITOR
     private void Update()
     {
         if (Keyboard.current != null && Keyboard.current.nKey.wasPressedThisFrame)
@@ -47,6 +50,7 @@ public class ProgressionManager : MonoBehaviour
             AdvanceOneTier();
         }
     }
+#endif
 
     public int CurrentLevel => currentLevel;
     public int CurrentXp => currentXp;
