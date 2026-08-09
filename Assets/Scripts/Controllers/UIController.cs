@@ -11,7 +11,8 @@ using UnityEngine.UI;
 public class UIController : MonoBehaviour
 {
     public static UIController Instance;
-    public static bool IsCameraInputBlockedByMenu => Instance != null && Instance.HasCameraBlockingMenuOpen();
+    public static bool IsUiHidden => Instance != null && Instance.isUiHidden;
+    public static bool IsCameraInputBlockedByMenu => Instance != null && !Instance.isUiHidden && Instance.HasCameraBlockingMenuOpen();
     
     [Header("Button References")]
     public Button settingsButton;
@@ -59,6 +60,9 @@ public class UIController : MonoBehaviour
     private GameObject currentActivePanel;
     private RectTransform billContainer;
     private readonly List<BillEntry> activeBills = new List<BillEntry>();
+    private readonly Dictionary<Canvas, bool> canvasEnabledStates = new Dictionary<Canvas, bool>();
+    private readonly List<Canvas> staleCanvasStateKeys = new List<Canvas>();
+    private bool isUiHidden;
 
     public static event Action OnDetailsViewUpdate;
 
@@ -116,6 +120,11 @@ public class UIController : MonoBehaviour
     
     void OnDisable()
     {
+        if (isUiHidden)
+        {
+            SetUiHidden(false);
+        }
+
         EconomyManager.OnMoneyChanged -= OnMoneyChanged;
         EconomyManager.OnIncomePerMinuteChanged -= OnIncomePerMinuteChanged;
         EconomyManager.OnExpenseRecorded -= OnExpenseRecorded;
@@ -126,7 +135,12 @@ public class UIController : MonoBehaviour
 
     void Update()
     {
-        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current.yKey.wasPressedThisFrame)
+        {
+            ToggleUiVisibility();
+        }
+
+        if (isUiHidden || Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             return;
         }
@@ -140,6 +154,110 @@ public class UIController : MonoBehaviour
         if (currentActivePanel != null)
         {
             CloseAllPanels();
+        }
+    }
+
+    void LateUpdate()
+    {
+        if (isUiHidden)
+        {
+            ApplyHiddenStateToCanvases();
+        }
+    }
+
+    public void ToggleUiVisibility()
+    {
+        SetUiHidden(!isUiHidden);
+    }
+
+    public void SetUiHidden(bool hidden)
+    {
+        if (isUiHidden == hidden)
+        {
+            if (isUiHidden)
+            {
+                ApplyHiddenStateToCanvases();
+            }
+
+            return;
+        }
+
+        isUiHidden = hidden;
+
+        if (isUiHidden)
+        {
+            ApplyHiddenStateToCanvases();
+        }
+        else
+        {
+            RestoreCanvasStates();
+        }
+    }
+
+    private void ApplyHiddenStateToCanvases()
+    {
+        RemoveStaleCanvasStateKeys();
+
+        Canvas[] canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < canvases.Length; i++)
+        {
+            Canvas canvas = canvases[i];
+            if (canvas == null)
+            {
+                continue;
+            }
+
+            if (ShouldPreserveCanvasWhenUiHidden(canvas))
+            {
+                continue;
+            }
+
+            if (!canvasEnabledStates.ContainsKey(canvas))
+            {
+                canvasEnabledStates[canvas] = canvas.enabled;
+            }
+
+            if (canvas.enabled)
+            {
+                canvas.enabled = false;
+            }
+        }
+    }
+
+    private void RestoreCanvasStates()
+    {
+        foreach (KeyValuePair<Canvas, bool> canvasState in canvasEnabledStates)
+        {
+            Canvas canvas = canvasState.Key;
+            if (canvas != null)
+            {
+                canvas.enabled = canvasState.Value;
+            }
+        }
+
+        canvasEnabledStates.Clear();
+    }
+
+    private static bool ShouldPreserveCanvasWhenUiHidden(Canvas canvas)
+    {
+        return canvas != null && canvas.GetComponentInParent<PlacedBuildable>() != null;
+    }
+
+    private void RemoveStaleCanvasStateKeys()
+    {
+        staleCanvasStateKeys.Clear();
+
+        foreach (Canvas canvas in canvasEnabledStates.Keys)
+        {
+            if (canvas == null)
+            {
+                staleCanvasStateKeys.Add(canvas);
+            }
+        }
+
+        for (int i = 0; i < staleCanvasStateKeys.Count; i++)
+        {
+            canvasEnabledStates.Remove(staleCanvasStateKeys[i]);
         }
     }
 

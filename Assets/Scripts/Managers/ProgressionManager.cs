@@ -1,8 +1,6 @@
 using System;
 using UnityEngine;
-#if UNITY_EDITOR
 using UnityEngine.InputSystem;
-#endif
 
 [DisallowMultipleComponent]
 public class ProgressionManager : MonoBehaviour
@@ -44,12 +42,10 @@ public class ProgressionManager : MonoBehaviour
 
     private void Update()
     {
-#if UNITY_EDITOR
         if (Keyboard.current != null && Keyboard.current.nKey.wasPressedThisFrame)
         {
             AdvanceOneTier();
         }
-#endif
     }
 
     public int CurrentLevel => currentLevel;

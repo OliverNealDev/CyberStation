@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-#if UNITY_EDITOR
 using UnityEngine.InputSystem;
-#endif
 using UnityEngine.UI;
 
 public class PassengerManager : MonoBehaviour
@@ -131,7 +129,6 @@ public class PassengerManager : MonoBehaviour
         UpdatePassengerFacing();
         UpdateLitterChecks();
 
-#if UNITY_EDITOR
         if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame) 
         {
             if (TrainManager.Instance.activeTrainServices.Count > 0)
@@ -139,7 +136,6 @@ public class PassengerManager : MonoBehaviour
                 SpawnPassengerForService(TrainManager.Instance.AssignTrainServiceToPassenger());
             }
         }
-#endif
     }
     
     void LogicUpdate()

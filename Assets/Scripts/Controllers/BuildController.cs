@@ -807,7 +807,7 @@ public static class PointerUiUtility
 
     private static bool IsPointerOverUi(Predicate<GameObject> shouldCapturePointer)
     {
-        if (EventSystem.current == null || Mouse.current == null)
+        if (UIController.IsUiHidden || EventSystem.current == null || Mouse.current == null)
         {
             return false;
         }
