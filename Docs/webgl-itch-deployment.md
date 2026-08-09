@@ -16,6 +16,37 @@ Unity.exe -batchmode -quit -projectPath . -buildTarget WebGL -executeMethod WebG
 Both go through `Assets/Editor/WebGLBuilder.cs`, so the scene list and target
 cannot drift between a local build and a scripted one.
 
+## Packaging the upload
+
+Use the script. Do not zip the folder by hand:
+
+```powershell
+Tools\Package-ItchZip.ps1
+```
+
+`Compress-Archive` and the Explorer "Send to > Compressed folder" option both write
+Windows path separators into the zip entry names. The ZIP spec requires forward
+slashes, and itch.io unzips on Linux, where a backslash is a legal filename
+character rather than a separator. The upload then contains one root-level file
+literally named `Build\WebGL.loader.js`, every request for `Build/WebGL.loader.js`
+returns 404, and the game hangs at the very start of the loading bar with
+`createUnityInstance is not defined` in the console. The script builds the entries
+by hand with forward slashes and prints each one so the mistake is visible.
+
+## Testing before uploading
+
+A Unity Web build cannot be opened from disk: the page loads but the browser blocks
+the `file://` fetches for the data and wasm, so it stalls looking exactly like a
+broken build. Serve it instead:
+
+```powershell
+& "C:\Program Files\Unity\Hub\Editor\6000.3.8f1\Editor\Data\PlaybackEngines\WebGLSupport\BuildTools\Emscripten\python\python.exe" Tools\serve-like-itch.py Builds\WebGL 8099
+```
+
+That sets `Content-Encoding` from the file extension the same way itch.io does, so
+a local pass is meaningful rather than merely encouraging. Test the extracted zip
+rather than `Builds/WebGL` when you want to catch packaging faults too.
+
 ## Player settings that matter, and why
 
 | Setting | Value | Reason |
