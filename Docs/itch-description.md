@@ -19,6 +19,13 @@ Passengers are not decoration. They enter, queue for ticket machines, pass throu
 
 Around that core sit train scheduling, janitors and security drones that dispatch themselves, an economy with running costs as well as income, and saving so a station survives between sessions.
 
+## New: the Rush Hour update
+
+- **Directives** walk you through opening your first station, then keep three goals on screen with cash and XP rewards.
+- **Days and rush hours.** Mornings and evenings bring crowds, nights are quiet, and every day ends with a graded report on what went well and what your passengers gave up on.
+- **Announced events**: signal faults, concert crowds, transit inspections, fare-dodger crews, heatwaves and more, each with a warning before it hits.
+- **Pause and fast forward**, a live star rating in the top bar, a help card, and passengers who tell you what is wrong.
+
 ## Playing in the browser
 
 Runs in the browser, no download. Your station saves automatically and is stored in your browser, so you can close the tab and pick it back up later. Clearing your site data will clear the save with it. There is a Windows build below if you would rather play it natively.
@@ -36,10 +43,13 @@ The fullscreen button in the bottom right corner is worth using. It is a dense i
 | Left click | Place and select |
 | Escape | Close the open menu |
 | Y | Hide the interface for a clean look at your station |
+| Space | Pause and resume |
+| 1, 2 and 3 | Normal, fast and fastest speed |
+| F1 | How to play |
 
 ## About
 
-Built solo in Unity 6 as my final year artefact at Teesside University, where it scored 90/100 and won Best Games Programming and Development Artefact at ExpoTees 2026. Around 17,100 lines of C# across 86 scripts, written over one academic year.
+Built solo in Unity 6 as my final year artefact at Teesside University, where it scored 90/100 and won Best Games Programming and Development Artefact at ExpoTees 2026. Around 17,100 lines of C# across 86 scripts, written over one academic year. The Rush Hour update in September 2026 added the day cycle, events, directives and reports.
 
 The source is public, including an honest writeup of the three things I would change about the architecture given another run at it.
 
