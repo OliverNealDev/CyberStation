@@ -13,6 +13,11 @@ public class EconomyManager : MonoBehaviour
     public static event Action<int> OnIncomePerMinuteChanged;
     public static event Action<int, Sprite> OnExpenseRecorded;
 
+    // Every change to the balance except a save being loaded. The flag is the same one
+    // that decides whether a change counts towards income per minute, so running the
+    // station (fares, sales, wages) is told apart from building, refunds and rewards.
+    public static event Action<int, bool> OnMoneyDelta;
+
     public int money = 2050;
     private readonly Dictionary<StaffMember, float> staffBillingDueTimes = new Dictionary<StaffMember, float>();
     private float nextTrainBillingDueTime = -1f;
@@ -80,7 +85,8 @@ public class EconomyManager : MonoBehaviour
     {
         if (!passenger.hasTicket || passenger.isTicketEvader) return; // No refund for evaders or those without tickets
 
-        int refundAmount = passenger.assignedTrainService.trainData.costPerRide;
+        // Refund what was paid, which an event may have made more than the listed fare.
+        int refundAmount = passenger.ticketPrice > 0 ? passenger.ticketPrice : passenger.assignedTrainService.trainData.costPerRide;
         SpendMoney(refundAmount);
     }
 
@@ -111,6 +117,11 @@ public class EconomyManager : MonoBehaviour
         }
 
         OnMoneyChanged?.Invoke(money);
+
+        if (delta != 0)
+        {
+            OnMoneyDelta?.Invoke(delta, includeInIncomeAverage);
+        }
     }
 
     private void RecordMoneyChange(int delta)

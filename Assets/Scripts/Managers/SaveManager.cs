@@ -8,12 +8,36 @@ using UnityEngine.SceneManagement;
 using System.Runtime.InteropServices;
 #endif
 
+// A system that keeps its own state in the save, under its own key, without SaveManager
+// having to know its fields. New systems register themselves; nothing here changes.
+public interface ISaveParticipant
+{
+    string SaveKey { get; }
+    string CaptureState();
+    void RestoreState(string json);
+
+    // Called instead of RestoreState when the save holds nothing under this key.
+    // loadedSaveVersion is 0 for a brand-new station and 1 for a save written before
+    // versioning existed, which lets a system tell "new player" from "returning player".
+    void OnNoSavedState(int loadedSaveVersion);
+}
+
 public class SaveManager : MonoBehaviour
 {
     private const string SaveFileName = "savegame.json";
     private const float AutoSaveIntervalSeconds = 60f;
 
+    // 1: the original format, which had no version field (it reads back as 0).
+    // 2: adds saveVersion and per-system sections.
+    public const int CurrentSaveVersion = 2;
+    private const int FirstVersionedSave = 2;
+
     private static SaveManager instance;
+    private static readonly List<ISaveParticipant> participants = new List<ISaveParticipant>();
+
+    private readonly Dictionary<string, string> loadedSections = new Dictionary<string, string>(StringComparer.Ordinal);
+    private bool hasDeliveredLoadedState;
+    private int loadedSaveVersion;
 
     private readonly Dictionary<string, ObjectBuildable> buildablesById =
         new Dictionary<string, ObjectBuildable>(StringComparer.OrdinalIgnoreCase);
@@ -58,6 +82,36 @@ public class SaveManager : MonoBehaviour
     private static void ResetStaticState()
     {
         instance = null;
+        participants.Clear();
+    }
+
+    public static bool HasSaveFile => File.Exists(Path.Combine(Application.persistentDataPath, SaveFileName));
+
+    public static void RegisterParticipant(ISaveParticipant participant)
+    {
+        if (participant == null || participants.Contains(participant))
+        {
+            return;
+        }
+
+        participants.Add(participant);
+
+        // Systems created after the load has already happened still get their state.
+        if (instance != null && instance.hasDeliveredLoadedState)
+        {
+            instance.DeliverLoadedState(participant);
+        }
+    }
+
+    public static void UnregisterParticipant(ISaveParticipant participant)
+    {
+        participants.Remove(participant);
+    }
+
+    // Older saves have no version field, which JsonUtility reads back as 0.
+    public static int NormalizeSaveVersion(int storedVersion)
+    {
+        return storedVersion < FirstVersionedSave ? 1 : storedVersion;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -125,6 +179,7 @@ public class SaveManager : MonoBehaviour
         if (!File.Exists(SaveFilePath))
         {
             Debug.Log($"SaveManager found no save file at {SaveFilePath}.");
+            CompleteLoad(null, 0);
             yield break;
         }
 
@@ -135,6 +190,7 @@ public class SaveManager : MonoBehaviour
             if (string.IsNullOrWhiteSpace(json))
             {
                 Debug.LogWarning("SaveManager found an empty save file and skipped loading.");
+                CompleteLoad(null, 0);
                 yield break;
             }
 
@@ -143,12 +199,14 @@ public class SaveManager : MonoBehaviour
         catch (Exception exception)
         {
             Debug.LogError($"SaveManager failed to read save file '{SaveFilePath}': {exception}");
+            CompleteLoad(null, 0);
             yield break;
         }
 
         if (saveData == null)
         {
             Debug.LogWarning("SaveManager could not deserialize the save file.");
+            CompleteLoad(null, 0);
             yield break;
         }
 
@@ -172,7 +230,54 @@ public class SaveManager : MonoBehaviour
         RestoreStaffState(saveData);
 
         isApplyingSave = false;
-        Debug.Log($"SaveManager loaded save data from {SaveFilePath}.");
+        CompleteLoad(saveData, NormalizeSaveVersion(saveData.saveVersion));
+        Debug.Log($"SaveManager loaded save data (version {loadedSaveVersion}) from {SaveFilePath}.");
+    }
+
+    private void CompleteLoad(GameSaveData saveData, int saveVersion)
+    {
+        loadedSections.Clear();
+        loadedSaveVersion = saveVersion;
+
+        if (saveData != null && saveData.sections != null)
+        {
+            for (int i = 0; i < saveData.sections.Count; i++)
+            {
+                SaveSection section = saveData.sections[i];
+                if (section != null && !string.IsNullOrEmpty(section.key))
+                {
+                    loadedSections[section.key] = section.json;
+                }
+            }
+        }
+
+        hasDeliveredLoadedState = true;
+
+        List<ISaveParticipant> snapshot = new List<ISaveParticipant>(participants);
+        for (int i = 0; i < snapshot.Count; i++)
+        {
+            DeliverLoadedState(snapshot[i]);
+        }
+    }
+
+    private void DeliverLoadedState(ISaveParticipant participant)
+    {
+        try
+        {
+            if (loadedSections.TryGetValue(participant.SaveKey, out string json) && !string.IsNullOrEmpty(json))
+            {
+                participant.RestoreState(json);
+            }
+            else
+            {
+                participant.OnNoSavedState(loadedSaveVersion);
+            }
+        }
+        catch (Exception exception)
+        {
+            // One broken section must not stop the rest of the station loading.
+            Debug.LogError($"SaveManager failed to restore '{participant.SaveKey}': {exception}");
+        }
     }
 
     private IEnumerator AutoSaveRoutine()
@@ -248,6 +353,8 @@ public class SaveManager : MonoBehaviour
 
         isApplyingSave = false;
         hasAttemptedInitialLoad = false;
+        hasDeliveredLoadedState = false;
+        loadedSections.Clear();
 
         DeleteSaveFile(SaveFilePath);
         ReloadActiveScene();
@@ -483,9 +590,12 @@ public class SaveManager : MonoBehaviour
     {
         GameSaveData saveData = new GameSaveData
         {
+            saveVersion = CurrentSaveVersion,
             money = EconomyManager.Instance.money,
             currentXp = ProgressionManager.Instance.CurrentXp
         };
+
+        CaptureSections(saveData);
 
         for (int i = 0; i < ExpansionManager.Instance.builtExpansions.Count; i++)
         {
@@ -558,6 +668,31 @@ public class SaveManager : MonoBehaviour
         }
 
         return saveData;
+    }
+
+    private void CaptureSections(GameSaveData saveData)
+    {
+        Dictionary<string, string> sections = new Dictionary<string, string>(loadedSections, StringComparer.Ordinal);
+
+        for (int i = 0; i < participants.Count; i++)
+        {
+            ISaveParticipant participant = participants[i];
+            try
+            {
+                sections[participant.SaveKey] = participant.CaptureState();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"SaveManager failed to capture '{participant.SaveKey}': {exception}");
+            }
+        }
+
+        // Sections from systems that are not running this session are carried over
+        // untouched, so their data is not lost just because this build did not load them.
+        foreach (KeyValuePair<string, string> section in sections)
+        {
+            saveData.sections.Add(new SaveSection { key = section.Key, json = section.Value });
+        }
     }
 
     private void AddTrainAssignment(List<TrainAssignmentSaveData> assignments, Train train, int platformNumber, int slotIndex)
@@ -698,6 +833,7 @@ public class SaveManager : MonoBehaviour
     [Serializable]
     private class GameSaveData
     {
+        public int saveVersion;
         public int money;
         public int currentXp;
         public List<string> builtExpansionIds = new List<string>();
@@ -705,6 +841,14 @@ public class SaveManager : MonoBehaviour
         public List<string> unlockedTrainIds = new List<string>();
         public List<TrainAssignmentSaveData> trainAssignments = new List<TrainAssignmentSaveData>();
         public List<StaffSaveData> hiredStaff = new List<StaffSaveData>();
+        public List<SaveSection> sections = new List<SaveSection>();
+    }
+
+    [Serializable]
+    private class SaveSection
+    {
+        public string key;
+        public string json;
     }
 
     [Serializable]

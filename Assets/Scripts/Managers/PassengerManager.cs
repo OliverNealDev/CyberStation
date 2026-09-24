@@ -10,6 +10,15 @@ public class PassengerManager : MonoBehaviour
 {
     public static PassengerManager Instance;
     private const int CaughtEvaderFineAmount = 25;
+
+    public static event System.Action<Passenger> OnPassengerArrived;
+    public static event System.Action<Passenger, int> OnTicketSold;
+    public static event System.Action<Passenger> OnPassengerBoarded;
+    public static event System.Action<Passenger, Passenger.NeedType> OnNeedMet;
+    public static event System.Action<Passenger, Passenger.NeedType> OnNeedBecameUrgent;
+    public static event System.Action<Passenger, Passenger.NeedType> OnNeedAbandoned;
+    public static event System.Action<Passenger> OnEvaderCaught;
+    public static event System.Action<Passenger> OnServiceEndedForPassenger;
     
     public List<Passenger> activePassengers = new List<Passenger>();
     [SerializeField] private GameObject passengerPrefab;
@@ -664,7 +673,8 @@ public class PassengerManager : MonoBehaviour
             }
         }
 
-        if (sampledPassengers.Count == 0 || Random.value > litterDropChancePerSample)
+        float dropChance = Mathf.Clamp01(litterDropChancePerSample * Mathf.Max(0f, StationModifiers.LitterMultiplier));
+        if (sampledPassengers.Count == 0 || Random.value > dropChance)
         {
             return;
         }
@@ -1283,6 +1293,7 @@ public class PassengerManager : MonoBehaviour
         if (passenger.blockedNeedFailureStage == 1 && blockedDuration >= passiveDuration)
         {
             passenger.blockedNeedFailureStage = 2;
+            OnNeedBecameUrgent?.Invoke(passenger, needType);
         }
 
         ShowBlockedNeedIcon(passenger, needType, passenger.blockedNeedFailureStage >= 2);
@@ -1374,6 +1385,7 @@ public class PassengerManager : MonoBehaviour
         passenger.ClearNeed(needType);
         ResetFacilityChoicePreference(passenger);
         passenger.hasFailedNeed = true;
+        OnNeedAbandoned?.Invoke(passenger, needType);
         passenger.hasGivenUpNeed = needType != Passenger.NeedType.Ticket;
         passenger.blockedNeed = Passenger.NeedType.None;
         passenger.blockedNeedStartTime = 0f;
@@ -1662,7 +1674,10 @@ public class PassengerManager : MonoBehaviour
             passenger.currentSubState = Passenger.passengerSubStates.Idle;
             if (passenger.assignedTrainService != null)
             {
-                EconomyManager.Instance.AddMoney(passenger.assignedTrainService.trainData.costPerRide);
+                int fare = Mathf.RoundToInt(passenger.assignedTrainService.trainData.costPerRide * StationModifiers.FareMultiplier);
+                passenger.ticketPrice = fare;
+                EconomyManager.Instance.AddMoney(fare);
+                OnTicketSold?.Invoke(passenger, fare);
             }
 
             if (ProgressionManager.Instance != null)
@@ -1697,6 +1712,8 @@ public class PassengerManager : MonoBehaviour
             {
                 ProgressionManager.Instance.RecordNeedFulfilled();
             }
+
+            OnNeedMet?.Invoke(passenger, needType);
             
             MaterializeAnimator animator = passenger.GetComponent<MaterializeAnimator>();
             if (animator != null) animator.Pop();
@@ -1978,6 +1995,7 @@ public class PassengerManager : MonoBehaviour
             ProgressionManager.Instance.RecordPassengerBoarded();
         }
 
+        OnPassengerBoarded?.Invoke(passenger);
         UnregisterPassenger(passenger);
     }
 
@@ -2028,6 +2046,7 @@ public class PassengerManager : MonoBehaviour
                     EconomyManager.Instance.RefundTicket(passenger);
                 }
 
+                OnServiceEndedForPassenger?.Invoke(passenger);
                 LeaveStation(passenger);
                 passenger.assignedTrainService = null;
             }
@@ -2045,6 +2064,8 @@ public class PassengerManager : MonoBehaviour
         {
             EconomyManager.Instance.AddMoney(CaughtEvaderFineAmount);
         }
+
+        OnEvaderCaught?.Invoke(passenger);
 
         if (WorldSpacePromptCoordinator.Instance != null)
         {
@@ -2093,6 +2114,7 @@ public class PassengerManager : MonoBehaviour
         newPassenger.isTicketEvader = RollTicketEvader(service);
         
         RegisterPassenger(newPassenger);
+        OnPassengerArrived?.Invoke(newPassenger);
         newPassenger.TimeToGoToPlatform = Time.time + Random.Range(10f, 60f);
         newPassenger.navAgent.avoidancePriority = Random.Range(50, 100);
         
@@ -2300,6 +2322,7 @@ public class PassengerManager : MonoBehaviour
             adjustedChance *= Mathf.Max(0f, service.trainData.evasionChanceMultiplier);
         }
 
+        adjustedChance *= Mathf.Max(0f, StationModifiers.EvasionMultiplier);
         return Random.value < Mathf.Clamp01(adjustedChance / 100f);
     }
 

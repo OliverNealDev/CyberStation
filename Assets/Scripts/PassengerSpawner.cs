@@ -7,6 +7,7 @@ public class PassengerSpawner : MonoBehaviour
     private const float MaxDemandOccupancy = 1f;
     private const float DemandCurveExponent = 1.6f;
     private float tickRate = 20f; 
+    private const int MaxTicksPerFrame = 8;
     private float tickInterval;
     private float tickTimer = 0f;
 
@@ -18,11 +19,20 @@ public class PassengerSpawner : MonoBehaviour
     void Update()
     {
         tickTimer += Time.deltaTime;
-        
-        if (tickTimer >= tickInterval)
+
+        // At 2x and 3x a frame can span several ticks. Running them all keeps arrivals at
+        // the right rate; the cap and the reset stop a long stall turning into a surge.
+        int ticksThisFrame = 0;
+        while (tickTimer >= tickInterval && ticksThisFrame < MaxTicksPerFrame)
         {
             ProcessSpawns();
             tickTimer -= tickInterval;
+            ticksThisFrame++;
+        }
+
+        if (ticksThisFrame == MaxTicksPerFrame)
+        {
+            tickTimer = Mathf.Min(tickTimer, tickInterval);
         }
     }
 
@@ -40,7 +50,7 @@ public class PassengerSpawner : MonoBehaviour
             float capacity = service.TrainPassengerCapacity();
             float targetPassengers = capacity * targetOccupancy;
             
-            float spawnRatePerSecond = targetPassengers / ServiceCycleDurationSeconds;
+            float spawnRatePerSecond = targetPassengers * StationModifiers.SpawnMultiplier / ServiceCycleDurationSeconds;
             float spawnProbability = spawnRatePerSecond * tickInterval;
 
             int guaranteedSpawns = Mathf.FloorToInt(spawnProbability);

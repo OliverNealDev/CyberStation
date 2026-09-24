@@ -66,6 +66,15 @@ public class UIController : MonoBehaviour
     private bool isUiHidden;
     private float nextHiddenCanvasRescanTime;
 
+    // The balance rolls towards its new value instead of jumping, so a payout reads
+    // as money arriving rather than a number changing.
+    private const float MoneyRollSharpness = 10f;
+    private const int MoneyPunchThreshold = 100;
+    private float displayedMoney;
+    private int targetMoney;
+    private bool hasDisplayedMoney;
+    private Coroutine moneyPunch;
+
     public static event Action OnDetailsViewUpdate;
 
     private class BillEntry
@@ -137,6 +146,8 @@ public class UIController : MonoBehaviour
 
     void Update()
     {
+        AnimateMoneyText();
+
         if (Keyboard.current != null && Keyboard.current.yKey.wasPressedThisFrame)
         {
             ToggleUiVisibility();
@@ -553,18 +564,61 @@ public class UIController : MonoBehaviour
 
     void UpdateMoneyText(int amount)
     {
-        if (moneyText != null)
+        if (moneyText == null)
         {
-            if (amount >= 0 && moneyText.color != positiveMoneyColor)
-            {
-                moneyText.color = positiveMoneyColor;
-            }
-            else if (amount < 0 && moneyText.color != negativeMoneyColor)
-            {
-                moneyText.color = negativeMoneyColor;
-            }
-            moneyText.text = FormatMoney(amount);
+            return;
         }
+
+        if (!hasDisplayedMoney)
+        {
+            hasDisplayedMoney = true;
+            displayedMoney = amount;
+            targetMoney = amount;
+        }
+
+        if (amount - targetMoney >= MoneyPunchThreshold && isActiveAndEnabled)
+        {
+            if (moneyPunch != null)
+            {
+                StopCoroutine(moneyPunch);
+            }
+
+            moneyPunch = StartCoroutine(UiTween.Punch(moneyText.transform, 0.18f, 0.35f));
+        }
+
+        targetMoney = amount;
+        ApplyMoneyText(Mathf.RoundToInt(displayedMoney));
+    }
+
+    private void AnimateMoneyText()
+    {
+        if (!hasDisplayedMoney || Mathf.Approximately(displayedMoney, targetMoney))
+        {
+            return;
+        }
+
+        float blend = 1f - Mathf.Exp(-MoneyRollSharpness * Time.unscaledDeltaTime);
+        displayedMoney = Mathf.Lerp(displayedMoney, targetMoney, blend);
+        if (Mathf.Abs(targetMoney - displayedMoney) < 0.5f)
+        {
+            displayedMoney = targetMoney;
+        }
+
+        ApplyMoneyText(Mathf.RoundToInt(displayedMoney));
+    }
+
+    private void ApplyMoneyText(int amount)
+    {
+        if (amount >= 0 && moneyText.color != positiveMoneyColor)
+        {
+            moneyText.color = positiveMoneyColor;
+        }
+        else if (amount < 0 && moneyText.color != negativeMoneyColor)
+        {
+            moneyText.color = negativeMoneyColor;
+        }
+
+        moneyText.text = FormatMoney(amount);
     }
 
     private void UpdateIncomeText(int amountPerMinute)
@@ -652,7 +706,7 @@ public class UIController : MonoBehaviour
     private IEnumerator BillLifecycle(BillEntry entry)
     {
         yield return FadeBill(entry, 0f, 1f, billFadeDuration);
-        yield return new WaitForSeconds(billLifetime);
+        yield return new WaitForSecondsRealtime(billLifetime);
         yield return FadeBill(entry, 1f, 0f, billFadeDuration);
 
         activeBills.Remove(entry);
@@ -673,7 +727,7 @@ public class UIController : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = duration <= 0f ? 1f : elapsed / duration;
             entry.canvasGroup.alpha = Mathf.Lerp(from, to, t);
             yield return null;
@@ -707,7 +761,7 @@ public class UIController : MonoBehaviour
 
         while (elapsed < billMoveDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = billMoveDuration <= 0f ? 1f : elapsed / billMoveDuration;
             float easedT = t * t * (3f - 2f * t);
             rectTransform.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, easedT);

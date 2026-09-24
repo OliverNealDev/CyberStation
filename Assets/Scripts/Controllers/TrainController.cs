@@ -6,6 +6,8 @@ public class TrainController : MonoBehaviour, IPreviewInitializable
     private static readonly int BaseColorPropertyId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorPropertyId = Shader.PropertyToID("_Color");
 
+    public static event System.Action<TrainController> OnTrainDeparted;
+
     public Train trainData;
     public TrainService trainService;
     public Transform trainStopPoint;
@@ -109,6 +111,7 @@ public class TrainController : MonoBehaviour, IPreviewInitializable
                         }
 
                         currentState = trainStates.Departing;
+                        OnTrainDeparted?.Invoke(this);
                     }
                 }
                 break;

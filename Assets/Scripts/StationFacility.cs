@@ -123,7 +123,7 @@ public abstract class StationFacility : QueuableObject
 
     protected float ScaleServiceDuration(float baseDuration)
     {
-        return Mathf.Max(0f, baseDuration) * ServiceDurationMultiplier;
+        return Mathf.Max(0f, baseDuration) * ServiceDurationMultiplier * Mathf.Max(0.1f, StationModifiers.ServiceTimeMultiplier);
     }
 
     protected float GetAdditionalServiceDelay(float baseDuration)

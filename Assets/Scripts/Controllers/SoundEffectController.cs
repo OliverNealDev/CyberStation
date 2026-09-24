@@ -126,7 +126,7 @@ public class SoundEffectController : MonoBehaviour
         while (true)
         {
             AttachHooksToButtons();
-            yield return new WaitForSeconds(ButtonScanInterval);
+            yield return new WaitForSecondsRealtime(ButtonScanInterval);
         }
     }
 
