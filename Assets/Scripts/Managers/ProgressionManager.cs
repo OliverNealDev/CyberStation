@@ -10,6 +10,7 @@ public class ProgressionManager : MonoBehaviour
     public static ProgressionManager Instance { get; private set; }
 
     public static event Action OnProgressionChanged;
+    public static event Action<int> OnTierReached;
 
     [Header("XP Curve")]
     public int baseXpPerLevel = 200;
@@ -310,6 +311,11 @@ public class ProgressionManager : MonoBehaviour
         }
 
         NotifyProgressChanged();
+
+        if (currentLevel > previousLevel)
+        {
+            OnTierReached?.Invoke(currentLevel);
+        }
     }
 
     private void NotifyProgressChanged()

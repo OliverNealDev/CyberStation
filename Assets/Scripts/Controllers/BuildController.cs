@@ -279,6 +279,7 @@ public class BuildController : MonoBehaviour
 
         GridManager.Instance.OccupyArea(currentPreviewGridPos.x, currentPreviewGridPos.y, currentPreviewSize.x, currentPreviewSize.y);
         SoundEffectController.Play(SoundEffectId.BuildPlaced);
+        PlacementPop.Play(placedObject);
 
         if (IsMaterializerBuildable(objectBuildable))
         {
@@ -351,6 +352,14 @@ public class BuildController : MonoBehaviour
 
         bool removedMaterializer = IsPlacedMaterializer(currentDemolishTarget);
         EconomyManager.Instance.AddMoney(currentDemolishTarget.cost, false);
+
+        if (currentDemolishTarget.cost > 0 && WorldSpacePromptCoordinator.Instance != null)
+        {
+            WorldSpacePromptCoordinator.Instance.CreateWorldPrompt(
+                "+$" + currentDemolishTarget.cost,
+                currentDemolishTarget.transform.position + Vector3.up * 4f,
+                Color.green);
+        }
         GridManager.Instance.VacateArea(currentDemolishTarget.gridPos.x, currentDemolishTarget.gridPos.y, currentDemolishTarget.size.x, currentDemolishTarget.size.y);
         Destroy(currentDemolishTarget.gameObject);
         SoundEffectController.Play(SoundEffectId.Demolish);

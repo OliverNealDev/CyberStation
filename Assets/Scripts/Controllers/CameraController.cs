@@ -63,7 +63,7 @@ public class CameraController : MonoBehaviour
         right.Normalize();
 
         Vector3 moveDir = (forward * zInput + right * xInput).normalized;
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
+        transform.position += moveDir * moveSpeed * Time.unscaledDeltaTime;
     }
 
     private void HandleRotation()
@@ -73,7 +73,7 @@ public class CameraController : MonoBehaviour
         if (Keyboard.current.qKey.isPressed) rotateDir = -1f;
         if (Keyboard.current.eKey.isPressed) rotateDir = 1f;
 
-        transform.Rotate(Vector3.up, rotateDir * rotationSpeed * Time.deltaTime, Space.World);
+        transform.Rotate(Vector3.up, rotateDir * rotationSpeed * Time.unscaledDeltaTime, Space.World);
     }
 
     private void HandleMousePan()

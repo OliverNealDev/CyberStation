@@ -7,10 +7,10 @@ public class MoveAndFade : MonoBehaviour
     public float fadeDuration = 1f;
     void Update()
     {
-        transform.position += Vector3.up * verticalSpeed * Time.deltaTime;
+        transform.position += Vector3.up * verticalSpeed * Time.unscaledDeltaTime;
 
         Color currentColor = GetComponent<TextMeshProUGUI>().color;
-        currentColor.a -= Time.deltaTime / fadeDuration;
+        currentColor.a -= Time.unscaledDeltaTime / fadeDuration;
         GetComponent<TextMeshProUGUI>().color = currentColor;
 
         if (currentColor.a <= 0)

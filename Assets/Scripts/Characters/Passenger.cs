@@ -19,6 +19,7 @@ public class Passenger : Person
     public MeshRenderer visorRenderer;
     
     public bool hasTicket = false;
+    [HideInInspector] public int ticketPrice;
     public bool isTicketEvader = false;
     public bool hasBypassedBarrier = false;
     public bool isBeingEscorted = false;
@@ -91,6 +92,11 @@ public class Passenger : Person
         float hygieneChance = trainProfile != null
             ? trainProfile.hygieneNeedChance
             : (manager != null ? manager.hygieneNeedChance : 0.2f);
+
+        hungerChance = StationModifiers.ApplyNeedBonus(hungerChance, StationModifiers.HungerBonus);
+        thirstChance = StationModifiers.ApplyNeedBonus(thirstChance, StationModifiers.ThirstBonus);
+        energyChance = StationModifiers.ApplyNeedBonus(energyChance, StationModifiers.EnergyBonus);
+        hygieneChance = StationModifiers.ApplyNeedBonus(hygieneChance, StationModifiers.HygieneBonus);
 
         needsHunger = hungerUnlocked && Random.value < hungerChance;
         needsThirst = thirstUnlocked && Random.value < thirstChance;

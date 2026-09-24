@@ -74,7 +74,7 @@ public class OrthographicCameraController : MonoBehaviour
         right.Normalize();
 
         Vector3 moveDir = (forward * zInput + right * xInput).normalized;
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
+        transform.position += moveDir * moveSpeed * Time.unscaledDeltaTime;
     }
 
     private void HandleRotation()
@@ -122,7 +122,7 @@ public class OrthographicCameraController : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < rotationTime)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / rotationTime);
             
             t = t * t * (3f - 2f * t);

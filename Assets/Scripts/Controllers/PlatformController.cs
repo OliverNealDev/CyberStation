@@ -43,6 +43,10 @@ public class PlatformController : MonoBehaviour
     {
         if (isOccupied) return;
 
+        // A signal fault holds the next train outside rather than cancelling it, so the
+        // timer simply stops and the platform fills up with waiting passengers meanwhile.
+        if (StationModifiers.IsPlatformHeld(platformNumber)) return;
+
         spawnTimer -= Time.deltaTime;
 
         if (spawnTimer <= 0f)
